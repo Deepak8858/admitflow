@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://www.coderabbit.ai/integrations/schema.v2.json
+language: en-US
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  review_status: true
+  review_details: true
+  fail_commit_status: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: true
+    auto_incremental_review: true
+  path_instructions:
+    - path: "**/*"
+      instructions: >-
+        This is the initial import of AdmitFlow, a multi-tenant admissions application.
+        Prioritize concrete security, authorization, data-integrity and correctness findings.
+        Include severity, exact affected paths, a reproducible failure scenario and a suggested fix.
+        Check tenant isolation and PostgreSQL RLS, public webhook signatures and bounded bodies,
+        WorkOS membership fencing, subscription freshness/trial enforcement, secret handling,
+        money in integer paise, idempotency and recovery of uncertain external writes.
+        Do not recommend automatically replaying an ambiguous provider mutation.
+        Review migrations, tests, build files and CI/IAM alongside application source.
+        Distinguish local mocked-test evidence from live-provider verification.
+        Never include secret values in review comments. Report skipped files and review limits.
+    - path: "infra/**"
+      instructions: >-
+        Check least-privilege IAM and PassRole, private TLS/authenticated Valkey,
+        role-scoped Secrets Manager injection, image digest pinning, migration isolation,
+        safe rollback and retained KMS/data. The chosen baseline intentionally uses one
+        web task, one worker and one Valkey primary without NAT or HA replicas.
+chat:
+  auto_reply: true
