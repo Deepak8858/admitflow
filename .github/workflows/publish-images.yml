@@ -1,0 +1,132 @@
+name: Publish release images
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type PUBLISH after reviewing CI and approving build costs'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admitflow-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'PUBLISH'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    env:
+      AWS_REGION: ap-southeast-1
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      AWS_PUBLISH_ROLE_ARN: ${{ vars.AWS_PUBLISH_ROLE_ARN }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+      DEPOT_PROJECT_ID: ${{ vars.DEPOT_PROJECT_ID }}
+      NODE_IMAGE: ${{ vars.NODE_IMAGE }}
+      BUILDS_APPROVED: ${{ vars.BUILDS_APPROVED }}
+      NEXT_PUBLIC_META_APP_ID: ${{ vars.NEXT_PUBLIC_META_APP_ID }}
+      NEXT_PUBLIC_META_CONFIG_ID: ${{ vars.NEXT_PUBLIC_META_CONFIG_ID }}
+      NEXT_PUBLIC_WORKOS_REDIRECT_URI: https://admitflow.incfrog.ai/callback
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Require configured, explicitly approved release inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BUILDS_APPROVED" == 'true' ]] || { printf '%s\n' 'Build costs and account setup must be approved first.'; exit 1; }
+          [[ "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ ]]
+          [[ "$AWS_PUBLISH_ROLE_ARN" == "arn:aws:iam::${AWS_ACCOUNT_ID}:role/"* ]]
+          [[ "$ECR_REPOSITORY" =~ ^[a-z0-9][a-z0-9._/-]*$ ]]
+          [[ "$DEPOT_PROJECT_ID" =~ ^[a-z0-9]+$ ]]
+          [[ "$NODE_IMAGE" =~ ^node:24-bookworm-slim@sha256:[a-f0-9]{64}$ ]]
+          [[ "$NEXT_PUBLIC_META_APP_ID" =~ ^[0-9]*$ ]]
+          [[ "$NEXT_PUBLIC_META_CONFIG_ID" =~ ^[0-9]*$ ]]
+      - name: Require successful CI for this exact main commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
+            -f head_sha="$GITHUB_SHA" -f branch=main -f event=push -f status=success \
+            --jq '.workflow_runs | length')"
+          [[ "$count" -gt 0 ]] || { printf '%s\n' 'No successful main-push CI run exists for this commit.'; exit 1; }
+      - uses: depot/setup-action@91bc8495a33ebfc504ffc89e5674379ccf23c29c # v1
+        with:
+          version: 2.101.78
+      - name: Assume narrowly scoped ECR publishing role
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ env.AWS_PUBLISH_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: admitflow-images-${{ github.run_id }}
+          unset-current-credentials: true
+          output-env-credentials: true
+      - name: Login to ECR using temporary credentials
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2
+        with:
+          mask-password: 'true'
+      - name: Build and publish web
+        id: web
+        uses: depot/build-push-action@98e78adca7817480b8185f474a400b451d74e287 # v1
+        with:
+          project: ${{ env.DEPOT_PROJECT_ID }}
+          context: .
+          platforms: linux/amd64
+          target: web
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:web-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          build-args: |
+            NODE_IMAGE=${{ env.NODE_IMAGE }}
+            NEXT_PUBLIC_META_APP_ID=${{ env.NEXT_PUBLIC_META_APP_ID }}
+            NEXT_PUBLIC_META_CONFIG_ID=${{ env.NEXT_PUBLIC_META_CONFIG_ID }}
+            NEXT_PUBLIC_WORKOS_REDIRECT_URI=${{ env.NEXT_PUBLIC_WORKOS_REDIRECT_URI }}
+      - name: Build and publish worker
+        id: worker
+        uses: depot/build-push-action@98e78adca7817480b8185f474a400b451d74e287 # v1
+        with:
+          project: ${{ env.DEPOT_PROJECT_ID }}
+          context: .
+          platforms: linux/amd64
+          target: worker
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:worker-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          build-args: |
+            NODE_IMAGE=${{ env.NODE_IMAGE }}
+      - name: Record immutable image pair and public build configuration
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          WEB_DIGEST: ${{ steps.web.outputs.digest }}
+          WORKER_DIGEST: ${{ steps.worker.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$WEB_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
+          [[ "$WORKER_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]
+          aws ecr describe-images --repository-name "$ECR_REPOSITORY" --image-ids "imageDigest=$WEB_DIGEST" --query 'imageDetails[0].imageDigest' --output text > /dev/null
+          aws ecr describe-images --repository-name "$ECR_REPOSITORY" --image-ids "imageDigest=$WORKER_DIGEST" --query 'imageDetails[0].imageDigest' --output text > /dev/null
+          jq -n \
+            --arg commit "$GITHUB_SHA" --arg region "$AWS_REGION" \
+            --arg repository "$REGISTRY/$ECR_REPOSITORY" --arg nodeImage "$NODE_IMAGE" \
+            --arg webDigest "$WEB_DIGEST" --arg workerDigest "$WORKER_DIGEST" \
+            --arg callback "$NEXT_PUBLIC_WORKOS_REDIRECT_URI" \
+            --arg metaAppId "$NEXT_PUBLIC_META_APP_ID" --arg metaConfigId "$NEXT_PUBLIC_META_CONFIG_ID" \
+            '{commit:$commit,region:$region,repository:$repository,nodeImage:$nodeImage,webDigest:$webDigest,workerDigest:$workerDigest,publicConfig:{callback:$callback,metaAppId:$metaAppId,metaConfigId:$metaConfigId}}' > release-manifest.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release-manifest.json
+          retention-days: 90
+          if-no-files-found: error

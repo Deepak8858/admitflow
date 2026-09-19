@@ -81,5 +81,17 @@ jobs:
           tar -xzf "$destination/gitleaks.tar.gz" -C "$destination" gitleaks
       - name: Scan complete checked-out Git history (redacted)
         run: '"$RUNNER_TEMP/gitleaks/gitleaks" git . --log-opts="--all" --redact=100 --no-banner'
+      - name: Validate GitHub Actions workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          destination="$RUNNER_TEMP/actionlint"
+          mkdir -p "$destination"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            --output "$destination/actionlint.tar.gz"
+          printf '%s  %s\n' '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8' "$destination/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "$destination/actionlint.tar.gz" -C "$destination" actionlint
+          "$destination/actionlint" -shellcheck= -pyflakes=
       - name: Production lockfile audit
         run: npm audit --omit=dev --package-lock-only --ignore-scripts

@@ -126,6 +126,25 @@ No AWS credentials or parameter values are needed to construct the template. CDK
 
 ## Images and release procedure
 
+### GitHub review, CI and Depot image publishing
+
+The private repository is `Deepak8858/admitflow`. The first application import is submitted for review in PR #1 against a minimal baseline; do not merge until the review scope, skipped paths and findings have been checked. CodeRabbit requires repository installation/authorization and an eligible review plan. Posting `@coderabbitai full review` requests review of the PR diff, not unchanged baseline files or guaranteed coverage of every file.
+
+`.github/workflows/ci.yml` runs on PRs to `main` and pushes to `main`: isolated application/infra verification, browser fixtures, redacted Git-history secret scanning, actionlint workflow validation and a production lockfile audit. Actions and downloaded scanning/linting tools are pinned. actionlint's optional ShellCheck/Pyflakes integrations are disabled; it does not lint application TypeScript. PR jobs receive no deployment/provider credentials and checkout does not persist its token. There is still no application lint gate. The current private GitHub account plan rejected branch-protection access; these checks are visible but not enforced as required merge checks. Keep merging operator-controlled unless the account gains the necessary protection features.
+
+Depot remote container builds support GitHub personal repositories using OIDC; Depot-managed GitHub Actions runners require a GitHub organization. This setup therefore uses GitHub-hosted CI jobs and Depot for image building, not all-Depot compute. Dedicated Depot project `0xd1td4lmf` (`admitflow`) was created in the existing `voiceforge` Depot organization. Its returned cache policy is 25 GiB with seven-day retention, despite requesting 5 GiB; account-wide cache usage/billing must be checked before builds. No build or subscription purchase was started during setup.
+
+`.github/workflows/publish-images.yml` is **manual-only and currently disabled** by repository variable `BUILDS_APPROVED=false`. It only accepts `main`, requires the operator to type `PUBLISH`, and verifies a successful main-push CI run for the exact commit before obtaining AWS credentials or building images. It publishes an immutable web/worker pair and a 90-day release-manifest artifact; it does not deploy ECS, apply migrations or change DNS. Configure and verify deployment separately through the initial-release procedure below. Manual invocation and the opt-in variable are operational safeguards, not protection against a repository administrator changing workflows.
+
+Before enabling publishing:
+
+- In the Depot project's settings, add GitHub OIDC trust for user `Deepak8858`, repository `admitflow`, restricted to `refs/heads/main` where supported. Confirm the actual trust configuration and account usage allowance; creating the project alone does not grant workflow access.
+- Set `AWS_PUBLISH_ROLE_ARN` to a non-root role trusted only for GitHub issuer `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`, and subject `repo:Deepak8858/admitflow:ref:refs/heads/main`. Use a separate bootstrap/deployment identity. The image publisher needs ECR authorization plus upload/PutImage/DescribeImages for only the intended ECR repository; it needs no Secrets Manager reads, ECS deployment, IAM PassRole or database credentials.
+- Set `ECR_REPOSITORY` from the reviewed stack output after bootstrap. `AWS_ACCOUNT_ID`, `DEPOT_PROJECT_ID` and the digest-pinned `NODE_IMAGE` are nonsecret repository variables. Recheck the official Node image digest and vulnerability status before release; resolving a digest is not a container vulnerability audit.
+- Set optional public `NEXT_PUBLIC_META_APP_ID` and `NEXT_PUBLIC_META_CONFIG_ID` to the configured provider identifiers. The callback is fixed to `https://admitflow.incfrog.ai/callback`; match runtime and WorkOS configuration.
+- Only after provider prerequisites, current costs and build allowance are approved, set `BUILDS_APPROVED=true`. Keep AWS access keys and all provider credentials out of repository secrets/build arguments. GitHub and Depot OIDC provide short-lived access.
+- Inspect image scan results and execute container smoke tests before applying the manifest's digest pair. A completed image-publishing job is not production-deployment success. Tagged ECR images survive the untagged-image lifecycle policy; retain known-good rollback tags deliberately.
+
 ### Package integration
 
 `package.json` and `package-lock.json` include the deployment tooling and a direct, pinned `esbuild@0.28.2` development dependency. The scoped TypeScript configuration checks both infrastructure and the actual worker entry point against the installed queue APIs.
