@@ -12,7 +12,8 @@ test.beforeEach(({ page }) => {
 });
 test.afterEach(({ page }) => { expect.soft(runtimeErrors.get(page)).toEqual([]); });
 async function noOverflow(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const size = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
+  expect(size.scroll, `Horizontal overflow at ${new URL(page.url()).pathname}`).toBeLessThanOrEqual(size.viewport);
 }
 async function accessible(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
@@ -172,6 +173,65 @@ test("all workspace screens are accessible in dark theme", async ({ page }) => {
     if (route === "/leads") await expect(page.locator(".leads-panel")).toHaveAttribute("aria-busy", "false");
     await noOverflow(page);
     await accessible(page);
+  }
+});
+
+test("charts stay contained while zoom resize measurements are pending", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    const NativeObserver = window.ResizeObserver;
+    let paused = false;
+    const pending = new Map<ResizeObserver, () => void>();
+    window.addEventListener("pause-chart-resize", () => { paused = true; });
+    window.addEventListener("resume-chart-resize", () => {
+      paused = false;
+      for (const deliver of pending.values()) deliver();
+      pending.clear();
+    });
+    window.ResizeObserver = class extends NativeObserver {
+      constructor(callback: ResizeObserverCallback) {
+        super((entries, observer) => {
+          if (paused) pending.set(observer, () => callback(entries, observer));
+          else callback(entries, observer);
+        });
+      }
+      disconnect() { pending.delete(this); super.disconnect(); }
+    };
+  });
+  for (const route of ["/analytics", "/"]) {
+    await test.step(route, async () => {
+      await page.goto(route);
+      await page.evaluate(() => document.fonts.ready);
+      const container = page.locator(".recharts-responsive-container");
+      const chart = container.locator(".recharts-wrapper");
+      await expect(chart).toBeVisible();
+      // Start from a measured chart, then hold the pre-zoom dimensions in place.
+      await expect.poll(() => container.evaluate(element => {
+        const svg = element.querySelector("svg");
+        return Math.abs(Number(svg?.getAttribute("width")) - element.clientWidth);
+      })).toBeLessThanOrEqual(1);
+      await page.evaluate(() => {
+        window.dispatchEvent(new Event("pause-chart-resize"));
+        document.body.style.zoom = "2";
+      });
+      try {
+        await noOverflow(page);
+        for (const selector of [".recharts-wrapper", ".recharts-surface"]) {
+          const fits = await container.evaluate((element, selector) => {
+            const child = element.querySelector(selector)!;
+            return child.getBoundingClientRect().right <= element.getBoundingClientRect().right + 1;
+          }, selector);
+          expect(fits, `${selector} must fit before ResizeObserver catches up`).toBe(true);
+        }
+      } finally {
+        await page.evaluate(() => window.dispatchEvent(new Event("resume-chart-resize")));
+      }
+      await expect.poll(() => container.evaluate(element => {
+        const svg = element.querySelector("svg");
+        return Math.abs(Number(svg?.getAttribute("width")) - element.clientWidth);
+      })).toBeLessThanOrEqual(1);
+      await noOverflow(page);
+    });
   }
 });
 

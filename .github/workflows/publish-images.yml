@@ -124,7 +124,7 @@ jobs:
             --arg callback "$NEXT_PUBLIC_WORKOS_REDIRECT_URI" \
             --arg metaAppId "$NEXT_PUBLIC_META_APP_ID" --arg metaConfigId "$NEXT_PUBLIC_META_CONFIG_ID" \
             '{commit:$commit,region:$region,repository:$repository,nodeImage:$nodeImage,webDigest:$webDigest,workerDigest:$workerDigest,publicConfig:{callback:$callback,metaAppId:$metaAppId,metaConfigId:$metaConfigId}}' > release-manifest.json
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6, Node 24 runtime
         with:
           name: release-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: release-manifest.json
