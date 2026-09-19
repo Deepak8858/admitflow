@@ -1,0 +1,11 @@
+{
+  "asset": "admissions-mountain-hero",
+  "title": "Snowy mountain under calm blue sky",
+  "photographer": "Paul Pastourmatzis",
+  "source": "https://unsplash.com/photos/snowy-mountain-under-calm-blue-sky-QLxw2owS81I",
+  "license": "https://unsplash.com/license",
+  "downloadUrl": "https://images.unsplash.com/photo-1542759459-687e4f3c7a84?auto=format&fit=crop&w=2400&q=85",
+  "files": ["admissions-mountain-hero.webp", "admissions-mountain-hero-small.webp"],
+  "processing": "Resized to 1920px and 640px wide, encoded as WebP. Colour overlays applied in CSS.",
+  "usage": "Decorative public landing-page background. Not an institute photograph or product claim."
+}

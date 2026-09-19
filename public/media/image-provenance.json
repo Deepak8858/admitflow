@@ -1,0 +1,232 @@
+{
+  "assets": [
+    {
+      "slug": "admissions-recovery",
+      "provider": "ElevenLabs",
+      "request": {
+        "model_id": "gpt-image-2",
+        "quality": "medium",
+        "resolution": "1K",
+        "aspect_ratio": "3:2",
+        "prompt": "Original editorial product illustration for AdmitFlow, an admissions recovery workspace for coaching institutes. Precision-crafted miniature architectural objects, matte porcelain and fine brushed aluminium with a single restrained cobalt blue #4560E6 accent. Cool neutral off-white #F6F7FA seamless background, directional soft studio lighting from upper left, tactile microtexture, delicate contact shadows. Refined technical, calm, credible, not playful. Asymmetric composition, strong silhouette readable at small sizes, generous negative space and clean edges. No text, letters, numbers, logos, watermarks, human faces, screens, dashboards, fake browser chrome, robots, brains, sparkling stars, floating spheres, gradients or purple neon. This is conceptual illustration, not a screenshot or a photograph of a real institute.\n\nA sculptural admissions journey: three low white ceramic platforms arranged diagonally from lower left to upper right, each holding a single upright blank rounded rectangular enquiry tile. A finely machined cobalt channel reconnects a fourth previously separated tile into the middle platform and continues toward a subtle doorway-like open frame at the destination. The blue connecting path is the focal point. Physically coherent crafted tabletop installation, not an infographic. Entire object grouping occupies the right two thirds; left third remains empty. Three-quarter overhead view, editorial still-life photography treatment. Avoid generic 3D icons and excessive objects."
+      },
+      "alt": "A cobalt path reconnects a separated enquiry tile to a sequence of admissions milestones.",
+      "placement": "Marketing workflow feature, beside the interactive product preview",
+      "created_at": "2026-09-18T14:31:51.361340+00:00",
+      "status": "completed",
+      "generation_id": "HS5ka0rSD1HwYPnMq3dc",
+      "file": "public/media/admissions-recovery.png",
+      "bytes": 1957508,
+      "sha256": "b6f9e0cabb1f61107e8b706b1821cc87c7e868e346d20973640da9410a5c181d",
+      "width": 1536,
+      "height": 1024,
+      "variants": [
+        {
+          "file": "public/media/admissions-recovery.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 30110,
+          "sha256": "2598faa10712c0829d4523725eee6233f28df0e1682237567bd55bd4056fc596"
+        },
+        {
+          "file": "public/media/admissions-recovery-small.webp",
+          "width": 640,
+          "height": 427,
+          "bytes": 7542,
+          "sha256": "a58c08093ff605f61fa41dbe4ce8696b38dceff45e7f9bc823a0322d1116ea2b"
+        }
+      ],
+      "processing": "Auto-orient; resize without enlargement; saturation 0.96; WebP quality 84; original PNG retained."
+    },
+    {
+      "slug": "institute-onboarding",
+      "provider": "ElevenLabs",
+      "request": {
+        "model_id": "gpt-image-2",
+        "quality": "medium",
+        "resolution": "1K",
+        "aspect_ratio": "3:2",
+        "prompt": "Original editorial product illustration for AdmitFlow, an admissions recovery workspace for coaching institutes. Precision-crafted miniature architectural objects, matte porcelain and fine brushed aluminium with a single restrained cobalt blue #4560E6 accent. Cool neutral off-white #F6F7FA seamless background, directional soft studio lighting from upper left, tactile microtexture, delicate contact shadows. Refined technical, calm, credible, not playful. Asymmetric composition, strong silhouette readable at small sizes, generous negative space and clean edges. No text, letters, numbers, logos, watermarks, human faces, screens, dashboards, fake browser chrome, robots, brains, sparkling stars, floating spheres, gradients or purple neon. This is conceptual illustration, not a screenshot or a photograph of a real institute.\n\nA miniature open architectural pavilion made of two slim porcelain walls and a delicate brushed aluminium lintel on a low off-white rectangular base. One slim cobalt doorway frame marks the entrance. Three small flat white ceramic work tiles on shallow rails approach the same entrance from different directions, representing a team entering one shared institute workspace. Precise plausible construction, not a castle or school building, no roof, no books or graduation caps. Asymmetrical editorial composition placed in the lower right with generous empty upper-left space, warm-neutral contact shadows against cool neutral ground."
+      },
+      "alt": "Three individual work tiles converge at an open cobalt entrance to a shared institute workspace.",
+      "placement": "Institute onboarding companion illustration",
+      "created_at": "2026-09-18T14:32:11.781591+00:00",
+      "status": "completed",
+      "generation_id": "Fg2xkj7HrGCjkWYogCvD",
+      "file": "public/media/institute-onboarding.png",
+      "bytes": 1804963,
+      "sha256": "e5bff9b8424b947b0d1599910d70ec1481050ab1eff25488e3906003ed6f9546",
+      "width": 1536,
+      "height": 1024,
+      "variants": [
+        {
+          "file": "public/media/institute-onboarding.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 23848,
+          "sha256": "19c560d21b048bba810a57105007a8e26255ff3f8aee82c93e493ccb5b860186"
+        },
+        {
+          "file": "public/media/institute-onboarding-small.webp",
+          "width": 640,
+          "height": 427,
+          "bytes": 5816,
+          "sha256": "ecce1421e1c6239e6939f961eae1b8fb4e08245472ff60c6c1c8f9498ecfab1f"
+        }
+      ],
+      "processing": "Auto-orient; resize without enlargement; saturation 0.96; WebP quality 84; original PNG retained."
+    },
+    {
+      "slug": "knowledge-assistant",
+      "provider": "ElevenLabs",
+      "request": {
+        "model_id": "gpt-image-2",
+        "quality": "medium",
+        "resolution": "1K",
+        "aspect_ratio": "1:1",
+        "prompt": "Original editorial product illustration for AdmitFlow, an admissions recovery workspace for coaching institutes. Precision-crafted miniature architectural objects, matte porcelain and fine brushed aluminium with a single restrained cobalt blue #4560E6 accent. Cool neutral off-white #F6F7FA seamless background, directional soft studio lighting from upper left, tactile microtexture, delicate contact shadows. Refined technical, calm, credible, not playful. Asymmetric composition, strong silhouette readable at small sizes, generous negative space and clean edges. No text, letters, numbers, logos, watermarks, human faces, screens, dashboards, fake browser chrome, robots, brains, sparkling stars, floating spheres, gradients or purple neon. This is conceptual illustration, not a screenshot or a photograph of a real institute.\n\nA small asymmetric still-life of three upright ivory reference sheets in a precision aluminium index holder, each sheet with one tiny blank cobalt index tab at a different height. Beside the holder, a single matte cobalt speech-shaped plaque rests on the same surface, connected by a thin physically grounded aluminium track. The documents are blank and unmarked, no lines pretending to be text. Compose the group slightly right of centre with breathing room all around, close three-quarter view. An intelligent knowledge library translated into a conversation, no magical effects."
+      },
+      "alt": "Three neatly indexed reference sheets feed into a cobalt conversation marker.",
+      "placement": "Knowledge assistant introduction and feature card",
+      "created_at": "2026-09-18T14:32:07.515467+00:00",
+      "status": "completed",
+      "generation_id": "d3y3vcw6wXKBZeMOz6B1",
+      "file": "public/media/knowledge-assistant.png",
+      "bytes": 1243677,
+      "sha256": "c1a133fae331a4edbeae5182af68806a41110ab3edfd00334224992066d14106",
+      "width": 1024,
+      "height": 1024,
+      "variants": [
+        {
+          "file": "public/media/knowledge-assistant.webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 14462,
+          "sha256": "4b0f9a436fd392db689ec343ee88d47782f5cd805fa0ff6ad322fe6f150eff53"
+        },
+        {
+          "file": "public/media/knowledge-assistant-small.webp",
+          "width": 640,
+          "height": 640,
+          "bytes": 7960,
+          "sha256": "77f2c9e37f3761b37b8a25c0f6ce48fc063996e03b567d0aa4cf494dff766c79"
+        }
+      ],
+      "processing": "Auto-orient; resize without enlargement; saturation 0.96; WebP quality 84; original PNG retained."
+    },
+    {
+      "slug": "knowledge-observatory",
+      "provider": "ElevenLabs",
+      "request": {
+        "model_id": "gpt-image-2",
+        "quality": "medium",
+        "resolution": "1K",
+        "aspect_ratio": "1:1",
+        "prompt": "An original, visually arresting editorial illustration for AdmitFlow, an admissions workspace. Art direction: joyful surreal miniature worlds, ambitious art-school poster meets premium animated-film set design. Bold saturated coral orange, ultramarine, lavender violet, buttery sunshine yellow, turquoise and deep forest green, thoughtfully colour-blocked rather than randomly scattered. Inventive sculptural objects with soft clay, ribbed paper, translucent coloured acrylic and glossy enamel finishes. Warm cinematic sunlight, beautiful ambient shadows, rich tactile detail, confident dynamic composition, strong focal point and a beautifully composed full-bleed background. Expressive curves, arches and botanical silhouettes, delightful unexpected scale. Make it colourful, memorable, optimistic and sophisticated, never a bland white product render. No text, letters, numbers, watermarks, brands, fake interface screens, charts, portraits, stock graduation caps or generic robot mascot. Illustration only, not a real institute photograph. Keep every main object inside the frame with enough breathing room for responsive cropping.\n\nTHE KNOWLEDGE OBSERVATORY. A fantastical open-sided violet cylindrical reading room with tall sculptural turquoise shelves and oversized coral and butter-yellow blank books arranged into a beautiful spiral staircase. At its centre a large yellow translucent speech bubble is held inside a tilted ultramarine orbital ring like an armillary sphere, a metaphor for finding the right answer. Tiny emerald leaves emerge from the lower shelves. Peach-pink floor, deep periwinkle background, luminous amber highlights, a precise miniature diorama photographed close up. The scene fills the square with bold curved shapes, visual rhythm and friendly intellectual energy. Nothing printed on the books. Not generic stacked books on a white desk."
+      },
+      "alt": "An imaginative violet observatory holds a sun-yellow conversation shape above a spiral of coral books and turquoise shelves.",
+      "placement": "Colourful knowledge feature and workspace assistant card",
+      "created_at": "2026-09-18T14:46:15.935527+00:00",
+      "status": "completed",
+      "generation_id": "NiUVl8TU0aXoKuErPhun",
+      "file": "public/media/knowledge-observatory.png",
+      "bytes": 1958177,
+      "sha256": "68e2b26680e31b4231654f26f1e05145624e1ce2d34f554968fbdcbc8585502d",
+      "width": 1024,
+      "height": 1024,
+      "variants": [
+        {
+          "file": "public/media/knowledge-observatory.webp",
+          "width": 1024,
+          "height": 1024,
+          "bytes": 129186,
+          "sha256": "6e18af3046583057799c5c07a3b84982a1bfcf994e7deab979fe99755cc51448"
+        },
+        {
+          "file": "public/media/knowledge-observatory-small.webp",
+          "width": 640,
+          "height": 640,
+          "bytes": 69412,
+          "sha256": "5aef6c285ed4f814b29bc117428328b491308944746b66ec761fc2b9cf57a5fa"
+        }
+      ],
+      "processing": "Auto-orient; resize without enlargement; saturation 0.96; WebP quality 84; original PNG retained."
+    },
+    {
+      "slug": "next-chapter-campus",
+      "provider": "ElevenLabs",
+      "request": {
+        "model_id": "gpt-image-2",
+        "quality": "medium",
+        "resolution": "1K",
+        "aspect_ratio": "3:2",
+        "prompt": "An original, visually arresting editorial illustration for AdmitFlow, an admissions workspace. Art direction: joyful surreal miniature worlds, ambitious art-school poster meets premium animated-film set design. Bold saturated coral orange, ultramarine, lavender violet, buttery sunshine yellow, turquoise and deep forest green, thoughtfully colour-blocked rather than randomly scattered. Inventive sculptural objects with soft clay, ribbed paper, translucent coloured acrylic and glossy enamel finishes. Warm cinematic sunlight, beautiful ambient shadows, rich tactile detail, confident dynamic composition, strong focal point and a beautifully composed full-bleed background. Expressive curves, arches and botanical silhouettes, delightful unexpected scale. Make it colourful, memorable, optimistic and sophisticated, never a bland white product render. No text, letters, numbers, watermarks, brands, fake interface screens, charts, portraits, stock graduation caps or generic robot mascot. Illustration only, not a real institute photograph. Keep every main object inside the frame with enough breathing room for responsive cropping.\n\nTHE NEXT CHAPTER CAMPUS. A wildly imaginative small open campus, three friendly sculptural pavilions in coral red, ultramarine and lilac with oversized round windows, scalloped roofs and towering archways. Golden yellow staircases and turquoise bridges connect around a warm terracotta shared courtyard. Three broad coloured ribbons approach the courtyard from the foreground, representing people coming together. A lush teal palm and enormous folded-paper emerald leaves bring life and scale. A low lavender hill in the background under a soft apricot sky, a single bold yellow sun. Premium tactile miniature set with coloured plaster, playful rounded architecture, glass details and long warm shadows. Three-quarter overhead perspective, full composition, striking graphic colour blocking. No people, no signage, no logos."
+      },
+      "alt": "A welcoming coral and violet miniature campus with turquoise palms, yellow steps and colourful paths meeting in a shared courtyard.",
+      "placement": "Colourful institute onboarding and team feature",
+      "created_at": "2026-09-18T14:46:18.497229+00:00",
+      "status": "completed",
+      "generation_id": "m6XUeYTvLLUSKmh4YJXO",
+      "file": "public/media/next-chapter-campus.png",
+      "bytes": 3320945,
+      "sha256": "c077f1d37e1f56629f3169ed3915247566d1011a1577d0c95478b304000a2e69",
+      "width": 1536,
+      "height": 1024,
+      "variants": [
+        {
+          "file": "public/media/next-chapter-campus.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 280114,
+          "sha256": "7bab107411b60af8009b0a2ebf0a3e5d9a53ba172fae5189dfc7ad5be968f803"
+        },
+        {
+          "file": "public/media/next-chapter-campus-small.webp",
+          "width": 640,
+          "height": 427,
+          "bytes": 62924,
+          "sha256": "97e9e426fa19794b307f5ca67a5032768fa355b1d1d1ec889fb7960328a3aa2e"
+        }
+      ],
+      "processing": "Auto-orient; resize without enlargement; saturation 0.96; WebP quality 84; original PNG retained."
+    },
+    {
+      "slug": "opportunity-garden",
+      "provider": "ElevenLabs",
+      "request": {
+        "model_id": "gpt-image-2",
+        "quality": "medium",
+        "resolution": "1K",
+        "aspect_ratio": "3:2",
+        "prompt": "An original, visually arresting editorial illustration for AdmitFlow, an admissions workspace. Art direction: joyful surreal miniature worlds, ambitious art-school poster meets premium animated-film set design. Bold saturated coral orange, ultramarine, lavender violet, buttery sunshine yellow, turquoise and deep forest green, thoughtfully colour-blocked rather than randomly scattered. Inventive sculptural objects with soft clay, ribbed paper, translucent coloured acrylic and glossy enamel finishes. Warm cinematic sunlight, beautiful ambient shadows, rich tactile detail, confident dynamic composition, strong focal point and a beautifully composed full-bleed background. Expressive curves, arches and botanical silhouettes, delightful unexpected scale. Make it colourful, memorable, optimistic and sophisticated, never a bland white product render. No text, letters, numbers, watermarks, brands, fake interface screens, charts, portraits, stock graduation caps or generic robot mascot. Illustration only, not a real institute photograph. Keep every main object inside the frame with enough breathing room for responsive cropping.\n\nTHE OPPORTUNITY GARDEN. A dreamlike architectural garden growing from a deep lavender plinth, against a warm apricot peach background. One long glossy vermilion ribbon flows from foreground left through three undulating violet terraces, gathering bright yellow speech-bubble-shaped flowers and ending at a tall ultramarine arch framing a glowing golden sun. Dramatically oversized turquoise and emerald folded-paper leaves flank the path, a tiny cobalt staircase climbs to the arch, a pair of small abstract envelope sculptures sits near the starting point. The ribbon is the clear visual story: a conversation finding its way back. Wide editorial composition with layered depth, energetic asymmetry and physical material beauty. Rich vibrant complementary colours, surprising sculpture, not a flowchart, no empty white background. The garden should feel like a world one could step into."
+      },
+      "alt": "A coral ribbon winds through an imaginative garden of turquoise leaves, violet terraces and sun-yellow conversation blossoms toward an open blue arch.",
+      "placement": "Primary colourful marketing hero and recovery workflow illustration",
+      "created_at": "2026-09-18T14:46:13.356922+00:00",
+      "status": "completed",
+      "generation_id": "Hx3ltu4aebgHTbbwrnM4",
+      "file": "public/media/opportunity-garden.png",
+      "bytes": 3004798,
+      "sha256": "5915a51cafca74fe1da64ce93f331e28adeeb7660eb85b7891cb09769a768b37",
+      "width": 1536,
+      "height": 1024,
+      "variants": [
+        {
+          "file": "public/media/opportunity-garden.webp",
+          "width": 1536,
+          "height": 1024,
+          "bytes": 222962,
+          "sha256": "655c45dc979dc254f72335f8a1334657ff810d7a05f24421042a2db40609d6e2"
+        },
+        {
+          "file": "public/media/opportunity-garden-small.webp",
+          "width": 640,
+          "height": 427,
+          "bytes": 52402,
+          "sha256": "98bbd8d2f5afedde9abaa1a328e8130762b5dd4670e67ad6be58f34228dfa5a2"
+        }
+      ],
+      "processing": "Auto-orient; resize without enlargement; saturation 0.96; WebP quality 84; original PNG retained."
+    }
+  ]
+}

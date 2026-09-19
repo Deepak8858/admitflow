@@ -1,0 +1,50 @@
+{
+  "model_id": "gpt-image-2",
+  "quality": "medium",
+  "resolution": "1K",
+  "style": "An original, visually arresting editorial illustration for AdmitFlow, an admissions workspace. Art direction: joyful surreal miniature worlds, ambitious art-school poster meets premium animated-film set design. Bold saturated coral orange, ultramarine, lavender violet, buttery sunshine yellow, turquoise and deep forest green, thoughtfully colour-blocked rather than randomly scattered. Inventive sculptural objects with soft clay, ribbed paper, translucent coloured acrylic and glossy enamel finishes. Warm cinematic sunlight, beautiful ambient shadows, rich tactile detail, confident dynamic composition, strong focal point and a beautifully composed full-bleed background. Expressive curves, arches and botanical silhouettes, delightful unexpected scale. Make it colourful, memorable, optimistic and sophisticated, never a bland white product render. No text, letters, numbers, watermarks, brands, fake interface screens, charts, portraits, stock graduation caps or generic robot mascot. Illustration only, not a real institute photograph. Keep every main object inside the frame with enough breathing room for responsive cropping.",
+  "assets": [
+    {
+      "slug": "opportunity-garden",
+      "aspect_ratio": "3:2",
+      "placement": "Primary colourful marketing hero and recovery workflow illustration",
+      "alt": "A coral ribbon winds through an imaginative garden of turquoise leaves, violet terraces and sun-yellow conversation blossoms toward an open blue arch.",
+      "prompt": "THE OPPORTUNITY GARDEN. A dreamlike architectural garden growing from a deep lavender plinth, against a warm apricot peach background. One long glossy vermilion ribbon flows from foreground left through three undulating violet terraces, gathering bright yellow speech-bubble-shaped flowers and ending at a tall ultramarine arch framing a glowing golden sun. Dramatically oversized turquoise and emerald folded-paper leaves flank the path, a tiny cobalt staircase climbs to the arch, a pair of small abstract envelope sculptures sits near the starting point. The ribbon is the clear visual story: a conversation finding its way back. Wide editorial composition with layered depth, energetic asymmetry and physical material beauty. Rich vibrant complementary colours, surprising sculpture, not a flowchart, no empty white background. The garden should feel like a world one could step into."
+    },
+    {
+      "slug": "knowledge-observatory",
+      "aspect_ratio": "1:1",
+      "placement": "Colourful knowledge feature and workspace assistant card",
+      "alt": "An imaginative violet observatory holds a sun-yellow conversation shape above a spiral of coral books and turquoise shelves.",
+      "prompt": "THE KNOWLEDGE OBSERVATORY. A fantastical open-sided violet cylindrical reading room with tall sculptural turquoise shelves and oversized coral and butter-yellow blank books arranged into a beautiful spiral staircase. At its centre a large yellow translucent speech bubble is held inside a tilted ultramarine orbital ring like an armillary sphere, a metaphor for finding the right answer. Tiny emerald leaves emerge from the lower shelves. Peach-pink floor, deep periwinkle background, luminous amber highlights, a precise miniature diorama photographed close up. The scene fills the square with bold curved shapes, visual rhythm and friendly intellectual energy. Nothing printed on the books. Not generic stacked books on a white desk."
+    },
+    {
+      "slug": "next-chapter-campus",
+      "aspect_ratio": "3:2",
+      "placement": "Colourful institute onboarding and team feature",
+      "alt": "A welcoming coral and violet miniature campus with turquoise palms, yellow steps and colourful paths meeting in a shared courtyard.",
+      "prompt": "THE NEXT CHAPTER CAMPUS. A wildly imaginative small open campus, three friendly sculptural pavilions in coral red, ultramarine and lilac with oversized round windows, scalloped roofs and towering archways. Golden yellow staircases and turquoise bridges connect around a warm terracotta shared courtyard. Three broad coloured ribbons approach the courtyard from the foreground, representing people coming together. A lush teal palm and enormous folded-paper emerald leaves bring life and scale. A low lavender hill in the background under a soft apricot sky, a single bold yellow sun. Premium tactile miniature set with coloured plaster, playful rounded architecture, glass details and long warm shadows. Three-quarter overhead perspective, full composition, striking graphic colour blocking. No people, no signage, no logos."
+    },
+    {
+      "slug": "admissions-recovery",
+      "aspect_ratio": "3:2",
+      "placement": "Marketing workflow feature, beside the interactive product preview",
+      "alt": "A cobalt path reconnects a separated enquiry tile to a sequence of admissions milestones.",
+      "prompt": "A sculptural admissions journey: three low white ceramic platforms arranged diagonally from lower left to upper right, each holding a single upright blank rounded rectangular enquiry tile. A finely machined cobalt channel reconnects a fourth previously separated tile into the middle platform and continues toward a subtle doorway-like open frame at the destination. The blue connecting path is the focal point. Physically coherent crafted tabletop installation, not an infographic. Entire object grouping occupies the right two thirds; left third remains empty. Three-quarter overhead view, editorial still-life photography treatment. Avoid generic 3D icons and excessive objects."
+    },
+    {
+      "slug": "knowledge-assistant",
+      "aspect_ratio": "1:1",
+      "placement": "Knowledge assistant introduction and feature card",
+      "alt": "Three neatly indexed reference sheets feed into a cobalt conversation marker.",
+      "prompt": "A small asymmetric still-life of three upright ivory reference sheets in a precision aluminium index holder, each sheet with one tiny blank cobalt index tab at a different height. Beside the holder, a single matte cobalt speech-shaped plaque rests on the same surface, connected by a thin physically grounded aluminium track. The documents are blank and unmarked, no lines pretending to be text. Compose the group slightly right of centre with breathing room all around, close three-quarter view. An intelligent knowledge library translated into a conversation, no magical effects."
+    },
+    {
+      "slug": "institute-onboarding",
+      "aspect_ratio": "3:2",
+      "placement": "Institute onboarding companion illustration",
+      "alt": "Three individual work tiles converge at an open cobalt entrance to a shared institute workspace.",
+      "prompt": "A miniature open architectural pavilion made of two slim porcelain walls and a delicate brushed aluminium lintel on a low off-white rectangular base. One slim cobalt doorway frame marks the entrance. Three small flat white ceramic work tiles on shallow rails approach the same entrance from different directions, representing a team entering one shared institute workspace. Precise plausible construction, not a castle or school building, no roof, no books or graduation caps. Asymmetrical editorial composition placed in the lower right with generous empty upper-left space, warm-neutral contact shadows against cool neutral ground."
+    }
+  ]
+}

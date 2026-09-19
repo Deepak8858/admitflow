@@ -1,0 +1,28 @@
+{
+  "provider": "ElevenLabs",
+  "model_id": "eleven_multilingual_v2",
+  "voice_id": "EXAVITQu4vr4xnSDxMaL",
+  "voice_name": "Sarah",
+  "samples": [
+    {
+      "slug": "walkthrough",
+      "title": "A thoughtful next step",
+      "transcript": "Welcome to AdmitFlow. Bring your enquiries into one workspace, give your team the context they need, and turn a missed conversation into a thoughtful next step. Start with your enquiry list. Review the student's interests and contact preferences, then open the shared inbox. Your counsellor stays in control. For recovery, choose an eligible audience, review an approved message, and check the delivery status after sending. Finally, connect counselling and recorded payments to the original enquiry. This preview uses fictional examples. No messages are sent to real students."
+    },
+    {
+      "slug": "counselling-invitation",
+      "title": "Counselling invitation",
+      "transcript": "Hi Aanya, this is a sample message from Northstar Academy. Thanks for asking about our entrance preparation course. Would you like to speak with a counsellor about your goals and available study options? Let us know a convenient time. There's no need to decide today."
+    },
+    {
+      "slug": "session-reminder",
+      "title": "Session reminder",
+      "transcript": "Hi Aanya, a quick sample reminder about your counselling conversation tomorrow at four in the afternoon, India time. Please bring any questions about the course or your study schedule. If the time no longer works, reply and we can discuss another slot."
+    },
+    {
+      "slug": "thoughtful-followup",
+      "title": "A pressure-free follow-up",
+      "transcript": "Hi Aanya, this is a fictional follow-up from Northstar Academy. We wanted to check whether you had any questions after your counselling session. We're happy to help you compare the options at your own pace. If you'd prefer not to receive further messages, just let us know."
+    }
+  ]
+}
