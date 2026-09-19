@@ -379,6 +379,14 @@ async function checksum(filename: string) {
   return hash.digest("hex");
 }
 
+export async function verifyImportMigrationHistory(client: Pick<Client, "query">, plan: Awaited<ReturnType<typeof migrationPlan>>) {
+  const table = await client.query<{ name: string | null }>("SELECT to_regclass('drizzle.__drizzle_migrations')::text AS name");
+  if (!table.rows[0]?.name) throw new MigrationError("Apply the full Drizzle journal before importing SQLite workspaces.");
+  const history = (await client.query<{ hash: string; created_at: string }>("SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id")).rows;
+  verifyMigrationHistory(plan, history);
+  if (history.length !== plan.length) throw new MigrationError("Apply the full Drizzle journal before importing SQLite workspaces.");
+}
+
 export async function runSqliteMigration(options: SqliteMigrationOptions = {}) {
   if (options.resume && !options.apply) throw new MigrationError("--resume requires --apply.");
   const source = await realpath(resolve(options.source || process.env.ADMITFLOW_DB || ".data/admitflow.sqlite"));
@@ -449,9 +457,7 @@ export async function runSqliteMigration(options: SqliteMigrationOptions = {}) {
     await lockClient.connect();
     locked = (await lockClient.query<{ acquired: boolean }>("SELECT pg_try_advisory_lock(194821, 1) AS acquired")).rows[0]?.acquired === true;
     if (!locked) throw new MigrationError("Another AdmitFlow migration or SQLite import is running.");
-    const history = (await lockClient.query<{ hash: string; created_at: string }>("SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY id")).rows;
-    verifyMigrationHistory(plan, history);
-    if (history.length !== plan.length) throw new MigrationError("Apply the full Drizzle journal before importing SQLite workspaces.");
+    await verifyImportMigrationHistory(lockClient, plan);
     process.env.DATABASE_URL = connectionString;
     process.env.DATABASE_POOL_SIZE = "2";
     report.mode = "applying"; await writeReport();

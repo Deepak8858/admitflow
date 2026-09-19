@@ -66,7 +66,7 @@ export interface Member { id: string; name: string; email: string; role: Role; s
 export interface FollowupTask { id: string; leadId: string; title: string; owner: string; ownerId?: string | null; dueAt: string; status: "open" | "completed" }
 export interface Refund { id: string; revenueId: string; amount: number; reference: string; recordedAt: string }
 export interface WorkspaceFile { id: string; name: string; mime: string; size: number; purpose: "knowledge" | "attachment" | "receipt" | "import"; status: "pending" | "ready" | "failed"; createdAt: string; error?: string; objectKey?: string; leadId?: string; etag?: string; finalizedAt?: string; uploadedBy?: string }
-export interface Connection { id: string; service: "whatsapp" | "openai" | "elevenlabs" | "google" | "razorpay" | "meta_leads"; status: "connected" | "unverified" | "error"; externalId: string; label: string; updatedAt: string; metadata: Record<string, string>; secret?: string }
+export interface Connection { id: string; service: "whatsapp" | "openai" | "elevenlabs" | "google" | "razorpay" | "meta_leads"; status: "connected" | "unverified" | "error" | "disconnected"; externalId: string; label: string; updatedAt: string; metadata: Record<string, string>; secret?: string }
 export interface AiSettings { mode: "autonomous" | "assisted" | "paused"; model: string; language: "auto" | "en" | "hi"; instructions: string; voiceReplies: boolean; dailyLimit: number; voiceId: string }
 export interface SavedView { id: string; name: string; query: string; course: string; stage: string; owner: string; view?: LeadView; sort?: LeadSort }
 export interface SubscriptionLimits { members: number | null; leads: number | null }

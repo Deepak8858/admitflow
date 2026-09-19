@@ -1,8 +1,14 @@
 # AdmitFlow — implementation handoff
 
-Updated 18 September 2026. Workspace: `H:\new-app`.
+Documentation refreshed 19 September 2026. Workspace: `H:\new-app`.
 
 ## Resume from here
+
+The latest review-repair evidence is the [19 September README handoff](README.md): **236 application tests, 14 infrastructure tests and 38 browser tests in 13.0 minutes**, with full verification/browser exit 0. Workflow lint and redacted history/source scans passed; fresh audits report zero production vulnerabilities and four moderate dev-only findings. Repaired-commit Linux CI/CodeRabbit review and configured-environment gates are still pending. [Verification](docs/verification.md) preserves earlier attempts and scoped evidence; the [deployment runbook](docs/deployment.md) owns current recovery procedures and launch gates. Use the complete [Drizzle journal](drizzle/meta/_journal.json), not a historical migration count.
+
+Subscription enforcement and deferred enquiry intake supersede the earlier paid-access planning below. Live coexistence, provider/cloud setup, independent access review, Docker execution, capacity and restore checks remain separate gates. No historical local test run establishes deployment readiness.
+
+## Historical 18 September handoff
 
 The core application and light **12-screen redesign are implemented**. Payment/readiness hardening and the durable access-concurrency repair passed the uninterrupted 18 September full verifier: **143 application tests, 8 infrastructure tests, project/infra typechecks, Next production build, service bundles/CLI checks and six-migration dry run**. Browser rerun: **19 passed in 7.7 minutes**, disposable SQLite; final TypeScript also passed. The 17 September audit reported zero production vulnerabilities and four moderate dev-only findings; it was not repeated on 18 September.
 
@@ -15,7 +21,7 @@ Access repair is implemented in `src/lib/db/team-access.ts`, actual auth/team ro
 Read these current implementation records first:
 
 1. [README](README.md) — practical preview/setup commands.
-2. [Verification](docs/verification.md) — authoritative current results, recovered browser QA, open defects and historical evidence.
+2. [Verification](docs/verification.md) — scoped results and historical evidence; the README records the later 38-test browser run.
 3. [Backend verification](docs/backend-verification.md) — API contracts, identity/dispatch/booking behavior and measured projection limits.
 4. [Connected services](docs/connected-services.md) — WorkOS team, Google, Meta intake, SSE and SaaS billing.
 5. [Deployment](docs/deployment.md) — AWS, secrets, images, migrations, import, audit and rollback.
@@ -90,7 +96,7 @@ The import command defaults to backup/dry-run and needs reviewed WorkOS mappings
 
 ## Immediate next session
 
-1. Continue from the implemented access repair and 18 September release evidence; do not repeat the original race discovery. `node scripts/verify.mjs --access` exercises real auth/team routes with controlled providers and PGlite. The latest full source/build verification passed; browser and final TypeScript passed after a test-only timeout fix.
-2. Design the remaining paid-access policy and targeted workspace/inbox projections before implementation. Preserve the durable operation gates, invitation/seat accounting and conservative recovery behavior.
-3. No lint script or lint pass exists; agree its configuration separately. Keep the four moderate development-tool advisories visible rather than forcing an incompatible downgrade.
+1. Start from the README's latest recorded release evidence and current deployment/recovery runbook, not the historical 18 September scope above. Revalidate review repairs before treating those earlier runs as acceptance of changed code.
+2. Paid-access enforcement and deferred intake are implemented. Preserve durable operation gates and conservative recovery; targeted workspace/inbox projections and capacity testing remain follow-up work.
+3. No application lint script is configured; the README separately records workflow lint. Keep the four moderate development-tool advisories visible rather than forcing an incompatible downgrade.
 4. Prepare a separately authorized staging pilot for multi-replica tenancy/access, WorkOS recovery/late responses, private files, coexistence/handoff, signed callbacks, queue restart, payments and restore. Direct WorkOS console changes are outside app serialization. Never delete access receipts or roll back to unfenced writers to unblock a tenant.

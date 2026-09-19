@@ -9,7 +9,7 @@ import { transform } from "esbuild";
 import { NextRequest } from "next/server";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { useTestDatabase, type Database } from "../src/lib/db/client";
 import { createPostgresWorkspace, loadPostgresWorkspace, mutatePostgresWorkspace, tenantTransaction } from "../src/lib/db/repository";
 import * as billing from "../src/lib/providers/billing";
@@ -263,6 +263,19 @@ test("hosted access operations serialize provider writes and fence actual auth/t
     await assert.rejects(projectAccessIdentity(idle, actor, f.state.memberships[0].id), /access changed/);
     await assert.rejects(readAccessFence(f.workspace.id, other.organizationId), /another institute/);
     await releaseAccess(next); await releaseAccess(otherClaim);
+  });
+
+  await t.test("restricted role cannot read or change another tenant's members", async () => {
+    const a = await fixture(), b = await fixture();
+    await pg.exec("CREATE ROLE team_rls_test NOLOGIN NOSUPERUSER NOBYPASSRLS; GRANT SELECT, INSERT, UPDATE ON members TO team_rls_test;");
+    const restricted = <T,>(operation: Parameters<typeof tenantTransaction<T>>[1]) => tenantTransaction(b.workspace.id, async tx => { await tx.execute(sql`set local role team_rls_test`); return operation(tx); });
+    const people = await restricted(tx => tx.select().from(schema.members));
+    assert.equal(people.length, b.workspace.members!.length);
+    assert.ok(people.every(row => row.organizationId === b.workspace.id));
+    assert.equal((await restricted(tx => tx.update(schema.members).set({ role: "analyst" }).where(eq(schema.members.id, a.workspace.members![0].id)).returning())).length, 0);
+    await assert.rejects(() => restricted(tx => tx.insert(schema.members).values({ id: "om_foreign_insert", organizationId: a.workspace.id, name: "Foreign", email: "foreign@example.com", role: "owner", status: "active" })));
+    await assert.rejects(() => restricted(tx => tx.update(schema.members).set({ organizationId: a.workspace.id }).where(eq(schema.members.id, b.workspace.members![0].id))));
+    assert.equal((await loadPostgresWorkspace(a.workspace.id)).members![0].role, "owner");
   });
 
   await t.test("reactivation lost-response recovery confirms its seat; deactivation then frees it", async () => {

@@ -63,7 +63,16 @@ test("subscription snapshots form an additive chain without modeled schema drift
   assert.deepEqual(Object.keys(seven.tables).filter(name => !six.tables[name]), ["public.intake_inbox"]);
   for (const [name, table] of Object.entries(five.tables)) assert.deepEqual(six.tables[name], table);
   for (const [name, table] of Object.entries(six.tables)) assert.deepEqual(seven.tables[name], table);
-  assert.deepEqual(await generateMigration(seven, generateDrizzleJson(schema, seven.id)), []);
+  const eight = JSON.parse(await readFile("drizzle/meta/0008_snapshot.json", "utf8"));
+  const nine = JSON.parse(await readFile("drizzle/meta/0009_snapshot.json", "utf8"));
+  assert.equal(eight.prevId, seven.id); assert.equal(nine.prevId, eight.id);
+  assert.deepEqual(Object.keys(eight.tables).filter(name => !seven.tables[name]), ["public.organization_provisioning"]);
+  for (const [name, table] of Object.entries(seven.tables)) assert.deepEqual(eight.tables[name], table);
+  assert.deepEqual(Object.keys(nine.tables), Object.keys(eight.tables));
+  for (const [name, table] of Object.entries(eight.tables)) {
+    if (!["public.connections", "public.intake_inbox"].includes(name)) assert.deepEqual(nine.tables[name], table);
+  }
+  assert.deepEqual(await generateMigration(nine, generateDrizzleJson(schema, nine.id)), []);
   // RLS, immutable-ledger triggers and custom SQL checks are migration-owned, as in prior snapshots.
   // Their behavior is exercised separately against all SQL migrations in PGlite.
 });

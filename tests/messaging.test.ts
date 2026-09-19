@@ -32,11 +32,11 @@ test("service replies do not invent marketing consent, and status events cannot 
   applyDelivery(message, "sent"); applyDelivery(message, "failed"); assert.equal(message.status, "delivered");
   applyDelivery(message, "read"); assert.equal(message.status, "read");
 });
-test("provider signatures and tenant-bound encrypted credentials reject forgery and cross-tenant use", async () => {
+test("provider signatures and tenant-bound encrypted credentials reject forgery and cross-tenant use", async t => {
   const raw = '{"event":"test"}', key = "test-secret";
   const signature = `sha256=${createHmac("sha256", key).update(raw).digest("hex")}`;
   assert.ok(validSignature(raw, signature, key)); assert.ok(!validSignature(`${raw} `, signature, key));
-  process.env.INTEGRATION_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
+  environment(t, { KMS_KEY_ID: undefined, INTEGRATION_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString("base64") });
   const org = uid(), sealed = await sealSecret({ token: "private" }, org);
   assert.equal((await openSecret(sealed, org)).token, "private");
   await assert.rejects(() => openSecret(sealed, uid()));

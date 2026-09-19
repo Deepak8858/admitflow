@@ -1,18 +1,18 @@
 # AdmitFlow — implemented architecture and release follow-up
 
-> **16 September 2026 supersession notice:** The inventory below records the 12 September handoff, not current verification. [Current verification](verification.md) and [checkpoint](../CHECKPOINT.md) take precedence: build/TypeScript and 111 application tests pass, 8 infrastructure tests pass, and 19 completed browser tests were recovered from OpenCode. Shared distinct-student reporting, server-side saved-view preferences (six migrations through `0005_saved_view_preferences`), verified invoice reads and configured member/enquiry quotas are implemented. Statements below that these are pending are historical. Admission-payment webhook defects remain open; live-provider/cloud behavior remains unvalidated.
+> **19 September 2026 supersession notice:** This inventory retains the 12 September handoff and its historical test counts. The [README handoff](../README.md) records the later **175 application / 8 infrastructure / 38 browser tests (9.7 minutes)**, including the CSS-zoom fix; [verification](verification.md) retains prior evidence. Shared distinct-student reporting, server-persisted saved-view preferences, payment/access hardening, subscription enforcement and deferred intake are implemented. This documentation refresh is not a new validation run. Current source, the complete [Drizzle journal](../drizzle/meta/_journal.json) and [deployment/recovery runbook](deployment.md) take precedence over historical inventory details. Independent review, credentialed provider/cloud staging, Docker, capacity and restore gates remain open.
 
-Updated 12 September 2026. **The core application and light 12-screen UI are built; current browser QA is PENDING.** This document inventories the implementation and remaining work. It does not certify a deployed or fully production-ready service.
+Original inventory: 12 September 2026. **The core application and light 12-screen UI are built; local browser QA is now recorded in the README linked above.** The original evidence paragraph below is preserved as history. This document does not certify a deployed or fully production-ready service.
 
 The user's decisions are resolved: **Neon + Drizzle, WorkOS AuthKit, Cloudflare R2, AWS hosting, Meta WhatsApp Cloud API, OpenAI autonomous mode and ElevenLabs speech**. The existing WhatsApp Business app number should use Meta's coexistence-enabled onboarding. Counsellors retain human override. Native ElevenLabs Agents WhatsApp is not the selected transport.
 
-The parent reports **`npm run build` and typechecking PASS**, and **94 `npm test` cases passing** after the BullMQ/ioredis dependency updates. The **8 tooling tests**, worker bundles, migration checks and offline CDK synthesis passed separately. Browser QA is running with the parent; a final result has not been supplied. [Verification and provenance](verification.md).
+**Historical 12 September report:** `npm run build` and typechecking passed, with **94 `npm test` cases** after the BullMQ/ioredis dependency updates. The **8 tooling tests**, worker bundles, migration checks and offline CDK synthesis passed separately; browser QA was pending at that handoff. Later results supersede that status without changing this historical count. [Verification and provenance](verification.md).
 
 ## Product and current interface
 
 AdmitFlow supports an institute team's enquiry → follow-up → conversation → counselling → payment workflow, with NEET/JEE-oriented sample content and configurable courses. The English interface exposes English/Hindi/automatic reply-language settings. Demo people, fees and messages are fictional.
 
-The implemented main routes are Overview, Enquiries, Admissions pipeline, Shared inbox, Counselling, Recovery campaigns, AI & automations, Knowledge base, Revenue analytics, Team & access, Integrations and Settings. Settings includes SaaS billing. Hosted onboarding/institute switching is a separate flow. The light shared shell, CSS layers and page components are applied; keyboard, responsive and visual acceptance remain part of the pending browser QA.
+The implemented main routes are Overview, Enquiries, Admissions pipeline, Shared inbox, Counselling, Recovery campaigns, AI & automations, Knowledge base, Revenue analytics, Team & access, Integrations and Settings. Settings includes SaaS billing. Hosted onboarding/institute switching is a separate flow. The light shared shell, CSS layers and page components are applied; local browser/responsive/scoped accessibility evidence is recorded in the linked release records, not a live-provider certification.
 
 The [accepted UI direction](production-ui-direction.md) uses the existing eight inspected references. Additional image research or a new design-selection pass is not needed.
 
@@ -24,7 +24,7 @@ The [accepted UI direction](production-ui-direction.md) uses the existing eight 
 | Interface | Custom shared components, Radix primitives, native dialogs, Tailwind 4 and layered CSS; Geist, Lucide, Recharts; React Hook Form/Zod |
 | Data UI | TanStack Query and React Table **8.21.3**; native server-filtered/count/paginated enquiry queries; full workspace projection still used by the shell and mutations |
 | Local preview | Node SQLite, cookie-scoped demo sessions and local evaluation accounts when `DATABASE_URL` is absent |
-| Hosted database | Neon PostgreSQL with Drizzle/`pg`, tenant transactions/RLS, composite references and financial constraints; five journaled migrations |
+| Hosted database | Neon PostgreSQL with Drizzle/`pg`, tenant transactions/RLS, composite references and financial constraints; apply the complete current Drizzle journal |
 | Hosted identity/team | WorkOS AuthKit, organizations, verified memberships, stable member-ID assignment and owner/admin/counsellor/analyst authorization; invitations and team reconciliation |
 | Background work | BullMQ **5.81.5**, ioredis **5.11.1**, Node worker, durable PostgreSQL jobs, bounded retries and reconciliation; private node-based Valkey/noeviction in CDK |
 | Inbox updates | Revision-based SSE with periodic checks, heartbeats, reconnection and WorkOS membership revalidation; changes trigger an authorized workspace refresh |
@@ -40,9 +40,9 @@ WorkOS supplies hosted authentication/invitation email behavior. Application not
 
 | Area | Working code / local verification | Remaining work or configured-environment dependency |
 | --- | --- | --- |
-| UI/navigation | Twelve implemented screens, role-aware navigation, command search, enquiry drawer, loading/error/empty states, responsive CSS | Current browser/Axe/viewport QA is pending; build success alone does not establish usability |
+| UI/navigation | Twelve implemented screens, role-aware navigation, command search, enquiry drawer, loading/error/empty states, responsive CSS | Local browser/Axe/viewport coverage is recorded in the README and verification ledger; build success alone does not establish usability |
 | Accounts/team | AuthKit login/callback/logout, organization create/switch, membership validation, invite/role/deactivate/reactivate/revoke actions, last-owner protection, team UI | Actual WorkOS accounts, email/activation and role setup need a configured pilot; durable WorkOS Events API cursor synchronization is not implemented |
-| Enquiries | Manual/CSV intake, validation/deduplication, bulk owner-ID assignment, tags/custom-field data, export, saved filters, SQL view/sort/count/page endpoint used by the UI | The model still couples contact and enquiry, with tenant phone uniqueness. Separate household/guardian/contact relationships, merge review and full import history remain roadmap work. Saved built-in-view/sort preferences currently also rely on browser storage |
+| Enquiries | Manual/CSV intake, validation/deduplication, bulk owner-ID assignment, tags/custom-field data, export, server-persisted saved filters/view/sort, SQL view/sort/count/page endpoint used by the UI | The model still couples contact and enquiry, with tenant phone uniqueness. Separate household/guardian/contact relationships, merge review and full import history remain roadmap work |
 | Tasks/pipeline | Stable member assignments, due tasks, activity records, eight fixed stages, drag and explicit stage controls | Configurable stages/transition rules, richer task/reminder management and branch-scoped organization modeling remain future scope |
 | Recovery/automation | Selected audiences, approved-template selection, recipient/job records, delay playbook, pause/resume, stop guards and run-history/retry UI | Arbitrary condition/workflow graphs, versioned publishing, comprehensive sending-window configuration and richer sequence analytics are not implemented |
 | WhatsApp/inbox | Per-institute onboarding/manual connection checks, WABA subscription, shared threads, reply/note/draft/attachment actions, signed callbacks, phone-app echo takeover, acceptance/reconciliation states | Real account eligibility, template/scopes/delivery and same-number coexistence need live validation. Header-media/dynamic-button template workflows, call support and historical chat import are outside the current adapter |
@@ -50,8 +50,8 @@ WorkOS supplies hosted authentication/invitation email behavior. Application not
 | Knowledge/files | Article editing/version counters, document ingestion, tenant chunks, full-text retrieval, private immutable finalization and authorized downloads; mocked speech/R2/media tests | Full version-history management, orphan/pending-object cleanup and retention need further work. The vector-enabled branch needs a vector-capable database/provider run |
 | Counselling | Booking/reschedule/cancel/outcomes, local owner-ID clashes, Google availability/self-event checks, deferred AI booking jobs, sync-state UI and ICS export | **One institute calendar; AdmitFlow → Google sync only.** No inbound Google-change import or per-counsellor OAuth calendars. Availability is not an atomic external reservation |
 | Admission money | Positive INR receipts, exact paise persistence/display, duplicate-reference/refund-balance protection, offline refund recording, Razorpay payment links and captured/refund event reconciliation | Actual merchant verification is pending. Payment links are not collected funds. Full instalment schedules, invoice issuance and initiating provider refunds are not implemented |
-| Revenue | Receipt/refund/net reporting, date/course/source views, ledger export and campaign association | No causal/incremental-lift claim. The Admissions time series currently counts receipt events rather than unique enquiries; see the reporting follow-up below |
-| SaaS billing | Settings panel, configured provider plans, checkout, provider-confirmed state, signed webhook dedup/routing, uncertain-create reconciliation and immediate cancellation | Cycle-end cancellation, upgrades/proration, invoices, usage/seat entitlements and SaaS refunds remain unimplemented; plans/accounts must be configured externally |
+| Revenue | Receipt/refund/net reporting, shared distinct-student charts/headlines, date/course/source views, ledger export and campaign association | No causal/incremental-lift claim |
+| SaaS billing | Settings panel, configured plans, checkout, provider-confirmed state, signed webhook dedup/routing, uncertain-create reconciliation, immediate cancellation, verified invoice reads, member/enquiry quotas, subscription enforcement and deferred intake | Cycle-end cancellation, upgrades/proration, complete cost/usage accounting and SaaS refunds remain unimplemented; plans/accounts must be configured externally |
 | Operations/migration | Safe schema runner, backup/dry-run SQLite importer, explicit verified WorkOS mappings, per-workspace atomic import/fingerprint resume, deployment resources and runbook | Actual AWS/Docker rollout, DNS/TLS, live queue behavior, restore exercises, alert delivery and throughput validation remain outstanding |
 
 Detailed contracts and tests: [backend verification](backend-verification.md), [connected services](connected-services.md), [deployment](deployment.md).
@@ -74,9 +74,9 @@ Hosted mode, DATABASE_URL configured
 
 `DATABASE_URL` selects the database path; `NODE_ENV` or a successful Next build alone does not select hosted behavior. Production containers reject absent database configuration. AuthKit credentials and a real organization membership are required to access a hosted institute; the local anonymous demo path is not substituted for that session.
 
-### Actual schema
+### Historical schema inventory
 
-The current schema has **21 tables**, rather than every entity from the former proposal:
+The 12 September schema inventory had **21 tables**, rather than every entity from the former proposal. This list predates subscription-trial/deferred-intake additions; use `src/lib/db/schema.ts` and the full Drizzle journal for the current schema:
 
 - Institute/identity projection: `organizations`, `members`, `organization_routes`.
 - CRM/work: `leads`, `tasks`, `activities`, `saved_views`.
@@ -130,7 +130,7 @@ npm run build:services
 npm run test:infra
 ```
 
-The schema runner validates the Drizzle journal/hashes, locks the migration session and applies through the direct connection. The normal sequence currently ends at `0004_lead_view_dates.sql`; optional pgvector setup is separate.
+The schema runner validates the Drizzle journal/hashes, locks the migration session and applies through the direct connection. Apply every entry in `drizzle/meta/_journal.json` in journal order; `0004_lead_view_dates.sql` was a historical endpoint, not today's migration boundary. Use `npm run db:migrate -- --dry-run` to inspect the release plan. Optional pgvector setup is separate.
 
 SQLite import already exists. It makes a coherent backup and defaults to offline dry-run; explicit mappings and read-only WorkOS verification are required on apply. It preserves IDs and exact money, detects collisions, holds pending messaging work for reconciliation, and verifies committed workspaces. Resume accepts only identical completed imports. Local passwords/sessions are not fabricated into WorkOS identities; provider ciphertext and R2 object bytes require their own reviewed migration steps.
 
@@ -138,8 +138,8 @@ AWS/CDK defaults to Singapore alongside Neon Singapore. The reviewed Neon region
 
 ## Remaining release follow-up
 
-1. **Finish current browser QA.** The parent owns the run. Record actual outcomes for the redesigned 12 screens, navigation/dialogs, enquiry pagination, demo autonomy/human echo, booking, money and role/error states. Until results arrive, visual/responsive/accessibility acceptance is pending.
-2. **Correct the Admissions chart series.** `src/components/overview.tsx` increments the series by payment-record count; `metrics()` counts distinct `leadId` values. Multiple receipts for one student can overstate that chart. This source-inspected mismatch was identified during handoff and needs a focused fix/check.
+1. **Preserve browser evidence and rerun after changes.** The README records 38 local browser passes, including the chart/200% CSS-zoom regression; these supersede the original pending status, not the need to validate later repairs.
+2. **Preserve reporting consistency.** Admissions charts and headlines now share distinct-student reporting, exact paise totals and refund-date cash flow. The original receipt-count mismatch is historical, not an open defect.
 3. **Complete a credentialed pilot.** Exercise the existing Business-app number through eligible Meta coexistence onboarding, actual signed echoes/statuses, OpenAI/ElevenLabs behavior, WorkOS membership/email, R2 CORS, Google and separate merchant accounts. Mocked tests establish application behavior, not real account readiness.
 4. **Address full-projection throughput.** `readWorkspace` loads the tenant's collections and `scopeWorkspace` clones them. Mutations serialize on the organization and often repeat reads. The shell still loads that projection even though enquiries use `/api/leads`. A local synthetic owner response was over 4 MB at 1,000 leads/5,000 messages and over 41 MB at 10,000/50,000; these are not load-tested capacity guarantees. [Measurement scope](backend-verification.md#full-projection-performance-inspection).
 5. **Validate rollout/recovery.** Container execution, actual AWS services, TLS/DNS, queue loss/restarts and a Neon restore exercise are outstanding. Restoring Neon does not rewind WorkOS, R2, KMS or provider delivery/payment state.

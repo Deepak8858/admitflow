@@ -1,6 +1,6 @@
 # AdmitFlow — resolved WhatsApp decision and coexistence handoff
 
-Updated 12 September 2026. **Decision resolved and adapter implemented: Meta WhatsApp Cloud API + OpenAI autonomous replies + ElevenLabs speech.** Actual provider accounts, the existing Business-app number's eligibility and live coexistence/delivery have not been validated.
+Decision recorded 12 September 2026; evidence pointers refreshed 19 September. **Decision resolved and adapter implemented: Meta WhatsApp Cloud API + OpenAI autonomous replies + ElevenLabs speech.** Actual provider accounts, the existing Business-app number's eligibility and live coexistence/delivery have not been validated. The [README handoff](../README.md) records later local/mock and 38-test browser evidence; this documentation refresh adds no live validation.
 
 ## Selected responsibilities
 
@@ -67,11 +67,11 @@ Hosted operation uses the existing Neon/WorkOS organization model and KMS-encryp
 
 The old platform-wide Twilio sender and `INTEGRATION_WORKSPACE_ID` model are superseded. Each institute resolves through its stored connection and server-maintained routing identifiers.
 
-For a credential-free preview, leave `DATABASE_URL` unset and run `npm run dev`. In the demo inbox, **Try an incoming message** exercises autonomous local knowledge replies; the Business-app echo checkbox exercises human takeover. Demo paths are tested with provider/KMS/R2 calls prohibited. A demo echo does not verify a real number. Current redesigned-browser QA remains pending with the parent.
+For a credential-free preview, leave `DATABASE_URL` unset and run `npm run dev`. In the demo inbox, **Try an incoming message** exercises autonomous local knowledge replies; the Business-app echo checkbox exercises human takeover. Demo paths are tested with provider/KMS/R2 calls prohibited. A demo echo does not verify a real number. Redesigned-browser QA is recorded in the README and verification ledger, not pending or proof of live coexistence.
 
 ## Evidence and remaining provider checks
 
-The [backend verification record](backend-verification.md) covers signed tenant routing, echoes, duplicate/out-of-order callbacks, acceptance races, guarded dispatch, restart/retry behavior, mock speech/media and provider-free demos. Those cases contribute to the current **94 passing backend/service tests**; they do not establish live account connectivity.
+The [backend verification record](backend-verification.md) covers signed tenant routing, echoes, duplicate/out-of-order callbacks, acceptance races, guarded dispatch, restart/retry behavior, mock speech/media and provider-free demos. The **94 passing backend/service tests** were the historical 12 September count. Use the [README handoff](../README.md) for the later 175-application/8-infrastructure and 38-browser-test record, and [verification](verification.md) for scoped provenance. Neither historical nor later local checks establish live account connectivity.
 
 A configured pilot must still verify the actual existing number's eligibility, coexistence-enabled Meta config/app permissions, approved templates, both phone-app and Cloud API sends, signed callback delivery, human/AI ownership changes, the selected OpenAI model and ElevenLabs voice, and private R2 media behavior. Actual account review, throughput/limits, fees and provider quality are external deployment inputs, not capabilities certified by this handoff.
 

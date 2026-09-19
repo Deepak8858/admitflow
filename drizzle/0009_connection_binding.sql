@@ -1,0 +1,4 @@
+-- Existing orphaned or mismatched receipts must fail validation, never be rebound or removed.
+CREATE UNIQUE INDEX "connections_tenant_binding" ON "connections" USING btree ("organization_id","id","service","external_id");--> statement-breakpoint
+ALTER TABLE "intake_inbox" ADD CONSTRAINT "intake_connection_binding" FOREIGN KEY ("organization_id","connection_id","service","external_id") REFERENCES "public"."connections"("organization_id","id","service","external_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "connections" ADD CONSTRAINT "connections_disconnected_secret" CHECK ("connections"."status" <> 'disconnected' or "connections"."secret" is null);

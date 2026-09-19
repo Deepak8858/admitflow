@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { productionDatabase } from "./config";
 import { tenantTransaction } from "./db/repository";
 import { organizations, instituteTrials } from "./db/schema";
-import { assert } from "./errors";
+import { assert, safeErrorDiagnostic } from "./errors";
 import { assertCapability, actionCapability, subscriptionCapabilities, SubscriptionRestricted } from "./subscription-policy";
 import type { Workspace } from "./domain";
 
@@ -18,9 +18,13 @@ export function assertActionCapability(workspace: Workspace, action: Record<stri
 /** Provider refresh occurs before the final short check, never in an aggregate callback. */
 export async function prepareSubscription(workspaceId: string) {
   if (!productionDatabase()) return;
-  const { refreshBillingAccess } = await import("./providers/billing");
-  try { await refreshBillingAccess(workspaceId); }
-  catch { throw new SubscriptionRestricted({ allowed: false, reason: "verification_required", message: "Subscription verification is unavailable. Existing data and billing remain available; retry verification before using paid features.", checkedAt: new Date().toISOString() }); }
+  try {
+    const { refreshBillingAccess } = await import("./providers/billing");
+    await refreshBillingAccess(workspaceId);
+  } catch (error) {
+    console.error("Subscription verification failed", { workspaceId, ...safeErrorDiagnostic(error) });
+    throw new SubscriptionRestricted({ allowed: false, reason: "verification_required", message: "Subscription verification is unavailable. Existing data and billing remain available; retry verification before using paid features.", checkedAt: new Date().toISOString() }, { cause: error });
+  }
 }
 export async function requirePaidCapability(workspaceId: string) {
   if (!productionDatabase()) return;

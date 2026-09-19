@@ -124,6 +124,7 @@ test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction 
       if (!available) assert.match(retrieval.retrievalNote!, /pgvector is unavailable/);
       await mutatePostgresWorkspace(first.id, current => applyAction(current, { type: "article.save", id: first.articles[0].id, title: "Updated fees", category: "Courses", body: "Verified updated fees for this institute only." }));
       const after = await tenantTransaction(first.id, tx => tx.select().from(schema.knowledgeChunks).where(eq(schema.knowledgeChunks.articleId, first.articles[0].id)));
+      assert.ok(after.length > 0, "re-indexing must create replacement chunks");
       assert.ok(after.every(chunk => chunk.version === 2 && !before.some(old => old.id === chunk.id)));
       await assert.rejects(() => tenantTransaction(first.id, tx => tx.insert(schema.knowledgeChunks).values({ id: uid(), organizationId: first.id, articleId: second.articles[0].id, ordinal: 0, title: "Foreign", body: "Foreign source", version: 1, contentHash: "hash" })));
     });

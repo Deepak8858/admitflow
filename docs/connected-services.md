@@ -64,6 +64,14 @@ The caller must retain its `resolveWorkspace` / `requireAdmin` checks. The helpe
 
 Connection metadata includes `subscriptionStatus` (`pending`, `active`, `error`), `appId`, `tokenExpiresAt` when present, `lastLeadAt`, `lastLeadError`, and `lastLeadErrorAt`. Keep these safe fields in the public metadata allowlist and show errors/status in Integrations. Raw credentials remain encrypted. A failed registration is marked `error` and requires reconnection.
 
+### Disconnect and retained intake
+
+Disconnect removes stored credentials and active routing but retains the connection UUID/provider identity and imported/deferred receipts. WhatsApp recovery requires the original phone-number and Business Account IDs; Meta Lead Ads requires the original Page. Different accounts are rejected, not rebound. Reconnect verifies provider access again; stale verification cannot overwrite a newer disconnect. See [connection recovery](deployment.md#connection-and-intake-recovery).
+
+OpenAI/ElevenLabs disconnect also suppresses platform-key fallback for that institute, including when no tenant credential row existed. It does not revoke the shared key globally. Disconnect is local, not provider-side revocation or cancellation of already-dispatched requests. For other services, disconnecting an absent row does not cancel first-time setup in flight.
+
+**Live Meta/WhatsApp activation gate:** raw-intake retention duration, deferred-event expiry and backup/restore policy still require approval. No automatic purge is implemented; do not delete/redact current receipts to clear storage or force imports.
+
 ### Google result and availability
 
 The existing `/api/integrations/google/start` link is implemented. OAuth returns to `/integrations?google=connected|cancelled|error`. Read this finite result parameter to show a success/cancellation/retry notice and refresh the workspace. Callback redirects never include tokens, codes or raw provider errors.
@@ -95,8 +103,13 @@ events.addEventListener("revoked", () => { events.close(); location.assign("/log
 
 `/onboarding` is independent of `useData` and can render before a workspace exists. It calls the existing organization endpoints:
 
-- `GET /api/organizations` → `{ organizations, current, name }`.
-- `POST /api/organizations` with `{ type: "create", name }` or `{ organizationId }`.
+- `GET /api/organizations` → `{ organizations, current, name, scope, provisioning }`; active memberships are fully paginated. `scope` binds browser intent to the WorkOS client and actor.
+- `POST /api/organizations` with `{ type: "create", requestId: "<UUID>", name }` returns `{ provisioning }` (200 when ready, otherwise 202). Retain the same request UUID and immutable name across retries; only one unacknowledged operation is allowed per actor/client.
+- `{ type: "continue", id: "<operation UUID>" }` checks positive provider evidence and may perform the next never-dispatched step. It never replays an uncertain organization or membership write.
+- `{ type: "open", id }` revalidates ownership and updates the session independently of creation. A 503 with `PROVISIONING_SESSION_INCOMPLETE` means retry Open/sign-in, not create a replacement.
+- `{ type: "acknowledge", id }` explicitly acknowledges verified completion before another create intent. `{ organizationId }` or `{ type: "switch", organizationId }` selects an existing active membership.
+
+Provisioning states are `pending`, `continue`, `review_required` and `ready`; responses include operation/request IDs, name, message, acknowledgement and confirmed organization ID when available. The onboarding UI retains actor/client-scoped sessionStorage intent but treats server state as authoritative. Review-required evidence is sticky. See [organization provisioning recovery](deployment.md#organization-provisioning-recovery).
 
 Successful selection uses a full navigation to `/`, resetting the workspace query cache after the organization cookie changes. Loading, errors, no memberships, invitation refresh, and unconfigured/local installation states are explicit.
 

@@ -266,7 +266,9 @@ test("webhook boundaries reject forged/oversized payloads and request retries wh
   assert.equal(await verified.text(), "123");
   const billing = JSON.stringify({ event: "subscription.activated", payload: { subscription: { entity: { id: "sub_Test" } } } });
   const signed = createHmac("sha256", "billing-secret").update(billing).digest("hex");
-  const response = await billingWebhook(new NextRequest("http://127.0.0.1:3000/api/webhooks/billing", { method: "POST", headers: { "Content-Type": "application/json", "x-razorpay-signature": signed }, body: billing }));
+  const billingRequest = (signature: string) => new NextRequest("http://127.0.0.1:3000/api/webhooks/billing", { method: "POST", headers: { "Content-Type": "application/json", "x-razorpay-signature": signature }, body: billing });
+  for (const signature of ["malformed", "0".repeat(64), signed.toUpperCase(), signed.slice(1), `${signed}0`, `sha256=${signed}`]) assert.equal((await billingWebhook(billingRequest(signature))).status, 403);
+  const response = await billingWebhook(billingRequest(signed));
   assert.equal(response.status, 503);
 });
 
@@ -328,6 +330,11 @@ test("connected-service persistence isolates tenants, deduplicates side effects 
   assert.deepEqual(refreshedSubscription, initialSubscription, "a refresh may advance verification evidence, not provider lifecycle or entitlements");
   const first = subscriptions.get("sub_Test1")!;
   const event = (id: string, name = "subscription.activated") => ({ event: name, payload: { subscription: { entity: { id } } } });
+  await t.test("billing rejects another platform account before recording the event", async t => {
+    environment(t, { BILLING_RAZORPAY_ACCOUNT_ID: "acc_expected" });
+    await assert.rejects(() => processBillingWebhook({ ...event(first.id), account_id: "acc_foreign" }, "foreign-account"), (error: unknown) => error instanceof AppError && error.status === 403);
+    assert.equal((await db.select().from(schema.eventReceipts).where(eq(schema.eventReceipts.id, "billing:event:foreign-account"))).length, 0);
+  });
   first.status = "active"; first.charge_at = 2000000000; first.current_end = Math.floor(Date.now() / 1000) + 86400;
   await processBillingWebhook(event(first.id), "activated");
   assert.equal((await loadPostgresWorkspace(workspace.id)).subscription?.status, "active");

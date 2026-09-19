@@ -1,8 +1,20 @@
 # AdmitFlow verification and open follow-up
 
-Updated 19 September 2026. Results distinguish the subscription-enforced source from earlier access/payment hardening and UI baselines.
+Updated 19 September 2026. Results distinguish the first-release review repairs from earlier subscription/access/payment hardening and UI baselines.
 
-## Current subscription evidence — 18–19 September
+## Current release-repair evidence — 19 September
+
+- Uninterrupted `npm run verify`: **236 application tests**, **14 infrastructure tests**, project/infra TypeScript, Next production build, five service bundles, operational syntax/help checks and the **ten-migration dry run through 0009** passed; explicit `VERIFY_EXIT=0`. A separate isolated infrastructure confirmation passed 14/14 with `INFRA_EXIT=0`.
+- Fresh isolated `npm run verify:browser`: **38 passed in 13.0 minutes**, one worker, disposable SQLite, explicit `BROWSER_EXIT=0`. This is automated fixture coverage, not separate manual visual or live-provider acceptance.
+- Repairs cover durable actor/client-scoped organization provisioning and sticky review evidence, hosted/local auth separation, tenant dispatcher failure isolation, retained connection/receipt identity, stale reconnect and subscription-write checks, platform-key opt-out, malformed provider responses, non-bypass-role tenant isolation, and transactional orphan-migration refusal.
+- Workflow actionlint passed with optional ShellCheck/Pyflakes disabled. Fully redacted Gitleaks scans passed over all five local Git commits and a fresh 222-file tracked/unignored source snapshot. These scans do not certify provider credential rotation. No application lint script exists.
+- Fresh production lockfile audit: **0 vulnerabilities**, exit 0. Full audit: **4 moderate development-only findings**, exit 1, the existing Drizzle Kit/esbuild loader chain; no dependency changes or forced downgrade.
+- Retained failed attempts: the first full run passed 235 tests and failed the schema-drift assertion because it compared current source to the old 0007 snapshot; the test now verifies the additive chain through 0009 and no modeled drift. Earlier focused fixture/type errors were corrected. An author's prior typecheck-pass claim based on absent diagnostics was retracted; the uninterrupted full verifier above is the authoritative compiler evidence.
+- Independent source rechecks confirmed the sticky-provisioning and stale-local-reconnect fixes. Provider requests already dispatched cannot be recalled; absent non-AI/speech rows do not make disconnect a first-time setup cancellation API. See the recovery runbook.
+
+These results cover the uncommitted repair checkout and were recorded in this session's command output, not the older log files below. Repaired-commit Linux CI/CodeRabbit review, restricted-role Neon rehearsal, WorkOS configuration, container/provider staging and deployment gates remain pending. No production migrations or deployments were performed. Raw-intake retention remains an explicit gate before live Meta/WhatsApp activation.
+
+## Earlier subscription evidence — 18–19 September
 
 - Uninterrupted `node scripts/verify.mjs --all` on 18 September: **175 application tests passed** (83.020 seconds), **8 infrastructure tests passed** (20.271 seconds), both TypeScript checks, Next 16.3.5 production build, five service bundles, operational syntax/help checks and the **eight-migration** dry run passed; exit **0**, `databaseContacted: false`.
 - Final isolated `node scripts/verify.mjs --browser` on 19 September: **37 passed, 0 failed in 21.3 minutes**, one worker/default Chromium and disposable SQLite; exit **0**. Final isolated project TypeScript passed after the browser-test corrections, exit **0**. Runtime source did not change after the full non-browser pass.
@@ -88,7 +100,7 @@ The [deployment runbook](deployment.md) records the eight tooling tests and scop
 - Read-only SQLite input, coherent WAL backup, default offline report, demo exclusion and omission of credential/session content from reports.
 - Repository import round-trip, ID/money/history preservation, preflight collision rejection and resume that refuses changed tenants.
 
-The normal Drizzle journal includes eight migrations, `0000` through `0007_deferred_intake`, including `0006_subscription_trials`; both new snapshots are included. Preserve the immutable institute trial ledger and intake receipts during restores; see [subscription rollout and recovery](deployment.md#subscription-rollout-and-recovery). The optional `drizzle/optional/pgvector.sql` remains separate; local tests cover the extension-absent fallback, not a real vector-enabled deployment.
+The normal Drizzle journal now includes ten migrations, `0000` through `0009_connection_binding`, including `0008_org_provisioning`; all snapshots are included. Preserve the immutable institute trial ledger and intake receipts during restores; see [subscription rollout and recovery](deployment.md#subscription-rollout-and-recovery). The optional `drizzle/optional/pgvector.sql` remains separate; local tests cover the extension-absent fallback, not a real vector-enabled deployment.
 
 ## Browser QA — fresh local/fixture run
 `node scripts/verify.mjs --browser` reports **37 passed in 21.3 minutes** on 19 September, using one worker and default Chromium against disposable SQLite. The 19-test runs on 16–18 September are baseline history. In addition to the subscription regressions documented above, the suite includes:

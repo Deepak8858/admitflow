@@ -1,5 +1,7 @@
 # AdmitFlow — MVP plan
 
+> **Historical local-MVP plan, superseded for hosted operation.** The SQLite/scrypt/Twilio design and proposed delivery sequence below are retained as original planning context, not current setup instructions. The implemented hosted stack uses Neon/Drizzle, WorkOS, Meta Cloud API, OpenAI and ElevenLabs; SQLite remains a local preview path. Use the [README handoff](../README.md), [implementation inventory](production-plan.md), [verification history](verification.md) and [deployment runbook](deployment.md). The README records the later 38-test browser run; this document claims no new validation.
+
 ## Job and audience
 
 An institute owner imports neglected enquiries; a counsellor prioritises, follows up, books counselling and records admissions. The owner sees revenue associated with recovery efforts. Audience and utilitarian visual direction were confirmed by the user.

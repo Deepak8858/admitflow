@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
+import { writeJsonAtomic } from "./atomic-json.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const media = path.join(root, "public", "media");
@@ -40,4 +41,4 @@ for (const asset of manifest.assets) {
   Object.assign(asset, { width: metadata.width, height: metadata.height, variants,
     processing: "Auto-orient; resize without enlargement; saturation 0.96; WebP quality 84; original PNG retained." });
 }
-await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+await writeJsonAtomic(manifestPath, manifest);

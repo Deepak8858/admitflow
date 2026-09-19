@@ -7,12 +7,13 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { readMigrationFiles } from "drizzle-orm/migrator";
 import { WorkOS } from "@workos-inc/node";
+import type { Client } from "pg";
 import * as schema from "../../src/lib/db/schema";
 import { useTestDatabase, type Database } from "../../src/lib/db/client";
 import { loadPostgresWorkspace, mutatePostgresWorkspace } from "../../src/lib/db/repository";
 import type { Workspace } from "../../src/lib/domain";
-import { migrationPlan, unpooledDatabaseUrl, verifyMigrationHistory } from "../migration-support";
-import { importPreparedWorkspaces, mappingSchema, prepareWorkspace, rupeesToPaise, runSqliteMigration, verifyWorkosMappings, workspaceFingerprint } from "../../scripts/migrate-sqlite";
+import { MigrationError, migrationPlan, safeMigrationError, unpooledDatabaseUrl, verifyMigrationHistory } from "../migration-support";
+import { importPreparedWorkspaces, mappingSchema, prepareWorkspace, rupeesToPaise, runSqliteMigration, verifyImportMigrationHistory, verifyWorkosMappings, workspaceFingerprint } from "../../scripts/migrate-sqlite";
 
 const id = (number: number) => `00000000-0000-4000-8000-${String(number).padStart(12, "0")}`;
 const time = "2026-09-01T09:30:00.000Z";
@@ -64,6 +65,28 @@ test("journal validation rejects unjournaled SQL and changed or newer applied hi
     await writeFile(join(folder, "0001_unjournaled.sql"), "SELECT 1;");
     await assert.rejects(() => migrationPlan(folder), /journal entry/);
   } finally { await rm(folder, { recursive: true, force: true }); }
+});
+
+test("SQLite import requires a complete matching journal, including a missing migration table", async () => {
+  const pg = new PGlite();
+  const client = { query: (query: string) => pg.query(query) } as unknown as Pick<Client, "query">;
+  const plan = [{ tag: "0000_fixture", when: 1, sha256: "fixture-hash", statements: 1 }];
+  const missingJournal = (error: unknown) => {
+    assert(error instanceof MigrationError);
+    assert.equal(safeMigrationError(error), "Apply the full Drizzle journal before importing SQLite workspaces.");
+    return true;
+  };
+  try {
+    await assert.rejects(() => verifyImportMigrationHistory(client, plan), missingJournal);
+    await pg.exec("CREATE SCHEMA drizzle; CREATE TABLE drizzle.__drizzle_migrations (id serial PRIMARY KEY, hash text NOT NULL, created_at bigint);");
+    await assert.rejects(() => verifyImportMigrationHistory(client, plan), missingJournal);
+    await pg.exec("INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES ('fixture-hash', 1)");
+    await verifyImportMigrationHistory(client, plan);
+    await pg.exec("UPDATE drizzle.__drizzle_migrations SET hash = 'changed'");
+    await assert.rejects(() => verifyImportMigrationHistory(client, plan), /differs/);
+    await pg.exec("INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES ('newer', 2)");
+    await assert.rejects(() => verifyImportMigrationHistory(client, plan), /newer/);
+  } finally { await pg.close(); }
 });
 
 test("explicit identity mappings preserve legacy member IDs and report unresolved/invalid data", () => {

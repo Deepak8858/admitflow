@@ -1,12 +1,12 @@
 # AdmitFlow — production UI direction
 
-Updated 12 September 2026. **Accepted direction implemented across the light 12-screen workspace; CSS patches applied. Current browser QA is PENDING with the parent.**
+Direction recorded 12 September 2026; documentation refreshed 19 September. **Accepted direction implemented across the light 12-screen workspace.** The [README handoff](../README.md) records **38 local browser tests passed in 9.7 minutes**, including the chart/200% CSS-zoom fix. [Verification](verification.md) preserves earlier attempts and scoped evidence. These are prior recorded runs, not fresh validation of subsequent review repairs or live-provider behavior.
 
 ## Accepted direction and current implementation
 
 [Attio's contact workspace](https://mobbin.com/screens/5bb2a956-b937-497e-bd31-afc2616bb111) is the accepted primary reference. Its light navigation, table hierarchy, selection feedback and contextual actions inform AdmitFlow's implemented enquiry/owner/conversation workspace.
 
-The earlier local MVP's visual direction has been replaced. The application now has a light grouped sidebar, shared controls, paginated enquiry table, contextual record drawer, working inbox, recovery/counselling pages and administration screens. The parent reports the current application build and typechecking passed. That does not establish browser, viewport or accessibility acceptance; those results remain pending.
+The earlier local MVP's visual direction has been replaced. The application now has a light grouped sidebar, shared controls, paginated enquiry table, contextual record drawer, working inbox, recovery/counselling pages and administration screens. Build/typechecking and local browser, viewport and scoped accessibility results are recorded separately in the linked release evidence; build success alone is not UI acceptance.
 
 ## Review method and image budget
 
@@ -15,7 +15,7 @@ The earlier local MVP's visual direction has been replaced. The application now 
 - Earlier broad searches are not included in this count. This is a focused shortlist, not a claim to have completed a 100-screen review.
 - The earlier reference review used direct Mobbin tools; its observations are retained below. The user subsequently authorized parent-assigned subagents for implementation.
 - This document contains source links and observations; screenshots are not embedded or bundled with the application.
-- **These eight references are sufficient.** Resume from the current components/CSS and the pending browser-QA findings; do not fetch new Mobbin images or load skills for another design-selection pass.
+- **These eight references are sufficient.** Resume from the current components/CSS and recorded browser-QA findings; do not fetch new Mobbin images or load skills for another design-selection pass.
 
 ## Inspected references
 
@@ -23,13 +23,13 @@ The visible-evidence column preserves the prior screenshot observations, not a n
 
 | ID | Mobbin reference | Visible evidence | AdmitFlow adaptation |
 | --- | --- | --- | --- |
-| R01 | [Attio — contacts and bulk selection](https://mobbin.com/screens/5bb2a956-b937-497e-bd31-afc2616bb111) | Light grouped sidebar; Contacts heading; view selector; Sort/Filter; grid columns for person, contact details, company and status; three selected rows; contextual bottom actions. | **Primary reference.** Implemented paginated enquiry views, filter/sort/display controls, selection and bulk member-ID assignment. Saved filters are persisted; some view/sort preferences remain browser-local. |
+| R01 | [Attio — contacts and bulk selection](https://mobbin.com/screens/5bb2a956-b937-497e-bd31-afc2616bb111) | Light grouped sidebar; Contacts heading; view selector; Sort/Filter; grid columns for person, contact details, company and status; three selected rows; contextual bottom actions. | **Primary reference.** Implemented paginated enquiry views, filter/sort/display controls, selection and bulk member-ID assignment. Saved filters and built-in `view`/`sort` preferences persist server-side. |
 | R02 | [Twenty — people table](https://mobbin.com/screens/d0dc59c9-10b0-4896-a01a-ec954d8fd213) | Narrow light navigation; a simple People heading; New Person action; five visible rows; Filter/Sort/Options; substantial open space below the table. | Applied clear page hierarchy and restrained borders, with the richer selection pattern from R01 for recovery work. |
 | R03 | [Attio — company record activity](https://mobbin.com/screens/297adfeb-8312-496b-8acf-41839a6cf775) | A company record, sweetgreen, with Activity/Emails/Team/Notes/Tasks/Files tabs; chronological attribute changes; right-side record details; top contextual actions. | Implemented enquiry drawer with properties/history and contextual inbox, counselling and receipt actions. `?lead=<id>` preserves the surrounding page; a separate full-page record route remains future scope. |
 | R04 | [Attio — sales pipeline template preview](https://mobbin.com/screens/e275641a-a3e8-440a-b53e-983bb9cec7c7) | A template-preview modal containing stage columns, counts and cards with company, value, date, owner and activity indicators; an attributes panel on the right. | Implemented fixed-stage cards with owner, next action and potential course value, plus drag and explicit stage-select controls. Configurable stage definitions remain roadmap work. |
 | R05 | [Front — shared inbox thread](https://mobbin.com/screens/3548f0dd-75c6-4797-af55-6f282ba8a5a7) | Folder navigation, conversation list, open thread, assignee control in the header, muted system events, Reply action and an internal-comment composer. A narrow integration rail is visible at the right. | Implemented conversation list/thread/context layout, reply/note/draft controls, attachments, AI/human ownership and explicit provider-outcome states. |
 | R06 | [Customer.io — workflow and selected-step editor](https://mobbin.com/screens/773dc504-362f-4bce-a732-dfce6f95f9d1) | A vertical trigger/email/wait/generate-content/exit sequence; selected step outlined; editing panel with content choices and a visible missing-credit warning. | Implemented short delay playbook, assistant settings and run history. Arbitrary condition graphs, selected-step editing and versioned publishing remain future work. |
-| R07 | [Shopify — analytics overview](https://mobbin.com/screens/35153b56-4d7f-4398-ae6b-2fefaba5d024) | Date/comparison/currency controls; compact metrics; a large sales-over-time chart beside a gross-to-net breakdown; channel and product breakdowns below. | Implemented date/course-aware collected-fee reporting, refunds/net, source breakdowns, chart data and payment ledger. Admissions-series deduplication is a recorded follow-up. |
+| R07 | [Shopify — analytics overview](https://mobbin.com/screens/35153b56-4d7f-4398-ae6b-2fefaba5d024) | Date/comparison/currency controls; compact metrics; a large sales-over-time chart beside a gross-to-net breakdown; channel and product breakdowns below. | Implemented date/course-aware collected-fee reporting, refunds/net, source breakdowns, chart data and payment ledger. Admissions charts and headlines share distinct-student reporting. |
 | R08 | [Cal.com — filtered bookings](https://mobbin.com/screens/0e77a5a7-a1e2-4e67-a35f-44b3eca5cf08) | Upcoming/Unconfirmed/Recurring/Past/Canceled tabs; event-type and attendee filters; an open filter editor; booking row with date/time, meeting details, Cancel/Edit and pagination. | Implemented counselling agenda/calendar controls, booking/reschedule/cancel actions and explicit local/pending/synced/failed status. Google synchronization is one-way. |
 
 ## Applied principles
@@ -42,7 +42,7 @@ The visible-evidence column preserves the prior screenshot observations, not a n
 
 ## Applied visual system
 
-These values come from the applied application source/CSS, not measurements of the Mobbin screenshots. Browser rendering and accessibility acceptance remain pending.
+These values come from the applied application source/CSS, not measurements of the Mobbin screenshots. Consult the linked release records for the scope of local browser rendering and accessibility checks.
 
 | Element | Current source implementation |
 | --- | --- |
@@ -55,9 +55,9 @@ These values come from the applied application source/CSS, not measurements of t
 | Enquiries | Student/contact, course, stage, intent, counsellor and last-contact columns; optional enquiry-date column, page sizes and display controls. |
 | Records | Up to 560px desktop drawer, opened with `?lead=<id>`; contextual inbox, booking and payment actions. |
 | Inbox | Conversation list, thread and wide-screen enquiry context; narrow-screen thread/back navigation; distinct reply/note modes and persistent send-request state. |
-| Mobile | Responsive grids/toolbars, contained table/board scrolling and full-screen dialogs/drawers at small widths. Actual overflow/touch/focus behavior awaits browser QA. |
+| Mobile | Responsive grids/toolbars, contained table/board scrolling and full-screen dialogs/drawers at small widths. Local viewport/zoom coverage is recorded in the release evidence; real-device behavior remains a pilot concern. |
 | Feedback | Loading/error/empty/retry states, toasts, field validation, connection setup states and unresolved-provider outcomes are coded. |
-| Accessibility | Skip link, labels, focus styles, native modal behavior, keyboard search and reduced-motion CSS are implemented. Current Axe/keyboard/focus results are pending. |
+| Accessibility | Skip link, labels, focus styles, native modal behavior, keyboard search and reduced-motion CSS are implemented. Scoped local Axe/keyboard/focus results are recorded in the release evidence, not a comprehensive accessibility certification. |
 
 ## Implemented information architecture
 
@@ -74,10 +74,10 @@ Navigation visibility follows permissions. Enquiry links and `/inbox?conversatio
 - Visual foundation: `src/app/tokens.css`, `workspace.css`, `surfaces.css`, `responsive.css`; imported by the root layout/global stylesheet.
 - Screen behavior: `leads.tsx`, `inbox.tsx`, `recovery.tsx`, `appointments.tsx`, `overview.tsx`, `configuration.tsx`, `billing.tsx`, `whatsapp-connect.tsx` and `onboarding.tsx` under `src/components/`.
 
-**The parent is running browser QA.** Keep all current visual/responsive/Axe claims pending until that result is supplied. Review the 12 routes, narrow-screen navigation/table scrolling, dialog focus, role-restricted controls, exact monetary display, and demo autonomy/takeover paths. Old nine-test MVP results and old screenshots are historical only.
+**Local browser QA is recorded, not pending:** use the README's later 38-test run and the verification ledger for exact coverage and earlier failures. Rerun affected checks after changes to the 12 routes, narrow-screen navigation/table scrolling, dialog focus, role-restricted controls, exact monetary display or demo autonomy/takeover paths. Old nine-test MVP results and old screenshots remain historical only.
 
 Preserve the implemented distinction between configured accounts, requested/verified coexistence, provider acceptance, actual delivery and unresolved sends. Autonomous mode and a Business-app echo must retain human control; local simulation must stay visibly separate from live verification. Booking acceptance and Google sync confirmation, and recorded versus provider-confirmed money, likewise need distinct labels.
 
-Known follow-ups include the full-workspace projection cost, browser-local saved-view preferences, and an Admissions chart that currently counts receipts while its headline counts unique enquiries. Broader workflow publishing, configurable stages and a separate full-page record view are roadmap features rather than finished UI behavior.
+The full-workspace projection cost remains a follow-up. Saved-view `view`/`sort` now persist server-side, and Admissions charts/headlines share distinct-student reporting; those former defects are not current roadmap items. Broader workflow publishing, configurable stages and a separate full-page record view remain roadmap features.
 
 Current implementation scope: [production-plan.md](production-plan.md). QA ledger: [verification.md](verification.md). Backend/UI contracts: [backend-verification.md](backend-verification.md).

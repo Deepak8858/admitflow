@@ -6,6 +6,7 @@ import { App } from "aws-cdk-lib";
 import { Match, Template } from "aws-cdk-lib/assertions";
 import { AdmitFlowStack, SHARED_SECRET_KEYS, WEB_SECRET_KEYS } from "../stack";
 import { prepareEnvironment } from "../entrypoint.mjs";
+import { highAvailabilityContext } from "../context";
 
 test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selectors and digest-pinned images", async () => {
   const root = resolve("infra", ".test-output");
@@ -56,6 +57,26 @@ test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selec
     assert(Object.values(secret).every(value => value === "" || value === "[]"));
     assert.equal(app.synth().manifest.missing, undefined, "offline synthesis must not request AWS context lookups");
   } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test("HA context accepts boolean and CLI forms and synthesizes matching service/cache availability", async () => {
+  for (const value of [null, 0, 1, "", "TRUE", "yes", [], {}]) assert.throws(() => highAvailabilityContext(value), /highAvailability/);
+  const root = resolve("infra", ".test-output");
+  await mkdir(root, { recursive: true });
+  for (const [value, expected] of [[undefined, false], [false, false], ["false", false], [true, true], ["true", true]] as const) {
+    const directory = await mkdtemp(join(root, "cdk-ha-"));
+    try {
+      const app = new App({ outdir: directory, context: value === undefined ? {} : { highAvailability: value } });
+      const highAvailability = highAvailabilityContext(app.node.tryGetContext("highAvailability"));
+      assert.equal(highAvailability, expected);
+      const stack = new AdmitFlowStack(app, "AvailabilityTest", { stage: "test", env: { region: "ap-southeast-1" }, availabilityZones: ["ap-southeast-1a", "ap-southeast-1b"], highAvailability });
+      const template = Template.fromStack(stack);
+      template.hasParameter("WebDesiredCount", { Default: expected ? 2 : 1 });
+      template.hasResourceProperties("AWS::ECS::Service", { DesiredCount: { Ref: "WebDesiredCount" } });
+      template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { ReplicasPerNodeGroup: expected ? 1 : 0, AutomaticFailoverEnabled: expected, MultiAZEnabled: expected });
+      assert.equal(app.synth().manifest.missing, undefined);
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  }
 });
 
 test("entrypoint translates secret injection into TLS REDIS_URL without persisting the password field", () => {

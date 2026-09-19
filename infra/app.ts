@@ -1,5 +1,6 @@
 import { App } from "aws-cdk-lib";
 import { AdmitFlowStack } from "./stack";
+import { highAvailabilityContext } from "./context";
 
 const app = new App();
 const stage = String(app.node.tryGetContext("stage") ?? "staging");
@@ -12,7 +13,7 @@ new AdmitFlowStack(app, `AdmitFlow-${stage}`, {
   // Deliberately leave account unresolved: synthesis needs neither credentials nor lookups.
   env: { region },
   availabilityZones: [`${region}a`, `${region}b`],
-  highAvailability: app.node.tryGetContext("highAvailability") === "true",
+  highAvailability: highAvailabilityContext(app.node.tryGetContext("highAvailability")),
   appSecretKmsKeyArn: app.node.tryGetContext("appSecretKmsKeyArn"),
   alarmTopicArn: app.node.tryGetContext("alarmTopicArn"),
 });

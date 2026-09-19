@@ -57,6 +57,20 @@
       "when": 1789750800000,
       "tag": "0007_deferred_intake",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789754400000,
+      "tag": "0008_org_provisioning",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789831574262,
+      "tag": "0009_connection_binding",
+      "breakpoints": true
     }
   ]
 }

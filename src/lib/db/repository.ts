@@ -110,11 +110,11 @@ async function persist(db: Transaction, before: Workspace, after: Workspace) {
   await sync(s.tasks, before.tasks || [], after.tasks || []);
   await sync(s.connections, before.connections || [], after.connections || []);
   for (const connection of after.connections || []) {
-    if (!connection.externalId) continue;
+    if (!connection.externalId || connection.status !== "connected") continue;
     const [route] = await db.insert(s.connectionRoutes).values({ service: connection.service, externalId: connection.externalId, organizationId: after.id }).onConflictDoUpdate({ target: [s.connectionRoutes.service, s.connectionRoutes.externalId], set: { organizationId: after.id }, setWhere: eq(s.connectionRoutes.organizationId, after.id) }).returning();
     assert(route, "This provider account is already connected to another institute.", 409);
   }
-  for (const connection of before.connections || []) if (!after.connections?.some(current => current.id === connection.id && current.externalId === connection.externalId)) await db.delete(s.connectionRoutes).where(and(eq(s.connectionRoutes.organizationId, after.id), eq(s.connectionRoutes.service, connection.service), eq(s.connectionRoutes.externalId, connection.externalId)));
+  for (const connection of before.connections || []) if (!after.connections?.some(current => current.id === connection.id && current.externalId === connection.externalId && current.status === "connected")) await db.delete(s.connectionRoutes).where(and(eq(s.connectionRoutes.organizationId, after.id), eq(s.connectionRoutes.service, connection.service), eq(s.connectionRoutes.externalId, connection.externalId)));
   await sync(s.savedViews, before.savedViews || [], after.savedViews || []);
 }
 

@@ -158,7 +158,8 @@ test("hosted intake, actual workspace routes and restricted worker recovery", { 
       try { await assert.rejects(() => importIntake(f.workspace.id, f.actor), /No import rows were saved/); } finally { process.env.BILLING_PLANS_JSON = ""; }
       assert.equal((await loadPostgresWorkspace(f.workspace.id)).leads.length, 0);
       assert.ok((await f.rows()).every(row => row.state === "deferred"));
-      await mutatePostgresWorkspace(f.workspace.id, current => { current.connections![0].externalId = "987654321"; });
+      await assert.rejects(() => mutatePostgresWorkspace(f.workspace.id, current => { current.connections![0].externalId = "987654321"; }), "retained intake forbids changing provider identity");
+      await mutatePostgresWorkspace(f.workspace.id, current => { current.connections![0].status = "disconnected"; });
       const changed = await importIntake(f.workspace.id, f.actor);
       assert.equal(changed.result.imported, 0); assert.equal(changed.result.blocked, 2);
       assert.equal((await intakeSummary(f.workspace.id, f.actor)).needsConnection, true);

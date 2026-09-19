@@ -5,7 +5,7 @@ import { database } from "./client";
 import { organizationRoutes } from "./schema";
 import { loadWorkspace, mutateWorkspace } from "../store";
 import { processJob, recoverWorkspaceJobs, JOB_LOCK_MS } from "../integrations";
-import { assert } from "../errors";
+import { assert, safeErrorDiagnostic } from "../errors";
 import type { Workspace } from "../domain";
 
 export const QUEUE_NAME = "admitflow";
@@ -17,7 +17,7 @@ export function queueConnection() {
 }
 export function workQueue() {
   const queue = new Queue(QUEUE_NAME, { connection: { ...queueConnection(), maxRetriesPerRequest: 2 } });
-  queue.on("error", error => console.error("Outbox queue connection error", error.name));
+  queue.on("error", error => console.error("Outbox queue connection error", safeErrorDiagnostic(error)));
   return queue;
 }
 
@@ -45,21 +45,29 @@ function needsRecovery(workspace: Workspace) {
 }
 /** Routing registry IDs are trusted server state; no caller-selected tenant. */
 export async function dispatchOutbox(queue: Pick<Queue, "getJob" | "add">) {
-  let after: string | undefined, organizations = 0, enqueued = 0;
+  let after: string | undefined, organizations = 0, enqueued = 0, failed = 0;
   do {
     const routes = await database().select().from(organizationRoutes).where(after ? gt(organizationRoutes.organizationId, after) : undefined).orderBy(asc(organizationRoutes.organizationId)).limit(100);
     if (!routes.length) break;
     for (const route of routes) {
       if (!route.workosId) continue;
-      let workspace = await loadWorkspace(route.organizationId);
-      if (workspace.demo || workspace.workosOrganizationId !== route.workosId) continue;
-      if (needsRecovery(workspace)) workspace = (await mutateWorkspace(workspace.id, current => recoverWorkspaceJobs(current))).workspace;
-      enqueued += await enqueueWorkspaceJobs(queue, workspace); organizations++;
+      let stage: "load" | "recover" | "enqueue" = "load";
+      try {
+        let workspace = await loadWorkspace(route.organizationId);
+        if (workspace.demo || workspace.workosOrganizationId !== route.workosId) continue;
+        stage = "recover";
+        if (needsRecovery(workspace)) workspace = (await mutateWorkspace(workspace.id, current => recoverWorkspaceJobs(current))).workspace;
+        stage = "enqueue";
+        enqueued += await enqueueWorkspaceJobs(queue, workspace); organizations++;
+      } catch (error) {
+        failed++;
+        console.error("Outbox tenant dispatch failed", { organizationId: route.organizationId, stage, ...safeErrorDiagnostic(error) });
+      }
     }
     after = routes.at(-1)!.organizationId;
     if (routes.length < 100) break;
   } while (after);
-  return { organizations, enqueued };
+  return { organizations, enqueued, failed };
 }
 export async function runQueuedJob(data: unknown) {
   const input = z.object({ workspaceId: z.uuid(), jobId: z.uuid() }).parse(data);

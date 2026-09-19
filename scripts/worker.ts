@@ -4,15 +4,16 @@ import { Worker } from "bullmq";
 import { QUEUE_NAME, queueConnection, workQueue, dispatchOutbox, runQueuedJob } from "../src/lib/db/outbox";
 import { recoverPaymentEvents } from "../src/lib/db/payment-inbox";
 import { reconcileSubscriptions } from "../src/lib/providers/billing";
+import { safeErrorClass } from "./operational-diagnostics";
 
 const queue = workQueue();
 const worker = new Worker(QUEUE_NAME, job => runQueuedJob(job.data), { connection: queueConnection(), concurrency: 5 });
-worker.on("error", error => console.error("Worker connection error", error.name));
-worker.on("failed", job => console.error("Worker job failed", job?.id));
+worker.on("error", error => console.error("Worker connection error", safeErrorClass(error)));
+worker.on("failed", (job, error) => console.error("Worker job failed", job?.id, safeErrorClass(error)));
 let running: Promise<void> | undefined, closing = false;
 function dispatch() {
   if (running || closing) return;
-  running = dispatchOutbox(queue).then(() => undefined).catch(error => { console.error("Outbox dispatch failed", error instanceof Error ? error.name : "unknown"); }).finally(() => { running = undefined; });
+  running = dispatchOutbox(queue).then(() => undefined).catch(error => { console.error("Outbox dispatch failed", safeErrorClass(error)); }).finally(() => { running = undefined; });
 }
 let paymentRecovery: Promise<void> | undefined;
 function recoverPayments() {

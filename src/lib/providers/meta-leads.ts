@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { connectionFor, credentials, saveConnection } from "../connections";
+import { connectionFor, credentials, saveConnection, assertIntakeConnectionIdentity, assertConnectionVersion } from "../connections";
 import { productionDatabase } from "../config";
 import { database } from "../db/client";
 import { tenantTransaction } from "../db/repository";
@@ -71,11 +71,14 @@ export function applyMetaLead(workspace: Workspace, event: MetaLeadEvent, form: 
 }
 
 /** Invoke from the admin-only /api/connections branch instead of saving an unverified Page ID. */
-export async function registerMetaLeadPage(workspaceId: string, input: { pageId: string; accessToken: string }) {
+export async function registerMetaLeadPage(workspaceId: string, input: { pageId: string; accessToken: string }, expected?: Parameters<typeof saveConnection>[6]) {
   const pageId = metaId.parse(input.pageId), accessToken = z.string().trim().min(10).max(10000).parse(input.accessToken);
   const workspace = await loadWorkspace(workspaceId);
+  const version = expected === undefined ? workspace.connections?.find(item => item.service === "meta_leads") || null : expected;
+  assertConnectionVersion(workspace, "meta_leads", version);
   assert(!workspace.demo, "Demo workspaces cannot connect a live Meta Page.", 409);
   assert(productionDatabase(), "Meta Lead Ads webhook routing requires the production database.", 503);
+  assertIntakeConnectionIdentity(workspace, "meta_leads", pageId);
   const appId = process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID;
   assert(appId && process.env.META_APP_SECRET, "Configure the Meta app ID and META_APP_SECRET before connecting a Page.", 503);
   const debug = await graph<{ data: { is_valid: boolean; app_id: string; scopes?: string[]; expires_at?: number } }>(`debug_token?input_token=${encodeURIComponent(accessToken)}`, `${appId}|${process.env.META_APP_SECRET}`);
@@ -87,9 +90,10 @@ export async function registerMetaLeadPage(workspaceId: string, input: { pageId:
   const apps = await graph<{ data: { id: string; subscribed_fields?: string[] }[] }>(`${pageId}/subscribed_apps`, accessToken);
   const fields = [...new Set([...(apps.data.find(app => app.id === appId)?.subscribed_fields || []), "leadgen"])];
   // Persist the verified Page route before subscribing, so the first callback can be routed immediately.
-  const saved = await saveConnection(workspaceId, "meta_leads", { accessToken }, pageId, page.name, { subscriptionStatus: "pending", appId, ...(debug.data.expires_at ? { tokenExpiresAt: new Date(debug.data.expires_at * 1000).toISOString() } : {}) });
+  const saved = await saveConnection(workspaceId, "meta_leads", { accessToken }, pageId, page.name, { subscriptionStatus: "pending", appId, ...(debug.data.expires_at ? { tokenExpiresAt: new Date(debug.data.expires_at * 1000).toISOString() } : {}) }, version);
   const savedConnection = saved.workspace.connections!.find(item => item.service === "meta_leads")!;
   try {
+    assertConnectionVersion(await loadWorkspace(workspaceId), "meta_leads", savedConnection);
     const result = await graph<{ success?: boolean }>(`${pageId}/subscribed_apps`, accessToken, { subscribed_fields: fields });
     assert(result.success === true, "Meta did not confirm the Page webhook subscription.", 502);
     await mutateWorkspace(workspaceId, current => {

@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     else {
       assert(!request.nextUrl.searchParams.has("error"), "Google did not authorize the connection.", 400);
       const code = z.string().min(1).max(4000).parse(request.nextUrl.searchParams.get("code"));
+      const workspace = await loadWorkspace(context.workspaceId);
       const config = googleConfiguration();
       const response = await fetch("https://oauth2.googleapis.com/token", { method: "POST", body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, redirect_uri: config.redirectUri, grant_type: "authorization_code", code, code_verifier: verifier }), signal: AbortSignal.timeout(20000), cache: "no-store", redirect: "error" });
       assert(response.ok, "Google authorization could not be completed. Reconnect the calendar.", 502);
@@ -28,13 +29,12 @@ export async function GET(request: NextRequest) {
       assert(identityResponse.ok, "Google account identity could not be verified.", 502);
       const identity = z.object({ sub: z.string().min(1).max(200), email: z.email().optional() }).parse(await identityResponse.json());
       let refreshToken = tokens.refresh_token;
-      const workspace = await loadWorkspace(context.workspaceId);
       // Google may omit a new refresh token on reauthorization. Never reuse one from a different account.
       if (!refreshToken && workspace.connections?.some(item => item.service === "google" && item.externalId === identity.sub && item.status === "connected")) refreshToken = (await credentials(workspace, "google")).refreshToken;
       assert(refreshToken, "Google did not grant offline access. Revoke AdmitFlow in Google account permissions, then reconnect.", 409);
       const currentContext = await resolveWorkspace(request); requireAdmin(currentContext);
       assert(currentContext.workspaceId === context.workspaceId && currentContext.actor.id === context.actor.id, "Your institute session changed during Google setup.", 403);
-      await saveConnection(context.workspaceId, "google", { refreshToken }, identity.sub, identity.email || "Google Calendar", { calendarId: "primary" });
+      await saveConnection(context.workspaceId, "google", { refreshToken }, identity.sub, identity.email || "Google Calendar", { calendarId: "primary" }, workspace.connections?.find(item => item.service === "google") || null);
       outcome = "connected";
     }
   } catch {

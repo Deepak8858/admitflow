@@ -30,7 +30,7 @@ export function subscriptionCapabilities(workspace: PolicyWorkspace, hosted: boo
   return result(true, "trial", "Your institute's seven-day trial is active.", end);
 }
 export class SubscriptionRestricted extends AppError {
-  constructor(public readonly policy: CapabilitySummary) { super(policy.message, policy.reason === "verification_required" ? 503 : 402, "SUBSCRIPTION_RESTRICTED"); }
+  constructor(public readonly policy: CapabilitySummary, options?: ErrorOptions) { super(policy.message, policy.reason === "verification_required" ? 503 : 402, "SUBSCRIPTION_RESTRICTED", options); }
 }
 export function assertCapability(workspace: PolicyWorkspace, hosted: boolean, now = Date.now()) {
   const policy = subscriptionCapabilities(workspace, hosted, now);

@@ -77,7 +77,7 @@ export const files = pgTable("files", {
 }, table => [leadReference(table), uniqueIndex("files_tenant_id").on(table.organizationId, table.id)]);
 export const connections = pgTable("connections", {
   ...tenant(), service: text("service").$type<Connection["service"]>().notNull(), status: text("status").notNull(), externalId: text("external_id").notNull(), label: text("label").notNull(), updatedAt: text("updated_at").notNull(), metadata: jsonb("metadata").$type<Record<string, string>>().notNull(), secret: text("secret"),
-}, table => [uniqueIndex("connections_service").on(table.organizationId, table.service), uniqueIndex("connections_external").on(table.service, table.externalId)]);
+}, table => [uniqueIndex("connections_service").on(table.organizationId, table.service), uniqueIndex("connections_external").on(table.service, table.externalId), uniqueIndex("connections_tenant_binding").on(table.organizationId, table.id, table.service, table.externalId), check("connections_disconnected_secret", sql`${table.status} <> 'disconnected' or ${table.secret} is null`)]);
 export const savedViews = pgTable("saved_views", {
   ...tenant(), name: text("name").notNull(), query: text("query").notNull(), course: text("course").notNull(), stage: text("stage").notNull(), owner: text("owner").notNull(),
   view: text("view").$type<LeadView>(), sort: text("sort").$type<LeadSort>(),
@@ -87,7 +87,7 @@ export const intakeInbox = pgTable("intake_inbox", {
   connectionId: uuid("connection_id").notNull(), service: text("service").$type<"whatsapp" | "meta_leads">().notNull(), externalId: text("external_id").notNull(), contactKey: text("contact_key").notNull(),
   receivedAt: text("received_at").notNull(), state: text("state").$type<"pending" | "deferred" | "imported">().notNull().default("pending"),
   payload: jsonb("payload").$type<import("../intake-types").IntakePayload>().notNull(), processedAt: text("processed_at"), error: text("error"),
-}, table => [index("intake_pending_page").on(table.organizationId, table.state, table.id), index("intake_pending_contact").on(table.organizationId, table.contactKey).where(sql`${table.state} <> 'imported'`), check("intake_payload_size", sql`octet_length(${table.payload}::text) <= 131072`)]);
+}, table => [index("intake_pending_page").on(table.organizationId, table.state, table.id), index("intake_pending_contact").on(table.organizationId, table.contactKey).where(sql`${table.state} <> 'imported'`), check("intake_payload_size", sql`octet_length(${table.payload}::text) <= 131072`), foreignKey({ name: "intake_connection_binding", columns: [table.organizationId, table.connectionId, table.service, table.externalId], foreignColumns: [connections.organizationId, connections.id, connections.service, connections.externalId] })]);
 // Identity ledger deliberately survives workspace deletion. Never persist it from a Workspace mutation.
 export const instituteTrials = pgTable("institute_trials", {
   workosId: text("workos_id").primaryKey(), startedAt: text("started_at"), endsAt: text("ends_at"),
@@ -97,6 +97,23 @@ export const instituteTrials = pgTable("institute_trials", {
 export const eventReceipts = pgTable("event_receipts", {
   id: text("id").primaryKey(), organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }), provider: text("provider").notNull(), receivedAt: text("received_at").notNull(), payload: jsonb("payload").$type<Record<string, unknown>>().notNull(), processedAt: text("processed_at"), error: text("error"),
 });
+// Exists before a tenant. Actor RLS and immutable dispatch history are installed by custom SQL.
+export const organizationProvisioning = pgTable("organization_provisioning", {
+  id: uuid("id").primaryKey(), actorId: text("actor_id").notNull(), clientId: text("client_id").notNull(), requestId: uuid("request_id").notNull(),
+  name: text("name").notNull(), externalId: text("external_id").notNull(),
+  phase: text("phase").$type<"org_dispatched" | "org_confirmed" | "membership_dispatched" | "ready">().notNull(),
+  organizationId: text("organization_id"), membershipId: text("membership_id"), revision: integer("revision").notNull().default(0),
+  reviewCode: text("review_code").$type<"identity_mismatch">(), createdAt: text("created_at").notNull(), updatedAt: text("updated_at").notNull(), acknowledgedAt: text("acknowledged_at"),
+}, table => [
+  uniqueIndex("provisioning_actor_request").on(table.clientId, table.actorId, table.requestId),
+  uniqueIndex("provisioning_actor_pending").on(table.clientId, table.actorId).where(sql`${table.acknowledgedAt} is null`),
+  uniqueIndex("provisioning_external_id").on(table.externalId), uniqueIndex("provisioning_provider_org").on(table.clientId, table.organizationId),
+  check("provisioning_phase_valid", sql`${table.phase} in ('org_dispatched', 'org_confirmed', 'membership_dispatched', 'ready')`),
+  check("provisioning_identity_valid", sql`(${table.phase} = 'org_dispatched' or ${table.organizationId} is not null) and (${table.phase} <> 'ready' or ${table.membershipId} is not null)`),
+  check("provisioning_ack_valid", sql`${table.acknowledgedAt} is null or ${table.phase} = 'ready'`),
+  check("provisioning_review_valid", sql`${table.reviewCode} is null or ${table.reviewCode} = 'identity_mismatch'`),
+  check("provisioning_revision_valid", sql`${table.revision} >= 0`),
+]);
 export const syncCursors = pgTable("sync_cursors", { id: text("id").primaryKey(), value: text("value").notNull() });
 export const organizationRoutes = pgTable("organization_routes", { organizationId: uuid("organization_id").primaryKey().references(() => organizations.id, { onDelete: "cascade" }), workosId: text("workos_id").unique() });
 export const connectionRoutes = pgTable("connection_routes", { service: text("service").notNull(), externalId: text("external_id").notNull(), organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }) }, table => [primaryKey({ columns: [table.service, table.externalId] })]);

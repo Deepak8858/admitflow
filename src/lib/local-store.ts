@@ -4,6 +4,7 @@ import path from "node:path";
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { createWorkspace } from "./seed";
 import { type Workspace, DAY } from "./domain";
+import { AppError } from "./errors";
 
 const globalStore = globalThis as unknown as { admitflowDb?: DatabaseSync };
 export function database() {
@@ -23,7 +24,7 @@ export function database() {
 const digest = (token: string) => createHash("sha256").update(token).digest("hex");
 export function loadWorkspace(id: string): Workspace {
   const row = database().prepare("SELECT data FROM workspaces WHERE id = ?").get(id) as { data: string } | undefined;
-  if (!row) throw new Error("Workspace not found. Sign in again.");
+  if (!row) throw new AppError("Workspace not found. Sign in again.");
   return JSON.parse(row.data) as Workspace;
 }
 export function saveNewWorkspace(workspace: Workspace) {
@@ -63,7 +64,7 @@ function passwordMatches(password: string, stored: string) {
 }
 export function register(email: string, password: string, name: string, institute: string) {
   const db = database();
-  if (db.prepare("SELECT email FROM users WHERE email = ?").get(email)) throw new Error("This email is already registered. Sign in instead.");
+  if (db.prepare("SELECT email FROM users WHERE email = ?").get(email)) throw new AppError("This email is already registered. Sign in instead.");
   const workspace = createWorkspace(false);
   workspace.name = institute; workspace.userName = name; workspace.email = email; workspace.team = [name];
   const hash = passwordHash(password);
@@ -79,13 +80,13 @@ export function register(email: string, password: string, name: string, institut
 export function login(email: string, password: string) {
   const row = database().prepare("SELECT password_hash, workspace_id FROM users WHERE email = ?").get(email) as { password_hash: string; workspace_id: string } | undefined;
   // Keep missing-user work comparable to password verification.
-  if (!row) { scryptSync(password, "admitflow-missing-user", 64); throw new Error("Email or password did not match. Please try again."); }
-  if (!passwordMatches(password, row.password_hash)) throw new Error("Email or password did not match. Please try again.");
+  if (!row) { scryptSync(password, "admitflow-missing-user", 64); throw new AppError("Email or password did not match. Please try again."); }
+  if (!passwordMatches(password, row.password_hash)) throw new AppError("Email or password did not match. Please try again.");
   return { workspace: loadWorkspace(row.workspace_id), token: createSession(row.workspace_id) };
 }
 export function checkAuthRate(key: string) {
   const db = database(), now = Date.now();
   const row = db.prepare("SELECT count, reset_at FROM auth_attempts WHERE key = ?").get(key) as { count: number; reset_at: number } | undefined;
-  if (row && row.reset_at > now && row.count >= 10) throw new Error("Too many sign-in attempts. Try again in 15 minutes.");
+  if (row && row.reset_at > now && row.count >= 10) throw new AppError("Too many sign-in attempts. Try again in 15 minutes.");
   db.prepare("INSERT OR REPLACE INTO auth_attempts (key, count, reset_at) VALUES (?, ?, ?)").run(key, row && row.reset_at > now ? row.count + 1 : 1, row && row.reset_at > now ? row.reset_at : now + 15 * 60000);
 }
