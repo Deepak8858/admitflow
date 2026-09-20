@@ -109,10 +109,11 @@ export const instituteTrials = pgTable("institute_trials", {
   workosId: text("workos_id").primaryKey(), startedAt: instant("started_at"), endsAt: instant("ends_at"),
   consumed: boolean("consumed").notNull().default(false), provenance: text("provenance").notNull(),
 }, table => finiteInstants(table.startedAt, table.endsAt));
-// Only server workers access this registry. It routes signed events to tenant transactions.
+// Tenant-scoped receipts: journaled SQL forces RLS. Legacy null-tenant rows stay hidden.
 export const eventReceipts = pgTable("event_receipts", {
   id: text("id").primaryKey(), organizationId: uuid("organization_id").references(() => organizations.id, { onDelete: "cascade" }), provider: text("provider").notNull(), receivedAt: instant("received_at").notNull(), payload: jsonb("payload").$type<Record<string, unknown>>().notNull(), processedAt: instant("processed_at"), error: text("error"),
-}, table => finiteInstants(table.receivedAt, table.processedAt));
+}, table => [...finiteInstants(table.receivedAt, table.processedAt),
+  index("event_receipts_tenant_due").on(table.organizationId, sql`(${table.payload}->>'nextAttemptAt')`, table.id).where(sql`${table.provider} = 'razorpay_admission' and ${table.processedAt} is null`)]);
 // Exists before a tenant. Actor RLS and immutable dispatch history are installed by custom SQL.
 export const organizationProvisioning = pgTable("organization_provisioning", {
   id: uuid("id").primaryKey(), actorId: text("actor_id").notNull(), clientId: text("client_id").notNull(), requestId: uuid("request_id").notNull(),

@@ -1,10 +1,10 @@
 # Core backend verification and UI handoff
 
-Latest addendum: 19 September 2026. Scope: AdmitFlow core backend in `H:\new-app`; older dated results below remain historical.
+Current release evidence is maintained in [the dated verification ledger](verification.md) and [README](../README.md). The 18–19 September subscription addendum below is historical, not the latest repair acceptance.
 
-## Subscription boundary addendum — 18–19 September
+## Historical subscription boundary addendum — 18–19 September
 
-The complete isolated non-browser run passed **175 application tests / 8 infrastructure tests**, both typechecks, Next production build, five service bundles, operational checks and eight-migration dry run, exit 0. The final browser run passed **37 tests in 21.3 minutes**, followed by a passing project typecheck; both exited 0. See [exact evidence and prior attempts](verification.md#current-subscription-evidence--1819-september).
+The complete isolated non-browser run passed **175 application tests / 8 infrastructure tests**, both typechecks, Next production build, five service bundles, operational checks and eight-migration dry run, exit 0. The final browser run passed **37 tests in 21.3 minutes**, followed by a passing project typecheck; both exited 0. See [exact evidence and prior attempts](verification.md#earlier-subscription-evidence--1819-september).
 
 - `tests/subscriptions.test.ts` covers exact trial boundaries/invalid evidence, immutable identity across concurrent provisioning and workspace deletion, authoritative freshness/current-period checks, replacement and additive snapshot drift. `tests/subscription-intake.test.ts` covers legacy upgrade from the six-migration baseline, signed intake/rollback/replay, tenant RLS and controlled recovery.
 - Actual workspace/team route and worker regressions cover denied paid mutations with existing-data/safety operations preserved, cancellation before the final dispatch check (no provider write), and cancellation after dispatch (confirmation remains allowed). Existing uncertainty/access fences and no-write-retry tests remain in the full suite.

@@ -141,7 +141,8 @@ export class AdmitFlowStack extends Stack {
       engine: "valkey", engineVersion: "7.2", cacheNodeType: cacheNodeType.valueAsString,
       cacheParameterGroupName: cacheParameters.ref, cacheSubnetGroupName: cacheSubnetGroup.ref,
       securityGroupIds: [cacheGroup.securityGroupId], port: 6379,
-      numNodeGroups: 1, replicasPerNodeGroup: replicas,
+      // BullMQ connects to a single primary endpoint, not a Redis Cluster client.
+      clusterMode: "disabled", numCacheClusters: replicas + 1,
       automaticFailoverEnabled: replicas > 0, multiAzEnabled: replicas > 0,
       atRestEncryptionEnabled: true, transitEncryptionEnabled: true, transitEncryptionMode: "required",
       // Only a CloudFormation dynamic reference is emitted, never the token value.
@@ -259,6 +260,7 @@ export class AdmitFlowStack extends Stack {
     });
     alarm("WorkerErrors", failures.metric({ statistic: "Sum", period: Duration.minutes(5) }), 1, 1);
     for (let index = 1; index <= replicas + 1; index++) {
+      // Cluster-mode-disabled members are <group>-001/-002 (no shard ID segment).
       const dimensionsMap = { CacheClusterId: Fn.join("", [cache.ref, `-${String(index).padStart(3, "0")}`]), CacheNodeId: "0001" };
       alarm(`QueueMemory${index}`, new cloudwatch.Metric({ namespace: "AWS/ElastiCache", metricName: "DatabaseMemoryUsagePercentage", dimensionsMap, statistic: "Maximum", period: Duration.minutes(5) }), 75);
       alarm(`QueueEvictions${index}`, new cloudwatch.Metric({ namespace: "AWS/ElastiCache", metricName: "Evictions", dimensionsMap, statistic: "Sum", period: Duration.minutes(5) }), 1, 1);

@@ -16,10 +16,12 @@ function dispatch() {
   if (running || closing) return;
   running = dispatchOutbox(queue).then(() => undefined).catch(error => { console.error("Outbox dispatch failed", safeErrorClass(error)); }).finally(() => { running = undefined; });
 }
-let paymentRecovery: Promise<void> | undefined;
+let paymentRecovery: Promise<void> | undefined, paymentAfter: string | undefined;
 function recoverPayments() {
   if (paymentRecovery || closing) return;
-  paymentRecovery = recoverPaymentEvents(2).then(result => {
+  paymentRecovery = recoverPaymentEvents(paymentAfter, 10, 2).then(result => {
+    paymentAfter = result.after;
+    if (result.tenantFailures) console.error("Payment recovery tenant failures", result.tenantFailures);
     if (result.selected) console.log("Payment recovery", JSON.stringify(result));
   }).catch(() => { console.error("Payment recovery dispatch failed"); }).finally(() => { paymentRecovery = undefined; });
 }

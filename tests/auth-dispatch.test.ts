@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { DatabaseSync } from "node:sqlite";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import vm from "node:vm";
@@ -92,6 +93,64 @@ test("local auth preserves expected errors, valid sessions and logout demo while
   const limited = await route.POST(request({ type: "login", email: rateEmail, password: "password-long" }));
   assert.equal(limited.status, 400); assert.match((await limited.json()).error, /Too many sign-in attempts/);
   assert.throws(() => local.loadWorkspace("missing"), AppError);
+});
+
+test("malformed stored salts and hashes produce only the ordinary sign-in failure", async t => {
+  assert.equal(process.env.ADMITFLOW_DB, ":memory:");
+  const local = await isolatedModule<typeof import("../src/lib/local-store")>("src/lib/local-store.ts", {}, [], {} as typeof globalThis);
+  const db = local.database(); t.after(() => db.close());
+  const account = local.register("valid@example.com", "password-long", "Owner", "Institute");
+  const valid = db.prepare("SELECT password_hash FROM users WHERE email = ?").get("valid@example.com")!.password_hash as string;
+  const [salt, hash] = valid.split(":");
+  const malformed = ["", salt, `:${hash}`, `${salt}:`, `${salt}:${hash}:extra`, `${salt.slice(1)}:${hash}`, `${salt}0:${hash}`, `${"g".repeat(32)}:${hash}`, `${salt}:${hash.slice(1)}`, `${salt}:${hash}0`, `${salt}:${"g".repeat(128)}`, ` ${valid}`, `${valid}\n`, `${"A".repeat(32)}:${hash}`, `${salt}:${"B".repeat(128)}`, new Uint8Array([1, 2, 3])];
+  const logs: unknown[][] = [], route = await authRoute(local, false, logs);
+  const sessionCount = () => db.prepare("SELECT count(*) AS count FROM sessions").get()!.count;
+  const before = sessionCount();
+  for (const [index, stored] of malformed.entries()) {
+    const email = `malformed-${index}@example.com`;
+    db.prepare("INSERT INTO users (email, password_hash, workspace_id) VALUES (?, ?, ?)").run(email, stored, account.workspace.id);
+    const response = await route.POST(request({ type: "login", email, password: "password-long" }));
+    assert.equal(response.status, 400); assert.deepEqual(await response.json(), { error: "Email or password did not match. Please try again." });
+    assert.equal(response.headers.get("set-cookie"), null); assert.equal(sessionCount(), before);
+  }
+  assert.deepEqual(logs, [], "malformed credential records must not surface crypto/storage exceptions");
+  assert.equal((await route.POST(request({ type: "login", email: "valid@example.com", password: "password-long" }))).status, 200);
+});
+
+test("SQLite configures timeout before WAL, ignores only WAL SQLITE_BUSY, and closes failed handles", async t => {
+  assert.equal(process.env.ADMITFLOW_DB, ":memory:");
+  for (const scenario of ["memory", "wal-busy", "wal-corrupt", "wal-not-database", "wal-locked", "wal-unknown", "timeout-busy", "ddl-busy"] as const) await t.test(scenario, async c => {
+    const statements: string[] = [], handles: DatabaseSync[] = [];
+    let closes = 0, fail = true;
+    const failure = Object.assign(new Error(sensitive), { errcode: scenario === "wal-corrupt" ? 11 : scenario === "wal-not-database" ? 26 : scenario === "wal-locked" ? 6 : scenario === "wal-unknown" ? undefined : 5 });
+    class TestDatabase extends DatabaseSync {
+      constructor(filename: string) { super(filename); handles.push(this); }
+      override exec(statement: string) {
+        statements.push(statement);
+        if (statement.includes("journal_mode")) assert.equal(this.prepare("PRAGMA busy_timeout").get()!.timeout, 5000);
+        if (fail && ((scenario.startsWith("wal-") && statement.includes("journal_mode")) || (scenario === "timeout-busy" && statement.includes("busy_timeout")) || (scenario === "ddl-busy" && statement.includes("CREATE TABLE")))) throw failure;
+        super.exec(statement);
+      }
+      override close() { closes++; super.close(); }
+    }
+    const local = await isolatedModule<typeof import("../src/lib/local-store")>("src/lib/local-store.ts", { "node:sqlite": { DatabaseSync: TestDatabase } }, [], {} as typeof globalThis);
+    if (scenario === "memory" || scenario === "wal-busy") {
+      const db = local.database(); c.after(() => db.close());
+      assert.equal(local.database(), db); assert.equal(handles.length, 1); assert.equal(closes, 0);
+      assert.equal(statements[0], "PRAGMA busy_timeout=5000"); assert.equal(statements[1], "PRAGMA journal_mode=WAL");
+      const tables = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all().map(row => row.name);
+      assert.deepEqual(tables, ["auth_attempts", "sessions", "users", "workspaces"]);
+      assert.equal(db.prepare("PRAGMA journal_mode").get()!.journal_mode, "memory", "unsupported WAL mode is not an initialization failure");
+    } else {
+      assert.throws(() => local.database(), error => error === failure); assert.equal(closes, 1);
+      assert.throws(() => handles[0].prepare("SELECT 1"), /not open/);
+      if (scenario.startsWith("wal-")) assert.equal(statements.some(statement => statement.includes("CREATE TABLE")), false);
+      fail = false;
+      const recovered = local.database(); c.after(() => recovered.close());
+      assert.equal(handles.length, 2); assert.notEqual(recovered, handles[0], "failed initialization must not cache its closed handle");
+      assert.equal(recovered.prepare("SELECT count(*) AS count FROM users").get()!.count, 0);
+    }
+  });
 });
 
 test("raced local registrations return the same generic error and roll back workspace/session writes", async t => {

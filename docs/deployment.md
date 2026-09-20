@@ -75,6 +75,12 @@ The Node worker expects `REDIS_URL`. ECS injects `REDIS_PASSWORD` as a secret an
 
 Use a local Redis/Valkey `REDIS_URL` when running `npm run worker` directly. Production queue nodes are private and have no externally reachable endpoint. BullMQ needs `noeviction`: capacity exhaustion should cause observable errors, not silent eviction of work. Neon durable records remain the recovery source after queue loss. Reconcile ambiguous provider attempts before retrying; restoring a queue or database is not proof that a message was never delivered.
 
+### Receipt RLS rollout
+
+Migration `0013_event_receipt_rls` forces tenant RLS on `event_receipts`. Deploy the tenant-paged worker with this migration: the old contextless recovery scan cannot see receipts under the restricted runtime role. Recovery pages ID-only `organization_routes`, attempts at most two due receipts per tenant across ten tenants per tick, advances past empty/failing tenants, and wraps to revisit capped backlogs. Existing claims, expired-lease retries and financial idempotency remain unchanged. Runtime must not be superuser or have `BYPASSRLS`.
+
+Legacy receipts with null `organization_id` are retained but hidden from all runtime tenant contexts. Do not guess their ownership or delete/reassign them automatically. Any repair requires a separately authorized migration/import-role investigation and verified tenant attribution.
+
 ### Provider prerequisites
 
 - **Neon:** pooled connection for a runtime role with required DML grants and no `BYPASSRLS`; direct connection for a separate schema/import role. Use certificate verification in PostgreSQL TLS settings, for example `sslmode=verify-full`. The SQLite importer requires the migration role to have `BYPASSRLS` so it can detect ID collisions across all tenants. Total runtime connections are roughly `DATABASE_POOL_SIZE × task count`, plus deployment overlap, imports and migrations.
@@ -366,7 +372,7 @@ Before rollout or rollback, drain/remove all application versions that do not pa
 
 This admission-money path passed local/mock-provider regressions on 17 September; real merchant delivery/recovery remains unvalidated. It is separate from SaaS subscriptions. Configure the institute's signed `/api/webhooks/razorpay/<workspace UUID>` endpoint for `payment.captured` and `refund.processed`. It requires hosted PostgreSQL and a connected tenant merchant with a webhook secret. HTTP 200 means a supported event was durably queued (or an unsupported signed event was ignored), not that financial reconciliation completed. Persistence/configuration failures return 503 with `Retry-After`; malformed/signature/oversized bodies return 400/403/413.
 
-The worker independently selects two due receipts every 15 seconds, with a 120-second claim lease. Attempts are bounded at eight; retry delay starts at 30 seconds and caps at one hour. Exhausted or invalid receipts are retained for operators. Monitor safe `Payment recovery`, `Payment reconciliation failed` and `Payment recovery dispatch failed` logs and pending/failed receipt state; configured alarms need subscribers.
+The worker checks every 15 seconds and starts a recovery tick only when the previous tick has finished. Each tick visits up to ten tenants and selects up to two due receipts per tenant, with a 120-second claim lease. Its tenant cursor advances past empty/failing tenants and wraps to revisit capped backlogs. Attempts are bounded at eight; retry delay starts at 30 seconds and caps at one hour. Exhausted or invalid receipts are retained for operators. Monitor safe `Payment recovery`, `Payment recovery tenant failures`, `Payment reconciliation failed` and `Payment recovery dispatch failed` logs and pending/failed receipt state; configured alarms need subscribers.
 
 Using an explicitly authorized runtime environment, inspect without provider calls:
 

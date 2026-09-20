@@ -13,6 +13,7 @@ export function verificationEnvironment(parent, template, directory) {
   for (const match of template.matchAll(/^\s*(?:#\s*)?([A-Z][A-Z0-9_]*)=/gm)) env[match[1]] = "";
   Object.assign(env, { DATABASE_URL: "", DATABASE_URL_UNPOOLED: "", ADMITFLOW_DB: ":memory:", ADMITFLOW_BROWSER_DB: join(directory, "browser.sqlite"), APP_BASE_URL: "", NEXT_TELEMETRY_DISABLED: "1", KNOWLEDGE_VECTOR_ENABLED: "false", AWS_EC2_METADATA_DISABLED: "true" });
   env.INTAKE_CONTACT_KEYS = JSON.stringify([Buffer.alloc(32, 17).toString("base64")]);
+  env.ADMITFLOW_BROWSER_ISOLATED = "1";
   return env;
 }
 

@@ -15,6 +15,13 @@ async function noOverflow(page: Page) {
   const size = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, viewport: innerWidth }));
   expect(size.scroll, `Horizontal overflow at ${new URL(page.url()).pathname}`).toBeLessThanOrEqual(size.viewport);
 }
+async function selectTheme(page: Page, theme: "light" | "dark" | "system") {
+  const select = page.getByRole("combobox", { name: "Colour theme" });
+  await expect(select).toHaveAttribute("data-appearance-ready", "true");
+  await select.selectOption(theme);
+  await expect(select).toHaveValue(theme);
+  if (theme !== "system") await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+}
 async function accessible(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
   expect(result.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => ({ target: node.target, failure: node.failureSummary })) }))).toEqual([]);
@@ -32,10 +39,10 @@ for (const width of [320, 375, 768, 1440]) {
       await expect(page.locator("h1")).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
       await expect(page.getByRole("combobox", { name: "Colour theme" })).toBeVisible();
-      await page.getByRole("combobox", { name: "Colour theme" }).selectOption("dark");
+      await selectTheme(page, "dark");
       await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
       await noOverflow(page);
-      await page.getByRole("combobox", { name: "Colour theme" }).selectOption("light");
+      await selectTheme(page, "light");
       await noOverflow(page);
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
       if (path === "/welcome") {
@@ -68,12 +75,12 @@ for (const width of [320, 375, 768, 1440]) {
   });
 }
 
-for (const theme of ["light", "dark"]) {
+for (const theme of ["light", "dark"] as const) {
   test(`public accessibility in ${theme} theme`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     for (const path of publicRoutes) {
       await page.goto(path);
-      await page.getByRole("combobox", { name: "Colour theme" }).selectOption(theme);
+      await selectTheme(page, theme);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       // Reveal all below-fold sections before checking their rendered contrast.
       for (const section of await page.locator(".public-section, .closing-cta").all()) await section.scrollIntoViewIfNeeded();
@@ -133,13 +140,32 @@ test("missing media keeps readable fallback and transcript", async ({ page }) =>
   await expect(page.locator(".sample-audio details p")).toBeVisible();
 });
 
+test("theme selection is disabled until appearance hydration is ready", async ({ browser, page }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const serverPage = await context.newPage();
+    await serverPage.goto("http://127.0.0.1:3100/welcome");
+    const select = serverPage.getByRole("combobox", { name: "Colour theme" });
+    await expect(select).toHaveAttribute("data-appearance-ready", "false");
+    await expect(select).toBeDisabled();
+  } finally { await context.close(); }
+  await page.addInitScript(() => localStorage.setItem("admitflow:theme", "dark"));
+  await page.goto("/welcome");
+  const select = page.getByRole("combobox", { name: "Colour theme" });
+  await expect(select).toHaveAttribute("data-appearance-ready", "true");
+  await expect(select).toBeEnabled();
+  await expect(select).toHaveValue("dark");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await selectTheme(page, "light");
+});
+
 test("sidebar, profile, theme persistence and keyboard search remain usable", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
   await page.goto("/");
   await expect(page.locator("#main-content h1")).toBeVisible();
   await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
   await expect(page.locator(".sidebar")).toHaveCSS("width", "80px");
-  await page.getByRole("combobox", { name: "Colour theme" }).selectOption("dark");
+  await selectTheme(page, "dark");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await expect(page.getByRole("combobox", { name: "Colour theme" })).toHaveValue("dark");
@@ -155,7 +181,7 @@ test("sidebar, profile, theme persistence and keyboard search remain usable", as
   await accessible(page);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Search workspace", exact: true })).toBeFocused();
-  await page.getByRole("combobox", { name: "Colour theme" }).selectOption("system");
+  await selectTheme(page, "system");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -166,10 +192,12 @@ test("all workspace screens are accessible in dark theme", async ({ page }) => {
   test.setTimeout(240_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await page.getByRole("combobox", { name: "Colour theme" }).selectOption("dark");
+  await selectTheme(page, "dark");
   for (const route of routes) {
     await page.goto(route);
     await expect(page.locator("#main-content h1")).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Colour theme" })).toHaveAttribute("data-appearance-ready", "true");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     if (route === "/leads") await expect(page.locator(".leads-panel")).toHaveAttribute("aria-busy", "false");
     await noOverflow(page);
     await accessible(page);
@@ -242,10 +270,9 @@ test("200 percent CSS zoom keeps public and workspace content reachable", async 
     await page.goto(route);
     await expect(page.locator("h1")).toBeVisible();
     // A visible SSR heading does not mean hydration has attached handlers yet.
-    const theme = page.getByRole("combobox", { name: "Colour theme" });
-    await theme.selectOption("dark");
+    await selectTheme(page, "dark");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-    await theme.selectOption("light");
+    await selectTheme(page, "light");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await page.evaluate(() => { document.body.style.zoom = "2"; });
     await noOverflow(page);

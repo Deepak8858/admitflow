@@ -1,8 +1,8 @@
 # Frontend and browser verification
 
-Latest addendum: 19 September 2026. Workspace: `H:\new-app`.
+Current release evidence is maintained in [the dated verification ledger](verification.md) and [README](../README.md). The subscription run below is historical, not the latest repair acceptance.
 
-## Current subscription and public-page verification
+## Historical subscription and public-page verification — 19 September
 
 Final isolated `node scripts/verify.mjs --browser`: **37 passed, 0 failed in 21.3 minutes**, one worker/default Chromium, disposable SQLite; exit **0**. Final isolated project TypeScript also passed, exit **0**. No runtime source changes followed the 175-application/8-infrastructure-test non-browser pass. See [full provenance](verification.md).
 

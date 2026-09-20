@@ -5,23 +5,17 @@ import { useData, workspaceAccess, assignableMembers, recordOwnerId, ownerLabel,
 import { Avatar, Badge, Button, EmptyState, IconButton, PageHeading, Score, SelectField, Dialog, TextareaField } from "./ui";
 import { type Lead, type Message, type Workspace, type WorkspaceFile, relativeTime, currency, dateLabel, replyBlock } from "@/lib/domain";
 import { uploadFile } from "./configuration";
+import { indexInboxMessages } from "@/lib/inbox-index";
 
 export function InboxPage({ initialLead, onOpen, onBook }: { initialLead?: string; onOpen: (id: string) => void; onBook: (id: string) => void }) {
   const { data, act, busy, refresh, notify } = useData();
   const access = workspaceAccess(data), members = assignableMembers(data);
   const [selected, setSelected] = useState(initialLead || ""), [mobileThread, setMobileThread] = useState(Boolean(initialLead)), [query, setQuery] = useState(""), [filter, setFilter] = useState("All"), [simulation, setSimulation] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const byLead = useMemo(() => {
-    const map = new Map<string, Message[]>();
-    for (const message of data.messages) {
-      if (message.status === "draft") continue;
-      const thread = map.get(message.leadId) || []; thread.push(message); map.set(message.leadId, thread);
-    }
-    for (const thread of map.values()) thread.sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
-    return map;
-  }, [data.messages]);
-  const lastFor = (id: string) => byLead.get(id)?.filter(message => message.direction !== "internal").at(-1);
-  const conversations = data.leads.filter(lead => (data.messages.some(message => message.leadId === lead.id) || lead.id === initialLead)
+  const { byLead, leadIds, latest } = useMemo(() => indexInboxMessages(data.messages), [data.messages]);
+  const filesById = useMemo(() => new Map(data.files?.map(file => [file.id, file])), [data.files]);
+  const lastFor = (id: string) => latest.get(id);
+  const conversations = data.leads.filter(lead => (leadIds.has(lead.id) || lead.id === initialLead)
     && `${lead.name} ${lead.course} ${lead.phone} ${lead.email}`.toLowerCase().includes(query.toLowerCase()))
     .filter(lead => filter === "All" || filter === "Needs reply" && lastFor(lead.id)?.direction === "inbound" || filter === "AI owned" && !lead.humanOwned)
     .sort((a, b) => (lastFor(b.id)?.createdAt || "").localeCompare(lastFor(a.id)?.createdAt || "") || a.name.localeCompare(b.name));
@@ -40,7 +34,7 @@ export function InboxPage({ initialLead, onOpen, onBook }: { initialLead?: strin
       {lead ? <>
         <div className="message-thread"><header className="thread-header"><IconButton label="Back to conversations" className="mobile-back" onClick={() => setMobileThread(false)}><ArrowLeft size={18} /></IconButton><Avatar name={lead.name} /><div><h2>{lead.name}</h2><span><MessageSquare size={11} />WhatsApp <i />{lead.phone.startsWith("meta:") ? "Phone number needed" : lead.phone}</span></div><div className="thread-header-actions"><IconButton label="Open student details" onClick={() => onOpen(lead.id)}><ArrowUpRight size={17} /></IconButton>{writable && <Button className="context-book" aria-label={`Book counselling for ${lead.name}`} onClick={() => onBook(lead.id)}><CalendarDays size={15} /><span>Book counselling</span></Button>}</div></header>
           <div className={`thread-context ${lead.humanOwned ? "human-context" : "ai-context"}`}><span>{lead.humanOwned ? <UserRound size={13} /> : <Sparkles size={13} />}{lead.humanOwned ? `With ${owner}` : data.ai?.mode === "paused" ? "Your assistant is paused" : data.ai?.mode === "assisted" ? "Co-pilot replies are reviewed by your team" : "Your assistant is handling this conversation"}</span>{writable && <button disabled={busy || paidActionBlocked(data, { type: "lead.update", changes: { humanOwned: !lead.humanOwned } })} onClick={() => void act({ type: "lead.update", id: lead.id, changes: { humanOwned: !lead.humanOwned } })}>{lead.humanOwned ? "Enable AI" : "Take over"}<ChevronRight size={12} /></button>}</div>
-          <div className="messages-scroll" ref={scrollRef}>{thread.length ? thread.map((message, index) => <div key={message.id}>{(index === 0 || dateLabel(thread[index - 1].createdAt) !== dateLabel(message.createdAt)) && <div className="message-date"><span>{dateLabel(message.createdAt, { day: "numeric", month: "long" })}</span></div>}<MessageBubble message={message} file={data.files?.find(file => file.id === message.fileId)} /></div>) : <EmptyState title="A good conversation starts with hello" body="Write a reply, or let your knowledge base give you a head start." />}</div>
+          <div className="messages-scroll" ref={scrollRef}>{thread.length ? thread.map((message, index) => <div key={message.id}>{(index === 0 || dateLabel(thread[index - 1].createdAt) !== dateLabel(message.createdAt)) && <div className="message-date"><span>{dateLabel(message.createdAt, { day: "numeric", month: "long" })}</span></div>}<MessageBubble message={message} file={message.fileId ? filesById.get(message.fileId) : undefined} /></div>) : <EmptyState title="A good conversation starts with hello" body="Write a reply, or let your knowledge base give you a head start." />}</div>
           {writable ? <ReplyComposer key={`${data.id}:${data.actor?.id}:${lead.id}`} lead={lead} /> : <div className="message-composer"><p className="composer-hint"><ShieldCheck size={13} />Your role has read-only access to this conversation.</p></div>}
         </div>
         <aside className="inbox-details"><header><span>ENQUIRY CONTEXT</span><button className="quiet-icon" aria-label="View complete enquiry" onClick={() => onOpen(lead.id)}><ArrowUpRight size={15} /></button></header><div className="inbox-profile"><Avatar name={lead.name} /><h3>{lead.name}</h3><span>{lead.course}</span><Badge tone={lead.stage === "Admitted" ? "green" : "blue"}><i className="status-dot" />{lead.stage}</Badge></div><div className="inbox-facts"><div><span>Intent</span><Score lead={lead} /></div><div><span>Course value</span><strong>{currency(lead.value)}</strong></div><div><span>Source</span><strong>{lead.source}</strong></div><div><span>Enquired on</span><strong>{dateLabel(lead.createdAt)}</strong></div></div>

@@ -7,6 +7,7 @@ import { ThemeSelect } from "./appearance";
 import { ArrowRight, Building2, Check, Layers3, LogOut, Plus, RefreshCw, ShieldCheck } from "lucide-react";
 import { Badge, Brand, Button, Field, PanelHeader } from "./ui";
 import type { ProvisioningStatus } from "@/lib/provisioning-types";
+import { readJsonBody } from "@/lib/client-response";
 
 interface Organization { id: string; name: string; role?: string }
 interface OrganizationList { organizations: Organization[]; current?: string; name?: string; scope: string; provisioning: ProvisioningStatus | null }
@@ -32,7 +33,8 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
     setLoading(true); setError(""); setNeedsSignIn(false);
     try {
       const response = await fetch("/api/organizations", { cache: "no-store", signal });
-      const result = await response.json();
+      setNeedsSignIn(response.status === 401);
+      const result = await readJsonBody<OrganizationList & { error?: string }>(response, "Your institutes could not be loaded.");
       if (!response.ok) { setNeedsSignIn(response.status === 401); throw new Error(result.error || "Your institutes could not be loaded."); }
       const list = result as OrganizationList;
       if (signal?.aborted) return;
@@ -55,7 +57,8 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
         setIntent(stable); action = { type: "create", ...stable };
       }
       const response = await fetch("/api/organizations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action) });
-      const result = await response.json();
+      setNeedsSignIn(response.status === 401);
+      const result = await readJsonBody<{ id?: string; provisioning?: ProvisioningStatus; error?: string; code?: string }>(response, "Your institute could not be opened. Please retry.");
       if (result.provisioning) {
         const status = result.provisioning as ProvisioningStatus;
         setProvisioning(status.acknowledged ? null : status);

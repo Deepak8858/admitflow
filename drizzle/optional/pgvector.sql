@@ -1,6 +1,9 @@
 -- Optional, separately applied after the regular Drizzle migrations.
 -- Absence of pgvector is supported: the default tenant-scoped GIN full-text
 -- index remains active. Enable KNOWLEDGE_VECTOR_ENABLED only after this step.
+-- These optional objects are intentionally outside the base Drizzle schema.
+-- Never use drizzle-kit push: it can drop embedding/indexes and raw SQL guards.
+-- The repository config blocks push; apply reviewed additive migrations instead.
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'vector') THEN

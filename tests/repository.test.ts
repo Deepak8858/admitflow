@@ -21,7 +21,20 @@ test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction 
   const previousUrl = process.env.DATABASE_URL, previousVector = process.env.KNOWLEDGE_VECTOR_ENABLED, previousMeta = process.env.META_APP_SECRET;
   try {
     const migrations = (await readdir(path.join(process.cwd(), "drizzle"))).filter(name => name.endsWith(".sql")).sort();
-    for (const name of migrations.filter(name => name !== "0005_saved_view_preferences.sql")) await pg.exec(await readFile(path.join(process.cwd(), "drizzle", name), "utf8"));
+    const journal = JSON.parse(await readFile(path.join("drizzle", "meta", "_journal.json"), "utf8")) as { entries: { tag: string }[] };
+    assert.deepEqual(migrations, journal.entries.map(entry => `${entry.tag}.sql`), "the fixture must apply the complete deployment journal");
+    for (const name of migrations.filter(name => name !== "0005_saved_view_preferences.sql")) {
+      await pg.exec(await readFile(path.join(process.cwd(), "drizzle", name), "utf8"));
+      if (name === "0007_deferred_intake.sql") {
+        const constraints = (await pg.query<{ conname: string }>("select conname from pg_constraint where conrelid = 'public.intake_inbox'::regclass and contype = 'c'")).rows.map(row => row.conname);
+        assert.ok(constraints.includes("intake_inbox_state_check"), "PostgreSQL names the inline0007 state check used by0011");
+      }
+      if (name === "0011_intake_retention.sql") {
+        const constraints = (await pg.query<{ conname: string }>("select conname from pg_constraint where conrelid = 'public.intake_inbox'::regclass and contype = 'c'")).rows.map(row => row.conname);
+        assert.ok(!constraints.includes("intake_inbox_state_check"), "0011 removes the original state constraint");
+        assert.ok(constraints.includes("intake_retention_state"), "0011 replaces it with the retention-aware state check");
+      }
+    }
     const db = drizzle(pg, { schema });
     useTestDatabase(db as unknown as Database);
     process.env.DATABASE_URL = "postgresql://injected-pglite-only";
@@ -31,6 +44,51 @@ test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction 
     const legacyViewId = uid();
     await tenantTransaction(first.id, tx => tx.execute(sql`insert into saved_views (id, organization_id, name, query, course, stage, owner) values (${legacyViewId}, ${first.id}, 'Legacy view', 'Student', 'NEET 2027', 'Qualified', 'Priya Sharma')`));
     await pg.exec(await readFile(path.join(process.cwd(), "drizzle", "0005_saved_view_preferences.sql"), "utf8"));
+    await t.test("the full migration journal installs and forces policies on every tenant and provisioning table", async () => {
+      // RLS is owned by journaled SQL, not Drizzle's generated schema/snapshot flags.
+      const tables = (await pg.query<{ name: string; enabled: boolean; forced: boolean; organization_scoped: boolean }>(`
+        select c.relname as name, c.relrowsecurity as enabled, c.relforcerowsecurity as forced,
+          exists (select 1 from pg_attribute a where a.attrelid = c.oid and a.attname = 'organization_id' and not a.attisdropped) as organization_scoped
+        from pg_class c join pg_namespace n on n.oid = c.relnamespace
+        where n.nspname = 'public' and c.relkind = 'r' order by c.relname
+      `)).rows;
+      const policies = (await pg.query<{ tablename: string; cmd: string; qual: string | null; with_check: string | null }>("select tablename, cmd, qual, with_check from pg_policies where schemaname = 'public'")).rows;
+      // ID-only routing registries must be readable before tenant selection. No CRM content lives there.
+      const routing = new Set(["organization_routes", "connection_routes"]);
+      const scoped = tables.filter(table => (table.organization_scoped || table.name === "organizations") && !routing.has(table.name));
+      for (const name of ["organizations", "members", "leads", "messages", "payments", "event_receipts", "intake_inbox", "whatsapp_subscription_operations", "organization_provisioning"]) assert.ok(scoped.some(table => table.name === name), `${name} must be covered by the complete journal`);
+      for (const table of scoped) {
+        assert.equal(table.enabled, true, `${table.name}: ENABLE ROW LEVEL SECURITY is missing`);
+        assert.equal(table.forced, true, `${table.name}: FORCE ROW LEVEL SECURITY is missing`);
+        const guards = table.name === "organization_provisioning" ? ["app.provisioning_actor", "app.provisioning_client"] : ["app.organization_id"];
+        assert.ok(policies.some(policy => policy.tablename === table.name && policy.cmd === "ALL" && guards.every(guard => policy.qual?.includes(guard) && policy.with_check?.includes(guard))), `${table.name}: a scoped USING/WITH CHECK policy is missing`);
+      }
+    });
+    await t.test("WhatsApp binding trigger skips non-WhatsApp lookups without bypassing existing bindings", async () => {
+      const bindingWorkspace = createWorkspace(false), ordinaryId = uid(), whatsappId = uid();
+      await createPostgresWorkspace(bindingWorkspace, "org_binding_trigger");
+      await tenantTransaction(bindingWorkspace.id, async tx => {
+        await tx.insert(schema.connections).values([
+          { id: ordinaryId, organizationId: bindingWorkspace.id, service: "openai", externalId: "fixture-ai", status: "unverified", label: "AI", updatedAt: isoNow(), metadata: {} },
+          { id: whatsappId, organizationId: bindingWorkspace.id, service: "whatsapp", externalId: "123456789", status: "unverified", label: "WhatsApp", updatedAt: isoNow(), metadata: { wabaId: "123456" } },
+        ]);
+        await tx.insert(schema.whatsappSubscriptionOperations).values({ id: uid(), organizationId: bindingWorkspace.id, connectionId: whatsappId, externalId: "123456789", wabaId: "123456", appId: "654321", generation: uid(), createdAt: isoNow() });
+      });
+      await pg.exec("CREATE ROLE binding_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS; GRANT SELECT, UPDATE ON connections TO binding_runtime;");
+      const restricted = <T,>(operation: Parameters<typeof tenantTransaction<T>>[1]) => tenantTransaction(bindingWorkspace.id, async tx => { await tx.execute(sql`set local role binding_runtime`); return operation(tx); });
+      const causedBy = (error: unknown, text: RegExp): boolean => error instanceof Error && (text.test(error.message) || causedBy(error.cause, text));
+      // The role cannot query the operation table. Success proves the early branch executes before its lookup.
+      assert.equal((await restricted(tx => tx.update(schema.connections).set({ label: "AI updated" }).where(eq(schema.connections.id, ordinaryId)).returning())).length, 1);
+      await assert.rejects(() => restricted(tx => tx.update(schema.connections).set({ label: "WhatsApp updated" }).where(eq(schema.connections.id, whatsappId))), error => causedBy(error, /permission denied for table whatsapp_subscription_operations/));
+      await pg.exec("GRANT SELECT ON whatsapp_subscription_operations TO binding_runtime;");
+      assert.equal((await restricted(tx => tx.update(schema.connections).set({ label: "WhatsApp updated" }).where(eq(schema.connections.id, whatsappId)).returning())).length, 1);
+      const bindingChanges: Partial<typeof schema.connections.$inferInsert>[] = [{ metadata: { wabaId: "999999" } }, { service: "google", metadata: {} }];
+      for (const change of bindingChanges) {
+        await assert.rejects(() => restricted(tx => tx.update(schema.connections).set(change).where(eq(schema.connections.id, whatsappId))), error => causedBy(error, /Original WhatsApp Business Account binding must be retained/));
+      }
+      const [saved] = await tenantTransaction(bindingWorkspace.id, tx => tx.select().from(schema.connections).where(eq(schema.connections.id, whatsappId)));
+      assert.equal(saved.service, "whatsapp"); assert.equal(saved.metadata.wabaId, "123456");
+    });
     const loaded = await loadPostgresWorkspace(first.id);
     assert.equal(loaded.leads.length, first.leads.length);
     assert.deepEqual(loaded.revenue.map(item => item.amount).sort(), first.revenue.map(item => item.amount).sort());

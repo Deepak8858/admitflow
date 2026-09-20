@@ -9,7 +9,8 @@ import { transform } from "esbuild";
 import { NextRequest } from "next/server";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, getTableName, sql } from "drizzle-orm";
+import { isoNow, uid } from "../src/lib/domain";
 import { useTestDatabase, type Database } from "../src/lib/db/client";
 import { createPostgresWorkspace, loadPostgresWorkspace, mutatePostgresWorkspace, tenantTransaction } from "../src/lib/db/repository";
 import * as billing from "../src/lib/providers/billing";
@@ -265,17 +266,49 @@ test("hosted access operations serialize provider writes and fence actual auth/t
     await releaseAccess(next); await releaseAccess(otherClaim);
   });
 
-  await t.test("restricted role cannot read or change another tenant's members", async () => {
+  await t.test("restricted CRM role cannot read, insert, update or delete another tenant's populated records", async () => {
     const a = await fixture(), b = await fixture();
-    await pg.exec("CREATE ROLE team_rls_test NOLOGIN NOSUPERUSER NOBYPASSRLS; GRANT SELECT, INSERT, UPDATE ON members TO team_rls_test;");
+    for (const f of [a, b]) await tenantTransaction(f.workspace.id, async tx => {
+      const leadId = uid();
+      await tx.insert(schema.leads).values({ id: leadId, organizationId: f.workspace.id, name: "RLS student", phone: "+919876543210", course: "NEET", source: "Website", stage: "New", owner: f.workspace.members![0].name, ownerId: f.workspace.members![0].id, createdAt: isoNow() });
+      await tx.insert(schema.messages).values({ id: uid(), organizationId: f.workspace.id, leadId, body: "Private RLS message", direction: "inbound", author: "Student", status: "received", createdAt: isoNow() });
+      await tx.insert(schema.payments).values({ id: uid(), organizationId: f.workspace.id, leadId, amountPaise: 10000, reference: "RLS-PAYMENT", recordedAt: isoNow() });
+      await tx.insert(schema.eventReceipts).values({ id: uid(), organizationId: f.workspace.id, provider: "rls_fixture", receivedAt: isoNow(), payload: { private: "Tenant receipt" } });
+    });
+    const legacyId = uid();
+    await db.insert(schema.eventReceipts).values({ id: legacyId, organizationId: null, provider: "legacy_fixture", receivedAt: isoNow(), payload: { legacy: true } });
+    await pg.exec("CREATE ROLE team_rls_test NOLOGIN NOSUPERUSER NOBYPASSRLS; GRANT SELECT, INSERT, UPDATE, DELETE ON members, leads, messages, payments, event_receipts TO team_rls_test;");
     const restricted = <T,>(operation: Parameters<typeof tenantTransaction<T>>[1]) => tenantTransaction(b.workspace.id, async tx => { await tx.execute(sql`set local role team_rls_test`); return operation(tx); });
-    const people = await restricted(tx => tx.select().from(schema.members));
-    assert.equal(people.length, b.workspace.members!.length);
-    assert.ok(people.every(row => row.organizationId === b.workspace.id));
-    assert.equal((await restricted(tx => tx.update(schema.members).set({ role: "analyst" }).where(eq(schema.members.id, a.workspace.members![0].id)).returning())).length, 0);
-    await assert.rejects(() => restricted(tx => tx.insert(schema.members).values({ id: "om_foreign_insert", organizationId: a.workspace.id, name: "Foreign", email: "foreign@example.com", role: "owner", status: "active" })));
-    await assert.rejects(() => restricted(tx => tx.update(schema.members).set({ organizationId: a.workspace.id }).where(eq(schema.members.id, b.workspace.members![0].id))));
-    assert.equal((await loadPostgresWorkspace(a.workspace.id)).members![0].role, "owner");
+    const noContext = <T,>(operation: Parameters<typeof tenantTransaction<T>>[1]) => tenantTransaction("", async tx => { await tx.execute(sql`set local role team_rls_test`); return operation(tx); });
+    const rlsDenied = (error: unknown): boolean => error instanceof Error && (/row-level security/.test(error.message) || rlsDenied(error.cause));
+    for (const table of [schema.members, schema.leads, schema.messages, schema.payments, schema.eventReceipts]) {
+      const name = getTableName(table), identifier = sql.identifier(name);
+      const before = (await db.execute<{ id: string; organization_id: string }>(sql`select * from ${identifier} order by id`)).rows;
+      const foreign = before.filter(row => row.organization_id === a.workspace.id), own = before.filter(row => row.organization_id === b.workspace.id);
+      assert.ok(foreign.length > 0 && own.length > 0, `${name} must contain both tenants before asserting isolation`);
+      const visible = await restricted(tx => tx.execute<{ id: string; organization_id: string }>(sql`select * from ${identifier} order by id`));
+      assert.deepEqual(visible.rows, own, `${name}: unrestricted SELECT returns exactly the current tenant's rows`);
+      assert.equal((await restricted(tx => tx.execute(sql`select * from ${identifier} where id = ${foreign[0].id}`))).rows.length, 0);
+      assert.equal((await restricted(tx => tx.execute(sql`update ${identifier} set organization_id = ${a.workspace.id} where id = ${foreign[0].id} returning id`))).rows.length, 0);
+      assert.equal((await restricted(tx => tx.execute(sql`delete from ${identifier} where id = ${foreign[0].id} returning id`))).rows.length, 0);
+      // Copy an actually valid foreign row, replacing unique identity fields, so rejection must be RLS rather than a missing fixture/FK.
+      const insert = { ...foreign[0], id: uid(), phone: "+919876543211", reference: `RLS-${uid()}`, workos_id: null };
+      await assert.rejects(() => restricted(tx => tx.execute(sql`insert into ${identifier} select (jsonb_populate_record(null::${identifier}, ${JSON.stringify(insert)}::jsonb)).*`)), rlsDenied);
+      assert.equal((await noContext(tx => tx.execute(sql`select * from ${identifier}`))).rows.length, 0, `${name}: missing tenant context hides all data`);
+      assert.equal((await noContext(tx => tx.execute(sql`update ${identifier} set organization_id = ${b.workspace.id} returning id`))).rows.length, 0);
+      assert.equal((await noContext(tx => tx.execute(sql`delete from ${identifier} returning id`))).rows.length, 0);
+      await assert.rejects(() => noContext(tx => tx.execute(sql`insert into ${identifier} select (jsonb_populate_record(null::${identifier}, ${JSON.stringify(insert)}::jsonb)).*`)), rlsDenied);
+      await assert.rejects(() => restricted(tx => tx.execute(sql`update ${identifier} set organization_id = ${a.workspace.id} where id = ${own[0].id}`)), rlsDenied);
+      assert.equal((await restricted(tx => tx.execute(sql`update ${identifier} set organization_id = ${b.workspace.id} where id = ${own[0].id} returning id`))).rows.length, 1, `${name}: own updates are permitted`);
+      const ownInsert = { ...own[0], id: uid(), phone: "+919876543212", reference: `RLS-${uid()}`, workos_id: null };
+      await restricted(tx => tx.execute(sql`insert into ${identifier} select (jsonb_populate_record(null::${identifier}, ${JSON.stringify(ownInsert)}::jsonb)).*`));
+      assert.equal((await restricted(tx => tx.execute(sql`delete from ${identifier} where id = ${ownInsert.id} returning id`))).rows.length, 1, `${name}: own inserts and deletes are permitted`);
+      assert.deepEqual((await db.execute(sql`select * from ${identifier} order by id`)).rows, before, `${name}: denied operations must leave both tenants unchanged`);
+    }
+    assert.equal((await restricted(tx => tx.select().from(schema.eventReceipts).where(eq(schema.eventReceipts.id, legacyId)))).length, 0);
+    assert.equal((await restricted(tx => tx.update(schema.eventReceipts).set({ organizationId: b.workspace.id }).where(eq(schema.eventReceipts.id, legacyId)).returning())).length, 0);
+    await assert.rejects(() => restricted(tx => tx.insert(schema.eventReceipts).values({ id: uid(), organizationId: null, provider: "invalid", receivedAt: isoNow(), payload: {} })), rlsDenied);
+    assert.equal((await db.select().from(schema.eventReceipts).where(eq(schema.eventReceipts.id, legacyId)))[0].organizationId, null);
   });
 
   await t.test("reactivation lost-response recovery confirms its seat; deactivation then frees it", async () => {

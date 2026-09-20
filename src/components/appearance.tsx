@@ -7,7 +7,7 @@ import { Monitor, Moon, Sun } from "lucide-react";
 
 export type Theme = "system" | "light" | "dark";
 export const spring = { type: "spring", stiffness: 350, damping: 28 } as const;
-const AppearanceContext = createContext<{ theme: Theme; setTheme: (theme: Theme) => void }>({ theme: "system", setTheme: () => {} });
+const AppearanceContext = createContext<{ theme: Theme; ready: boolean; setTheme: (theme: Theme) => void }>({ theme: "system", ready: false, setTheme: () => {} });
 
 export function AppearanceProvider({ children }: { children: ReactNode }) {
   const [theme, updateTheme] = useState<Theme>("system");
@@ -26,13 +26,13 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     return () => { media.removeEventListener("change", apply); window.removeEventListener("storage", sync); };
   }, [theme, ready]);
   function setTheme(value: Theme) { updateTheme(value); try { localStorage.setItem("admitflow:theme", value); } catch { /* The in-memory preference still works. */ } }
-  return <AppearanceContext.Provider value={{ theme, setTheme }}><MotionConfig reducedMotion="user" transition={spring}><Tooltip.Provider delayDuration={350}>{children}</Tooltip.Provider></MotionConfig></AppearanceContext.Provider>;
+  return <AppearanceContext.Provider value={{ theme, ready, setTheme }}><MotionConfig reducedMotion="user" transition={spring}><Tooltip.Provider delayDuration={350}>{children}</Tooltip.Provider></MotionConfig></AppearanceContext.Provider>;
 }
 
 export function ThemeSelect() {
-  const { theme, setTheme } = useContext(AppearanceContext);
+  const { theme, ready, setTheme } = useContext(AppearanceContext);
   const Icon = theme === "system" ? Monitor : theme === "dark" ? Moon : Sun;
-  return <label className="theme-select"><Icon size={15} aria-hidden="true" /><span className="sr-only">Colour theme</span><select aria-label="Colour theme" value={theme} onChange={event => setTheme(event.target.value as Theme)}><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>;
+  return <label className="theme-select"><Icon size={15} aria-hidden="true" /><span className="sr-only">Colour theme</span><select aria-label="Colour theme" data-appearance-ready={ready} disabled={!ready} value={theme} onChange={event => setTheme(event.target.value as Theme)}><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>;
 }
 
 export function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {

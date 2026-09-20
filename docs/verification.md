@@ -2,7 +2,21 @@
 
 Updated 20 September 2026. Results distinguish the complete review repairs from earlier release, subscription/access/payment and UI baselines.
 
-## Current review-repair evidence — 20 September
+## Current follow-up evidence — 20 September
+
+- Full isolated `npm run verify` passed: **306 application tests**, **26 infrastructure tests**, three Python audio-tooling tests, both TypeScript checks, Next production build, service bundles, operational syntax/help checks and the **14-migration dry run through 0013** (`databaseContacted: false`). Terminal result: `VERIFY_EXIT=0`.
+- The chained isolated `npm run verify:browser` passed **43 tests in 9 minutes 24 seconds**, one worker and disposable SQLite; `BROWSER_EXIT=0`. It includes non-JSON gateway fallback/retry, same-tick admission-submit fencing, explicit appearance hydration readiness and deterministic past/future appointment fixtures.
+- New `0013_event_receipt_rls` forces receipt tenant isolation and adds a bounded recovery index. Recovery pages tenant routing IDs and queries receipts only inside tenant transactions. Populated non-bypass-role tests cover members, leads, messages, payments and receipts; catalog assertions cover every tenant/provisioning table. All production receipt callers were reviewed for tenant context. Legacy null-tenant receipts remain hidden, not deleted or guessed.
+- Actual PostgreSQL catalog assertions prove `0007` creates `intake_inbox_state_check` and `0011` replaces it successfully. The reported missing-constraint finding is a false positive; published migrations remain unchanged. `0013` also skips WhatsApp-operation lookups for updates whose old service is not WhatsApp, with restricted-role and binding-preservation regressions.
+- Follow-ups also cover durable atomic JSON publication, malformed password records, narrowly handled SQLite WAL contention, defensive client responses, memoized inbox indexes, explicit noncluster Valkey topology/alarm dimensions, per-port ingress assertions and blocked Drizzle push/no implicit database URL.
+- Fresh production lockfile audit: **0 vulnerabilities**, exit 0. Full lockfile audit: **4 moderate development-only findings**, exit 1, in the existing Drizzle Kit/esbuild loader chain. No forced downgrade. No application lint script exists.
+- Workflow actionlint passed with optional ShellCheck/Pyflakes disabled. Fully redacted Gitleaks scans passed across all seven available Git commits and a fresh 5.72 MB publishable-source snapshot; all three exit codes were 0. These scans do not certify provider credential rotation.
+- Retained failed attempts: earlier focused browser checks had ambiguous alert locators, now scoped to the active dialog. An earlier browser run was interrupted and is not a pass. The new theme helper initially widened theme literals to `string`; the corrected literal tuple passed the full compiler/browser gates above.
+- Logs: `.data/verification-followup-20260920/all.log` and `browser.log`; prior browser artifacts were copied alongside before rerunning. Exit codes and Python output were recorded in terminal output. Automated captures are not a separate manual visual review.
+
+These are local/mock-provider results. Fresh published-commit Linux CI and CodeRabbit review remain publication gates; credentialed staging, restricted-role Neon rollout, finite backup retention and restore rehearsal remain deployment gates. See the coordinated receipt-RLS worker rollout in [deployment](deployment.md#receipt-rls-rollout). No production migration or deployment was performed.
+
+## Earlier review-repair evidence — 20 September
 
 - Full isolated `npm run verify` passed: **289 application tests**, infrastructure tests, project/infra typechecks, Next production build, six service bundles, operational syntax/help checks, and the **13-migration dry run through 0012**. Three Python audio-tooling tests also passed. The final chained browser command ran only after verifier success.
 - Fresh isolated `npm run verify:browser`: **40 passed in 13.5 minutes**, one worker and disposable SQLite. This includes WhatsApp evidence/check-only/deliberate-reconnect behavior and capped enquiry pagination with true totals.
@@ -113,10 +127,10 @@ The [deployment runbook](deployment.md) records the eight tooling tests and scop
 - Read-only SQLite input, coherent WAL backup, default offline report, demo exclusion and omission of credential/session content from reports.
 - Repository import round-trip, ID/money/history preservation, preflight collision rejection and resume that refuses changed tenants.
 
-The normal Drizzle journal includes 13 migrations, `0000` through `0012_whatsapp_subscription_operations`, with linked snapshots. Preserve immutable trial, intake and external-operation evidence during restores; apply the retention scrub before restarting writers. See [subscription rollout and recovery](deployment.md#subscription-rollout-and-recovery). The optional `drizzle/optional/pgvector.sql` remains separate; local tests cover the extension-absent fallback, not a real vector-enabled deployment.
+The normal Drizzle journal includes 14 migrations, `0000` through `0013_event_receipt_rls`, with linked snapshots. Preserve immutable trial, intake and external-operation evidence during restores; apply the retention scrub before restarting writers. See [subscription rollout and recovery](deployment.md#subscription-rollout-and-recovery) and [receipt RLS rollout](deployment.md#receipt-rls-rollout). The optional `drizzle/optional/pgvector.sql` remains separate and repository-configured Drizzle push is blocked; local tests cover the extension-absent fallback, not a real vector-enabled deployment.
 
 ## Browser QA — local/fixture coverage
-The latest complete run reports **40 passed in 13.5 minutes** on 20 September, using one worker and default Chromium against disposable SQLite. Earlier runs retain their dates and counts above. In addition to the subscription and final review regressions, coverage includes:
+The latest complete run reports **43 passed in 9 minutes 24 seconds** on 20 September, using one worker and default Chromium against disposable SQLite. Earlier runs retain their dates and counts above. In addition to the subscription and final review regressions, coverage includes:
 
 1. CSV → recovery → inbox → counselling → receipt persistence, local registration/sign-in, and cross-origin/cross-workspace rejection checks.
 2. Exact recovery collections and distinct paid-student chart data, including multiple receipts and a refund.
@@ -131,9 +145,9 @@ The public-page suite also checks no workspace requests on public pages, light/d
 ### Harness and artifacts
 
 - `playwright.config.ts` points to `tests/browser`, starts `npm run dev -- --port 3100`, uses one worker and does not reuse an existing server.
-- Browser base URL: `http://127.0.0.1:3100`; direct Playwright runs default to `.data/browser-tests.sqlite`. `npm run verify:browser` supplies `ADMITFLOW_BROWSER_DB` pointing to a disposable temporary database.
+- Browser base URL: `http://127.0.0.1:3100`. Both `npm run test:e2e` and `npm run verify:browser` use the sanitizer and supply `ADMITFLOW_BROWSER_DB` pointing to a disposable temporary database. Direct unsanitized Playwright configuration loading fails closed; there is no persistent browser-database fallback.
 - The normal preview uses port 3000 and `.data/admitflow.sqlite`.
-- Run local browser fixtures with `DATABASE_URL` unset: `ADMITFLOW_DB` does not override a configured PostgreSQL connection. Hosted identity tests require an explicitly configured/controlled environment.
+- The browser configuration requires the isolation marker and temporary database path, and rejects either configured PostgreSQL URL. `ADMITFLOW_DB` alone does not override PostgreSQL. The sanitizer also removes inherited provider credentials and blanks template-named variables; it is not a network sandbox. Hosted identity tests require an explicitly configured/controlled environment.
 - The browser suite writes `test-results/overview-1440.png`, `enquiries-1440.png`, `inbox-1440.png`, `overview-375.png` and `inbox-375.png`. The fresh run uses the same filenames, so prior images may have been replaced. Passing automated checks are not a separate manual visual inspection.
 
 ## Material implementation limits / open findings

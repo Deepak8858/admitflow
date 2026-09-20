@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { DatabaseSync } from "node:sqlite";
 import type { Workspace, Lead } from "../../src/lib/domain";
 
 const pageErrors = new WeakMap<Page, string[]>();
@@ -550,8 +551,27 @@ test("onboarding local setup is readable and keyboard-accessible at narrow width
 
 test("counselling reschedules by member ID, exports the new time and records cancellation", async ({ page }) => {
   const state = await workspace(page);
-  const appointment = state.appointments.find(item => item.status === "scheduled" && Date.parse(item.startsAt) > Date.now())!;
-  const missed = state.appointments.find(item => item.status === "scheduled" && Date.parse(item.startsAt) < Date.now() && item.leadId !== appointment.leadId)!;
+  const appointment = state.appointments.find(item => item.status === "scheduled");
+  expect(appointment, "demo fixture must contain a scheduled session").toBeDefined();
+  if (!appointment) throw new Error("Missing scheduled fixture");
+  const missed = state.appointments.find(item => item.status === "scheduled" && item.leadId !== appointment.leadId);
+  expect(missed, "demo fixture must contain a second student's session").toBeDefined();
+  if (!missed) throw new Error("Missing outcome fixture");
+  // Seed actual server state before opening the page; a browser-only clock cannot change server validation.
+  if (process.env.ADMITFLOW_BROWSER_ISOLATED !== "1" || !process.env.ADMITFLOW_BROWSER_DB) throw new Error("Isolated browser database required");
+  const db = new DatabaseSync(process.env.ADMITFLOW_BROWSER_DB, { timeout: 5000 });
+  try {
+    db.exec("BEGIN IMMEDIATE");
+    const row = db.prepare("SELECT data FROM workspaces WHERE id = ?").get(state.id) as { data: string };
+    const fixture = JSON.parse(row.data) as Workspace;
+    expect(fixture.demo).toBe(true);
+    for (const item of fixture.appointments) {
+      if (item.id === appointment.id) item.startsAt = new Date(Date.now() + 86_400_000).toISOString();
+      if (item.id === missed.id) item.startsAt = new Date(Date.now() - 86_400_000).toISOString();
+    }
+    db.prepare("UPDATE workspaces SET data = ? WHERE id = ?").run(JSON.stringify(fixture), state.id);
+    db.exec("COMMIT");
+  } finally { if (db.isTransaction) db.exec("ROLLBACK"); db.close(); }
   const lead = state.leads.find(item => item.id === appointment.leadId)!;
   const owner = state.members!.find(member => member.status === "active" && member.role === "counsellor" && member.id !== appointment.ownerId)!;
   await openPage(page, "/appointments");

@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { productionDatabase } from "../config";
 import { database } from "./client";
 import { tenantTransaction } from "./repository";
-import { connections, eventReceipts, organizations } from "./schema";
+import { connections, eventReceipts, organizations, organizationRoutes } from "./schema";
 import { assert } from "../errors";
 import { isoNow, uid, type Connection } from "../domain";
 import { paymentEventReferenceSchema, reconcilePayment, type PaymentEventReference } from "../providers/payments";
@@ -84,15 +84,30 @@ export async function processPaymentReceipt(workspaceId: string, id: string, now
   }
 }
 
-export async function recoverPaymentEvents(limit = 10) {
+/** Page routing IDs only; all receipt reads and claims enforce the selected tenant's RLS. */
+export async function recoverPaymentEvents(after?: string, tenantLimit = 10, receiptLimit = 10) {
   assert(productionDatabase(), "Payment recovery requires PostgreSQL.", 503);
-  z.number().int().min(1).max(100).parse(limit);
-  const rows = await database().select({ id: eventReceipts.id, organizationId: eventReceipts.organizationId }).from(eventReceipts)
-    .where(and(eq(eventReceipts.provider, PROVIDER), isNull(eventReceipts.processedAt), sql`${eventReceipts.payload}->>'nextAttemptAt' <= ${isoNow()}`))
-    .orderBy(sql`${eventReceipts.payload}->>'nextAttemptAt'`, asc(eventReceipts.id)).limit(limit);
-  const results = { selected: rows.length, processed: 0, ignored: 0, pending: 0, failed: 0, skipped: 0 };
-  for (const row of rows) if (row.organizationId) results[await processPaymentReceipt(row.organizationId, row.id)]++;
-  return results;
+  if (after !== undefined) z.uuid().parse(after);
+  z.number().int().min(1).max(20).parse(tenantLimit);
+  z.number().int().min(1).max(100).parse(receiptLimit);
+  const routes = await database().select({ organizationId: organizationRoutes.organizationId }).from(organizationRoutes)
+    .where(after ? gt(organizationRoutes.organizationId, after) : undefined).orderBy(asc(organizationRoutes.organizationId)).limit(tenantLimit);
+  const results = { tenants: routes.length, tenantFailures: 0, selected: 0, processed: 0, ignored: 0, pending: 0, failed: 0, skipped: 0 };
+  for (const { organizationId } of routes) {
+    let failed = false;
+    try {
+      const rows = await tenantTransaction(organizationId, tx => tx.select({ id: eventReceipts.id }).from(eventReceipts)
+        .where(and(eq(eventReceipts.organizationId, organizationId), eq(eventReceipts.provider, PROVIDER), isNull(eventReceipts.processedAt), sql`${eventReceipts.payload}->>'nextAttemptAt' <= ${isoNow()}`))
+        .orderBy(sql`${eventReceipts.payload}->>'nextAttemptAt'`, asc(eventReceipts.id)).limit(receiptLimit));
+      results.selected += rows.length;
+      for (const row of rows) {
+        try { results[await processPaymentReceipt(organizationId, row.id)]++; } catch { failed = true; }
+      }
+    } catch { failed = true; }
+    if (failed) results.tenantFailures++;
+  }
+  // Always visit the full tenant page. A capped tenant backlog is revisited on the next sweep.
+  return { ...results, after: routes.length === tenantLimit ? routes.at(-1)!.organizationId : undefined };
 }
 
 /** An operator must select one tenant and receipt. Inspection never fetches credentials or provider data. */

@@ -8,6 +8,36 @@ import { AdmitFlowStack, SHARED_SECRET_KEYS, WEB_SECRET_KEYS } from "../stack";
 import { prepareEnvironment } from "../entrypoint.mjs";
 import { highAvailabilityContext } from "../context";
 
+type IngressRule = { GroupId?: unknown; SourceSecurityGroupId?: unknown; CidrIp?: unknown; CidrIpv6?: unknown; SourcePrefixListId?: unknown; IpProtocol?: string; FromPort?: number; ToPort?: number };
+
+function assertProtectedIngress(template: Template) {
+  const groups = template.findResources("AWS::EC2::SecurityGroup");
+  const reference = (name: string) => {
+    const ids = Object.keys(groups).filter(id => id.startsWith(name));
+    assert.equal(ids.length, 1, `expected one ${name}`);
+    return { "Fn::GetAtt": [ids[0], "GroupId"] };
+  };
+  // CDK may inline CIDR rules while keeping SG-to-SG rules separate. Inspect both.
+  const ingress: IngressRule[] = [
+    ...Object.values(template.findResources("AWS::EC2::SecurityGroupIngress")).map(resource => resource.Properties),
+    ...Object.entries(groups).flatMap(([id, resource]) => (resource.Properties.SecurityGroupIngress ?? []).map((rule: IngressRule) => ({ ...rule, GroupId: { "Fn::GetAtt": [id, "GroupId"] } }))),
+  ];
+  const expected = new Map([
+    [3000, [["WebSecurityGroup", "AlbSecurityGroup"]]],
+    [6379, [["CacheSecurityGroup", "CacheSecurityGroup"], ["CacheSecurityGroup", "WebSecurityGroup"], ["CacheSecurityGroup", "WorkerSecurityGroup"]]],
+  ]);
+  for (const [port, edges] of expected) {
+    const rules = ingress.filter(rule => rule.IpProtocol === "-1" || (typeof rule.FromPort === "number" && typeof rule.ToPort === "number" && rule.FromPort <= port && rule.ToPort >= port));
+    assert.equal(rules.length, edges.length, `port ${port} must have every expected SG ingress rule and no others`);
+    for (const rule of rules) {
+      assert.equal(rule.IpProtocol, "tcp"); assert.equal(rule.FromPort, port); assert.equal(rule.ToPort, port);
+      assert.ok(rule.SourceSecurityGroupId, `port ${port} requires an SG source`);
+      assert.equal(rule.CidrIp, undefined); assert.equal(rule.CidrIpv6, undefined); assert.equal(rule.SourcePrefixListId, undefined);
+    }
+    assert.deepEqual(rules.map(rule => JSON.stringify([rule.GroupId, rule.SourceSecurityGroupId])).sort(), edges.map(([target, source]) => JSON.stringify([reference(target), reference(source)])).sort());
+  }
+}
+
 test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selectors and digest-pinned images", async () => {
   const root = resolve("infra", ".test-output");
   await mkdir(root, { recursive: true });
@@ -23,7 +53,7 @@ test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selec
     template.resourceCountIs("AWS::S3::Bucket", 0);
     template.resourceCountIs("AWS::ElastiCache::ServerlessCache", 0);
     template.hasResourceProperties("AWS::ElastiCache::ParameterGroup", { CacheParameterGroupFamily: "valkey7", Properties: { "maxmemory-policy": "noeviction" } });
-    template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { Engine: "valkey", TransitEncryptionEnabled: true, TransitEncryptionMode: "required", AtRestEncryptionEnabled: true, ReplicasPerNodeGroup: 0, AuthToken: Match.anyValue() });
+    template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { Engine: "valkey", TransitEncryptionEnabled: true, TransitEncryptionMode: "required", AtRestEncryptionEnabled: true, ClusterMode: "disabled", NumCacheClusters: 1, AuthToken: Match.anyValue() });
     template.hasResourceProperties("AWS::KMS::Key", { EnableKeyRotation: true });
     template.hasResourceProperties("AWS::ElasticLoadBalancingV2::Listener", { Port: 443, Protocol: "HTTPS", SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06", Certificates: [{ CertificateArn: { Ref: "CertificateArn" } }] });
     template.hasResourceProperties("AWS::ElasticLoadBalancingV2::TargetGroup", { HealthCheckPath: "/api/health", Port: 3000 });
@@ -49,9 +79,7 @@ test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selec
         }
       }
     }
-    for (const resource of Object.values(template.findResources("AWS::EC2::SecurityGroupIngress"))) {
-      if ([3000, 6379].includes(resource.Properties.ToPort)) assert(resource.Properties.SourceSecurityGroupId, "application and queue ports must only accept security-group sources");
-    }
+    assertProtectedIngress(template);
     const secret = JSON.parse(await readFile(resolve("infra/application-secret.example.json"), "utf8"));
     assert.deepEqual(Object.keys(secret).sort(), [...new Set([...SHARED_SECRET_KEYS, ...WEB_SECRET_KEYS, "DATABASE_URL_UNPOOLED"])].sort());
     assert(Object.values(secret).every(value => value === "" || value === "[]"));
@@ -73,9 +101,60 @@ test("HA context accepts boolean and CLI forms and synthesizes matching service/
       const template = Template.fromStack(stack);
       template.hasParameter("WebDesiredCount", { Default: expected ? 2 : 1 });
       template.hasResourceProperties("AWS::ECS::Service", { DesiredCount: { Ref: "WebDesiredCount" } });
-      template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { ReplicasPerNodeGroup: expected ? 1 : 0, AutomaticFailoverEnabled: expected, MultiAZEnabled: expected });
+      const nodes = expected ? 2 : 1;
+      template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { ClusterMode: "disabled", NumCacheClusters: nodes, NumNodeGroups: Match.absent(), ReplicasPerNodeGroup: Match.absent(), AutomaticFailoverEnabled: expected, MultiAZEnabled: expected });
+      const cacheIds = Object.keys(template.findResources("AWS::ElastiCache::ReplicationGroup"));
+      assert.equal(cacheIds.length, 1);
+      const queueAlarms = Object.values(template.findResources("AWS::CloudWatch::Alarm")).filter(resource => resource.Properties.Namespace === "AWS/ElastiCache");
+      assert.equal(queueAlarms.length, nodes * 2);
+      for (const metric of ["DatabaseMemoryUsagePercentage", "Evictions"]) {
+        const alarms = queueAlarms.filter(resource => resource.Properties.MetricName === metric);
+        assert.equal(alarms.length, nodes);
+        for (let index = 1; index <= nodes; index++) {
+          const dimensions = { CacheClusterId: { "Fn::Join": ["", [{ Ref: cacheIds[0] }, `-${String(index).padStart(3, "0")}`]] }, CacheNodeId: "0001" };
+          assert.equal(alarms.filter(resource => JSON.stringify(Object.fromEntries(resource.Properties.Dimensions.map((dimension: { Name: string; Value: unknown }) => [dimension.Name, dimension.Value]))) === JSON.stringify(dimensions)).length, 1);
+        }
+      }
+      for (const resource of Object.values(template.findResources("AWS::ECS::TaskDefinition"))) {
+        for (const container of resource.Properties.ContainerDefinitions) if (["web", "worker"].includes(container.Name)) {
+          const environment = Object.fromEntries(container.Environment.map((entry: { Name: string; Value: unknown }) => [entry.Name, entry.Value]));
+          assert.deepEqual(environment.REDIS_HOST, { "Fn::GetAtt": [cacheIds[0], "PrimaryEndPoint.Address"] });
+          assert.deepEqual(environment.REDIS_PORT, { "Fn::GetAtt": [cacheIds[0], "PrimaryEndPoint.Port"] });
+        }
+      }
+      assertProtectedIngress(template);
       assert.equal(app.synth().manifest.missing, undefined);
     } finally { await rm(directory, { recursive: true, force: true }); }
+  }
+});
+
+test("protected ingress assertions reject missing, public, ranged and wrong-SG rules in either CDK representation", () => {
+  const groupNames = ["AlbSecurityGroup", "WebSecurityGroup", "WorkerSecurityGroup", "CacheSecurityGroup"];
+  const groups = Object.fromEntries(groupNames.map(name => [name, { Type: "AWS::EC2::SecurityGroup", Properties: {} }]));
+  const rule = (target: string, source: string, port: number): IngressRule => ({ GroupId: { "Fn::GetAtt": [target, "GroupId"] }, SourceSecurityGroupId: { "Fn::GetAtt": [source, "GroupId"] }, IpProtocol: "tcp", FromPort: port, ToPort: port });
+  const rules = [rule("WebSecurityGroup", "AlbSecurityGroup", 3000), ...["CacheSecurityGroup", "WebSecurityGroup", "WorkerSecurityGroup"].map(source => rule("CacheSecurityGroup", source, 6379))];
+  const template = (ingress: IngressRule[], inline: boolean) => {
+    const resources = structuredClone(groups);
+    if (inline) {
+      const isSelfRule = (entry: IngressRule) => JSON.stringify(entry.GroupId) === JSON.stringify(entry.SourceSecurityGroupId);
+      for (const name of groupNames) resources[name].Properties = { SecurityGroupIngress: ingress.filter(entry => !isSelfRule(entry) && JSON.stringify(entry.GroupId) === JSON.stringify({ "Fn::GetAtt": [name, "GroupId"] })).map(({ GroupId: _group, ...entry }) => entry) };
+      // Like CDK, keep self-references standalone to avoid a CloudFormation cycle.
+      const selfRules = Object.fromEntries(ingress.filter(isSelfRule).map((entry, index) => [`SelfIngress${index}`, { Type: "AWS::EC2::SecurityGroupIngress", Properties: entry }]));
+      return Template.fromJSON({ Resources: { ...resources, ...selfRules } });
+    }
+    return Template.fromJSON({ Resources: { ...resources, ...Object.fromEntries(ingress.map((entry, index) => [`Ingress${index}`, { Type: "AWS::EC2::SecurityGroupIngress", Properties: entry }])) } });
+  };
+  for (const inline of [false, true]) {
+    assertProtectedIngress(template(rules, inline));
+    for (const port of [3000, 6379]) {
+      assert.throws(() => assertProtectedIngress(template(rules.filter(entry => entry.ToPort !== port), inline)));
+      for (const replacement of [
+        { SourceSecurityGroupId: undefined, CidrIp: "0.0.0.0/0" },
+        { SourceSecurityGroupId: undefined, CidrIpv6: "::/0" },
+        { SourceSecurityGroupId: { "Fn::GetAtt": ["WorkerSecurityGroup", "GroupId"] } },
+        { FromPort: 1, ToPort: 65535 },
+      ]) assert.throws(() => assertProtectedIngress(template(rules.map((entry, index) => index === (port === 3000 ? 0 : 1) ? { ...entry, ...replacement } : entry), inline)));
+    }
   }
 });
 

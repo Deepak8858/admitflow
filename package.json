@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "test:infra": "tsx --test infra/tests/*.test.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/verify.mjs --browser",
     "verify": "node scripts/verify.mjs --all",
     "verify:payments": "node scripts/verify.mjs --payments",
     "verify:browser": "node scripts/verify.mjs --browser",

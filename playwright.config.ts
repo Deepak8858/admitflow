@@ -1,5 +1,9 @@
 import { defineConfig } from "@playwright/test";
 
+if (process.env.ADMITFLOW_BROWSER_ISOLATED !== "1" || !process.env.ADMITFLOW_BROWSER_DB || process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED) {
+  throw new Error("Run browser tests through npm run test:e2e or npm run verify:browser with isolated fixtures.");
+}
+
 export default defineConfig({
   testDir: "./tests/browser",
   fullyParallel: false,
@@ -13,6 +17,6 @@ export default defineConfig({
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
     timeout: 120000,
-    env: { ADMITFLOW_DB: process.env.ADMITFLOW_BROWSER_DB || ".data/browser-tests.sqlite" },
+    env: { ADMITFLOW_DB: process.env.ADMITFLOW_BROWSER_DB },
   },
 });

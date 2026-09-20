@@ -13,14 +13,25 @@ export function database() {
   const filename = process.env.ADMITFLOW_DB || path.join(process.cwd(), ".data", "admitflow.sqlite");
   mkdirSync(path.dirname(filename), { recursive: true });
   const db = new DatabaseSync(filename);
-  db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;
-    CREATE TABLE IF NOT EXISTS workspaces (id TEXT PRIMARY KEY, data TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, expires_at INTEGER NOT NULL);
-    CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, password_hash TEXT NOT NULL, workspace_id TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS auth_attempts (key TEXT PRIMARY KEY, count INTEGER NOT NULL, reset_at INTEGER NOT NULL);
-  `);
-  globalStore.admitflowDb = db;
-  return db;
+  try {
+    db.exec("PRAGMA busy_timeout=5000");
+    try { db.exec("PRAGMA journal_mode=WAL"); }
+    catch (error) {
+      // Another process may hold the journal-mode lock. Other storage failures are fatal.
+      if (!error || typeof error !== "object" || !("errcode" in error) || error.errcode !== 5) throw error; // SQLITE_BUSY
+    }
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS workspaces (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, expires_at INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, password_hash TEXT NOT NULL, workspace_id TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS auth_attempts (key TEXT PRIMARY KEY, count INTEGER NOT NULL, reset_at INTEGER NOT NULL);
+    `);
+    globalStore.admitflowDb = db;
+    return db;
+  } catch (error) {
+    try { db.close(); } catch { /* Preserve the initialization failure if closing also fails. */ }
+    throw error;
+  }
 }
 const digest = (token: string) => createHash("sha256").update(token).digest("hex");
 export function loadWorkspace(id: string): Workspace {
@@ -62,6 +73,7 @@ function passwordHash(password: string) {
   return `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
 }
 function passwordMatches(password: string, stored: string) {
+  if (typeof stored !== "string" || stored.length !== 161 || !/^[a-f0-9]{32}:[a-f0-9]{128}$/.test(stored)) return false;
   const [salt, hash] = stored.split(":");
   return timingSafeEqual(Buffer.from(hash, "hex"), scryptSync(password, salt, 64));
 }

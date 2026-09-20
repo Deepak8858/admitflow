@@ -13,6 +13,7 @@ import { DeferredIntakePanel } from "./subscription";
 import { BillingPanel } from "./billing";
 import { Illustration } from "./illustration";
 import { SampleAudio } from "./sample-audio";
+import { readJsonResponse } from "@/lib/client-response";
 
 type BeginFileRequest = { type: "begin"; name: string; mime: string; size: number; purpose: WorkspaceFile["purpose"]; leadId?: string };
 type BeginFileResponse = { id: string; url: string; headers: Record<string, string>; expiresAt: string; error?: string };
@@ -26,15 +27,13 @@ export async function uploadFile(file: File, purpose: WorkspaceFile["purpose"], 
   const mime = file.type || mimeByExtension[file.name.split(".").at(-1)?.toLowerCase() || ""] || "application/octet-stream";
   const begin: BeginFileRequest = { type: "begin", name: file.name, mime, size: file.size, purpose, ...(leadId ? { leadId } : {}) };
   const init = await fetch("/api/files", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(begin) });
-  const info = await init.json() as BeginFileResponse;
-  if (!init.ok) throw new Error(info.error || "This upload could not be started.");
+  const info = await readJsonResponse<BeginFileResponse>(init, "This upload could not be started.");
   // All returned headers are part of the signed PUT, including the tenant/file metadata.
   const uploaded = await fetch(info.url, { method: "PUT", headers: info.headers, body: file });
   if (!uploaded.ok) throw new Error("The upload did not finish. Please retry.");
   const finish: FinishFileRequest = { type: "finish", id: info.id };
   const response = await fetch("/api/files", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(finish) });
-  const finished = await response.json() as FinishFileResponse;
-  if (!response.ok) throw new Error(finished.error || "The uploaded file could not be finalized.");
+  const finished = await readJsonResponse<FinishFileResponse>(response, "The uploaded file could not be finalized.");
   return finished.id;
 }
 
@@ -162,8 +161,7 @@ export function IntegrationsPage() {
     setSaving(true);
     try {
       const response = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "disconnect", service }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "The connection could not be removed.");
+      const result = await readJsonResponse<{ workspace?: Workspace }>(response, "The connection could not be removed.");
       if (result.workspace) setData(result.workspace); else await refresh();
       notify(service === "google" ? "Google disconnected. Previously created calendar events remain in Google." : "Disconnected. Credentials removed; account identity retained for recovery.");
     } catch (error) { notify(error instanceof Error ? error.message : "The connection could not be removed.", "error"); }
@@ -187,7 +185,7 @@ export function IntegrationsPage() {
         const secret = editing === "razorpay" ? { keyId: String(form.get("keyId")), keySecret: String(form.get("keySecret")), webhookSecret: String(form.get("webhookSecret")) } : editing === "meta_leads" ? { accessToken: String(form.get("apiKey")) } : { apiKey: String(form.get("apiKey")), ...(editing === "elevenlabs" ? { voiceId: String(form.get("voiceId")) } : {}) };
         try {
           const response = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ service: editing, secret, externalId: editing === "meta_leads" ? form.get("pageId") : data.id, label: integration.name }) });
-          const result = await response.json(); if (!response.ok) throw new Error(result.error || "The account could not be verified.");
+          const result = await readJsonResponse<{ workspace?: Workspace }>(response, "The account could not be verified.");
           if (result.workspace) setData(result.workspace); else await refresh();
           setEditing(null); notify(`${integration.name} account verified and configured.`);
         } catch (error) { notify(error instanceof Error ? error.message : "The account could not be verified.", "error"); await refresh(); }
@@ -210,9 +208,7 @@ export function TeamPage() {
     queryKey: teamKey, enabled: access.admin, staleTime: 0, refetchOnMount: "always",
     queryFn: async ({ signal }) => {
       const response = await fetch("/api/team", { cache: "no-store", signal });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Team access could not be refreshed.");
-      return result as TeamResponse;
+      return readJsonResponse<TeamResponse>(response, "Team access could not be refreshed.");
     },
   });
   useEffect(() => { if (team.data?.workspace) setData(team.data.workspace); }, [team.data, setData]);
@@ -221,9 +217,7 @@ export function TeamPage() {
     setSaving(String(action.id || "invite"));
     try {
       const response = await fetch("/api/team", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Team access could not be updated.");
-      const updated = result as TeamResponse;
+      const updated = await readJsonResponse<TeamResponse>(response, "Team access could not be updated.");
       setData(updated.workspace);
       if (workspaceAccess(updated.workspace).admin) client.setQueryData(teamKey, updated);
       notify(updated.message || "Team access updated.");
@@ -261,7 +255,7 @@ export function SettingsPage() {
   return <>
     <div className="page-eyebrow"><span>A WORKSPACE THAT FEELS LIKE YOURS</span></div><PageHeading title="The details make the difference." description="Your institute’s profile, preferences and workspace information.">{!data.demo && <Button onClick={async () => {
       if (data.actor?.backend === "workos") { location.assign("/logout"); return; }
-      try { const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "logout" }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Sign-out could not be completed."); setData(result); }
+      try { const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "logout" }) }); const result = await readJsonResponse<Workspace>(response, "Sign-out could not be completed."); setData(result); }
       catch (error) { notify(error instanceof Error ? error.message : "Sign-out could not be completed.", "error"); }
     }}><LogOut size={15} />Sign out</Button>}</PageHeading>
     {data.demo && <section className="account-banner"><span className="account-banner-icon"><Sparkles size={23} /></span><div><h2>Your next chapter starts here.</h2><p>You’re exploring a sample academy. Create a workspace for your own institute.</p></div><Button onClick={() => data.integrations?.auth ? location.assign("/login") : setAuth("login")}>Sign in</Button><Button variant="primary" onClick={() => data.integrations?.auth ? location.assign("/signup") : setAuth("register")}>Create workspace<ArrowUpRight size={15} /></Button></section>}
@@ -277,5 +271,5 @@ export function SettingsPage() {
 function AuthDialog({ mode, onMode, onClose }: { mode: "register" | "login"; onMode: (mode: "register" | "login") => void; onClose: () => void }) {
   const { setData } = useData();
   const [error, setError] = useState(""), [loading, setLoading] = useState(false);
-  return <Dialog title={mode === "register" ? "A fresh start for your institute." : "Welcome back."} onClose={onClose}><p className="dialog-intro">Local evaluation account. Production sign-in uses WorkOS AuthKit.</p><form key={mode} onSubmit={async event => { event.preventDefault(); const form = new FormData(event.currentTarget); setLoading(true); setError(""); try { const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: mode, email: form.get("email"), password: form.get("password"), ...(mode === "register" ? { name: form.get("name"), institute: form.get("institute") } : {}) }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "This account could not be opened."); setData(result as Workspace); onClose(); } catch (error) { setError(error instanceof Error ? error.message : "This account could not be opened."); } finally { setLoading(false); } }}>{mode === "register" && <><Field label="Your name" name="name" required autoComplete="name" /><Field label="Institute name" name="institute" required autoComplete="organization" /></>}<Field label="Email address" name="email" type="email" required autoComplete="email" /><Field label="Password" name="password" type="password" required minLength={10} maxLength={200} autoComplete={mode === "register" ? "new-password" : "current-password"} hint="At least 10 characters." />{error && <p className="inline-error" role="alert">{error}</p>}<Button variant="primary" className="full-width" loading={loading} type="submit">{mode === "register" ? "Create workspace" : "Sign in"}<ArrowUpRight size={15} /></Button><p className="auth-switch">{mode === "register" ? "Already have a workspace?" : "New to AdmitFlow?"}<button type="button" onClick={() => { setError(""); onMode(mode === "register" ? "login" : "register"); }}>{mode === "register" ? "Sign in" : "Create workspace"}</button></p></form></Dialog>;
+  return <Dialog title={mode === "register" ? "A fresh start for your institute." : "Welcome back."} onClose={onClose}><p className="dialog-intro">Local evaluation account. Production sign-in uses WorkOS AuthKit.</p><form key={mode} onSubmit={async event => { event.preventDefault(); const form = new FormData(event.currentTarget); setLoading(true); setError(""); try { const response = await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: mode, email: form.get("email"), password: form.get("password"), ...(mode === "register" ? { name: form.get("name"), institute: form.get("institute") } : {}) }) }); const result = await readJsonResponse<Workspace>(response, "This account could not be opened."); setData(result as Workspace); onClose(); } catch (error) { setError(error instanceof Error ? error.message : "This account could not be opened."); } finally { setLoading(false); } }}>{mode === "register" && <><Field label="Your name" name="name" required autoComplete="name" /><Field label="Institute name" name="institute" required autoComplete="organization" /></>}<Field label="Email address" name="email" type="email" required autoComplete="email" /><Field label="Password" name="password" type="password" required minLength={10} maxLength={200} autoComplete={mode === "register" ? "new-password" : "current-password"} hint="At least 10 characters." />{error && <p className="inline-error" role="alert">{error}</p>}<Button variant="primary" className="full-width" loading={loading} type="submit">{mode === "register" ? "Create workspace" : "Sign in"}<ArrowUpRight size={15} /></Button><p className="auth-switch">{mode === "register" ? "Already have a workspace?" : "New to AdmitFlow?"}<button type="button" onClick={() => { setError(""); onMode(mode === "register" ? "login" : "register"); }}>{mode === "register" ? "Sign in" : "Create workspace"}</button></p></form></Dialog>;
 }
