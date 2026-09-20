@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "slug": "counselling-invitation",
+      "title": "Counselling invitation",
+      "transcript": "Hi Aanya, this is a sample message from Northstar Academy. Thanks for asking about our entrance preparation course. Would you like to speak with a counsellor about your goals and available study options? Let us know a convenient time. There's no need to decide today.",
+      "provider": "ElevenLabs",
+      "model_id": "eleven_multilingual_v2",
+      "voice_id": "EXAVITQu4vr4xnSDxMaL",
+      "voice_name": "Sarah",
+      "status": "completed",
+      "file": "public/media/counselling-invitation.mp3",
+      "bytes": 244132,
+      "sha256": "8d2179d85233c4e5a73e1e75054e2316b8d955acb089ec1550e32231199e68ae",
+      "request_id": "Kh1O6FWbxn8x1lliKuVi"
+    },
+    {
+      "slug": "session-reminder",
+      "title": "Session reminder",
+      "transcript": "Hi Aanya, a quick sample reminder about your counselling conversation tomorrow at four in the afternoon, India time. Please bring any questions about the course or your study schedule. If the time no longer works, reply and we can discuss another slot.",
+      "provider": "ElevenLabs",
+      "model_id": "eleven_multilingual_v2",
+      "voice_id": "EXAVITQu4vr4xnSDxMaL",
+      "voice_name": "Sarah",
+      "status": "completed",
+      "file": "public/media/session-reminder.mp3",
+      "bytes": 234937,
+      "sha256": "e3e9e48601c00912d6c73c875f804c1789faa48d1e70903363998347b8f274c6",
+      "request_id": "n3N7IsSTYYsFhMXRm9Lt"
+    },
+    {
+      "slug": "thoughtful-followup",
+      "title": "A pressure-free follow-up",
+      "transcript": "Hi Aanya, this is a fictional follow-up from Northstar Academy. We wanted to check whether you had any questions after your counselling session. We're happy to help you compare the options at your own pace. If you'd prefer not to receive further messages, just let us know.",
+      "provider": "ElevenLabs",
+      "model_id": "eleven_multilingual_v2",
+      "voice_id": "EXAVITQu4vr4xnSDxMaL",
+      "voice_name": "Sarah",
+      "status": "completed",
+      "file": "public/media/thoughtful-followup.mp3",
+      "bytes": 252073,
+      "sha256": "357cda5cd3eaeaa119380e7f12f11d46f13996d4521d46f5bf296bf996bf8f37",
+      "request_id": "fBA2T5RDxgmabO8BLbue"
+    },
+    {
+      "slug": "walkthrough",
+      "title": "A thoughtful next step",
+      "transcript": "Welcome to AdmitFlow. Bring your enquiries into one workspace, give your team the context they need, and turn a missed conversation into a thoughtful next step. Start with your enquiry list. Review the student's interests and contact preferences, then open the shared inbox. Your counsellor stays in control. For recovery, choose an eligible audience, review an approved message, and check the delivery status after sending. Finally, connect counselling and recorded payments to the original enquiry. This preview uses fictional examples. No messages are sent to real students.",
+      "provider": "ElevenLabs",
+      "model_id": "eleven_multilingual_v2",
+      "voice_id": "EXAVITQu4vr4xnSDxMaL",
+      "voice_name": "Sarah",
+      "status": "completed",
+      "file": "public/media/walkthrough.mp3",
+      "bytes": 605248,
+      "sha256": "5b29b944c13f4374f6309728be9a4211dcda203c6790a7661f59b1f5e59ca66f",
+      "request_id": "EZLTYaIkNJnrQGIkoG09"
+    }
+  ]
+}
