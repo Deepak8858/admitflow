@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
+import { DrizzleQueryError } from "drizzle-orm";
 import { readMigrationFiles } from "drizzle-orm/migrator";
 import { WorkOS } from "@workos-inc/node";
 import type { Client } from "pg";
@@ -50,6 +51,112 @@ test("money conversion is exact and rejects fractional paise and PostgreSQL over
   for (const value of [0, -1, 0.001, 21474836.48, Number.MAX_SAFE_INTEGER, Infinity, "123.45"]) assert.throws(() => rupeesToPaise(value));
   assert.throws(() => unpooledDatabaseUrl({ DATABASE_URL: "postgres://runtime" }), /DATABASE_URL_UNPOOLED/);
   assert.throws(() => unpooledDatabaseUrl({ DATABASE_URL_UNPOOLED: "postgres://role:password@ep-example-pooler.ap-southeast-1.aws.neon.tech/db" }), /pooler/);
+});
+
+const diagnosticPrefix = "Invalid legacy instant counts: ";
+const genericMigrationFailure = "Migration failed. Check the database connection, permissions and reviewed migration files.";
+const legacyError = (counts = "event_receipts.received_at=1") => Object.assign(new Error(diagnosticPrefix + counts), { code: "22007" });
+const wrappedError = (cause: unknown) => new DrizzleQueryError("SELECT 'private-query-marker'", ["private-parameter-marker"], cause as Error);
+
+function assertGenericMigrationFailure(error: unknown) {
+  assert.match(safeMigrationError(error), /^Migration failed(?: \([A-Z0-9_]{2,32}\))?\. Check the database connection, permissions and reviewed migration files\.$/);
+}
+
+test("safe migration diagnostics accept exactly the 31 historical preflight pairs and safe counts", async () => {
+  const sql = await readFile(resolve("drizzle/0010_native_instants.sql"), "utf8");
+  const pairs = [...sql.matchAll(/\('([a-z_]+)', '([a-z_]+)'\)/g)].map(match => `${match[1]}.${match[2]}`);
+  assert.equal(pairs.length, 31);
+  assert.equal(new Set(pairs).size, 31);
+  for (const pair of pairs) {
+    const error = legacyError(`${pair}=1`);
+    assert.equal(safeMigrationError(error), error.message);
+    assert.equal(safeMigrationError(wrappedError(wrappedError(error))), error.message);
+  }
+  const all = legacyError(pairs.map(pair => `${pair}=${Number.MAX_SAFE_INTEGER}`).join(", "));
+  assert.equal(safeMigrationError(all), all.message);
+  // Whitelisting table and column names separately would incorrectly accept these combinations.
+  for (const table of new Set(pairs.map(pair => pair.split(".")[0]))) {
+    for (const column of new Set(pairs.map(pair => pair.split(".")[1]))) {
+      const pair = `${table}.${column}`;
+      if (!pairs.includes(pair)) assertGenericMigrationFailure(legacyError(`${pair}=1`));
+    }
+  }
+});
+
+test("safe migration diagnostics reject malformed counts, identifiers, extra text and excessive input", () => {
+  const invalid = ["", "0", "-1", "+1", "01", "1.0", "1.5", "1e2", "NaN", "Infinity", "9007199254740992", "9999999999999999", "9223372036854775807", "１", " 1", "1 "];
+  const messages = [
+    ...invalid.map(count => diagnosticPrefix + `event_receipts.received_at=${count}`),
+    diagnosticPrefix, diagnosticPrefix + "private_table.received_at=1", diagnosticPrefix + "event_receipts.private_column=1",
+    diagnosticPrefix + "public.event_receipts.received_at=1", diagnosticPrefix + '"event_receipts".received_at=1',
+    diagnosticPrefix + "event_receipts.received_at=1, event_receipts.received_at=2",
+    diagnosticPrefix + "event_receipts.received_at=1,event_receipts.processed_at=2",
+    diagnosticPrefix + "event_receipts.received_at=1, ", diagnosticPrefix + "event_receipts.received_at=1; SELECT private_marker",
+    diagnosticPrefix + "event_receipts.received_at=1\n", diagnosticPrefix + "event_receipts.received_at=1\r\n",
+    diagnosticPrefix + "event_receipts.received_at=1\0", diagnosticPrefix + "event_receipts.received_at=1\u001b[31m",
+    "private-marker " + diagnosticPrefix + "event_receipts.received_at=1",
+    diagnosticPrefix + "event_receipts.received_at=1 private-marker",
+    diagnosticPrefix + Array(32).fill("event_receipts.received_at=1").join(", "),
+    diagnosticPrefix + "event_receipts.received_at=" + "1".repeat(3000),
+  ];
+  for (const message of messages) {
+    const error = Object.assign(new Error(message), { code: "22007" });
+    assertGenericMigrationFailure(error);
+    assertGenericMigrationFailure(wrappedError(error));
+  }
+  for (const code of [undefined, "23505", 22007, "22007\n", "private-marker"]) {
+    assertGenericMigrationFailure(Object.assign(legacyError(), { code }));
+  }
+  assertGenericMigrationFailure({ code: "22007", cause: { message: legacyError().message } });
+  assertGenericMigrationFailure({ message: legacyError().message, cause: { code: "22007" } });
+});
+
+test("safe migration diagnostics bound cause traversal and reject cycles, accessors and malformed wrappers", () => {
+  const valid = legacyError();
+  let chain: unknown = valid;
+  for (let index = 0; index < 7; index++) chain = wrappedError(chain);
+  assert.equal(safeMigrationError(chain), valid.message, "eight total cause objects are accepted");
+  assertGenericMigrationFailure(wrappedError(chain));
+  for (let index = 0; index < 100; index++) chain = wrappedError(chain);
+  assertGenericMigrationFailure(chain);
+  const cycle = wrappedError(valid); cycle.cause = cycle;
+  assertGenericMigrationFailure(cycle);
+  const twoNodeCycle = wrappedError(cycle); cycle.cause = twoNodeCycle;
+  assertGenericMigrationFailure(twoNodeCycle);
+  assertGenericMigrationFailure(Object.assign(valid, { cause: valid }));
+  for (const malformed of [null, undefined, 1, "private-marker", [], { cause: legacyError() }, { message: 1, cause: legacyError() }, { message: "wrapper", cause: "private-marker" }, Object.create({ message: "wrapper", cause: legacyError() })]) assertGenericMigrationFailure(malformed);
+  let accessorCalls = 0;
+  for (const key of ["message", "code", "cause"]) {
+    const error = wrappedError(legacyError());
+    Object.defineProperty(error, key, { get() { accessorCalls++; throw new Error("private-accessor-marker"); } });
+    assertGenericMigrationFailure(error);
+  }
+  assert.equal(safeMigrationError({ code: { toString() { accessorCalls++; return "PRIVATE_MARKER"; } } }), genericMigrationFailure);
+  assert.equal(accessorCalls, 0, "error accessors and coercion hooks must never run");
+  const inheritedCause = Object.assign(Object.create({ cause: legacyError() }), { message: legacyError().message, code: "22007" });
+  assertGenericMigrationFailure(inheritedCause);
+  for (const code of ["22007\n", "22007\r", "22007\u2028", "22007\u2029", "A".repeat(33)]) assert.equal(safeMigrationError({ code }), genericMigrationFailure);
+  const revoked = Proxy.revocable({}, {}); revoked.revoke();
+  assert.equal(safeMigrationError(revoked.proxy), genericMigrationFailure);
+  assert.equal(safeMigrationError(new MigrationError("Reviewed migration guidance.")), "Reviewed migration guidance.");
+  assert.equal(safeMigrationError(new Error("postgres://private-marker")), genericMigrationFailure);
+  assert.equal(safeMigrationError(Object.assign(new Error("private-marker"), { code: "23505" })), genericMigrationFailure.replace("failed.", "failed (23505)."));
+});
+
+test("real historical preflight errors survive Drizzle wrapping without leaking invalid source values", async () => {
+  const pg = new PGlite();
+  try {
+    const plan = await migrationPlan(), migrations = readMigrationFiles({ migrationsFolder: resolve("drizzle") });
+    const index = plan.findIndex(entry => entry.tag === "0010_native_instants");
+    assert.ok(index > 0);
+    for (const migration of migrations.slice(0, index)) for (const statement of migration.sql) if (statement.trim()) await pg.exec(statement);
+    await pg.query("INSERT INTO event_receipts(id, provider, received_at, payload) VALUES ('invalid-instant', 'test', $1, '{}')", ["private-invalid-instant-marker"]);
+    await assert.rejects(() => pg.exec(migrations[index].sql.join("\n")), (error: unknown) => {
+      assert.equal(safeMigrationError(error), diagnosticPrefix + "event_receipts.received_at=1");
+      assert.equal(safeMigrationError(wrappedError(error)), diagnosticPrefix + "event_receipts.received_at=1");
+      return true;
+    });
+  } finally { await pg.close(); }
 });
 
 test("journal validation rejects unjournaled SQL and changed or newer applied history", async () => {
@@ -153,7 +260,13 @@ test("repository import preserves IDs, exact money and history; resume never ove
   try {
     for (const migration of readMigrationFiles({ migrationsFolder: resolve("drizzle") })) for (const statement of migration.sql) if (statement.trim()) await pg.exec(statement);
     const db = drizzle(pg, { schema }); useTestDatabase(db as unknown as Database);
-    const first = prepareWorkspace(fixture(), mapping()).prepared!;
+    const offsetSource = fixture();
+    offsetSource.leads[0].createdAt = "2026-09-01T15:00:00.000000+05:30";
+    offsetSource.appointments[0].startsAt = "2026-09-01T05:30:00-04:00";
+    offsetSource.subscription = { status: "trial", plan: "Pilot", renewsAt: "2026-09-01T15:00:00+05:30" };
+    const first = prepareWorkspace(offsetSource, mapping()).prepared!;
+    assert.equal(first.workspace.leads[0].createdAt, time);
+    assert.equal(first.workspace.subscription!.renewsAt, time);
     await importPreparedWorkspaces([first]);
     const saved = await loadPostgresWorkspace(first.workspace.id);
     assert.equal(workspaceFingerprint(saved), first.report.fingerprint);
@@ -162,7 +275,10 @@ test("repository import preserves IDs, exact money and history; resume never ove
     assert.equal(saved.leads[0].id, id(2));
     assert.equal(saved.leads[0].value, 65000, "pipeline values remain integer rupees in the current schema");
     assert.equal(saved.appointments[0].startsAt, time);
-    const resume = prepareWorkspace(fixture(), mapping()).prepared!;
+    const canonicalSource = fixture();
+    canonicalSource.subscription = { status: "trial", plan: "Pilot", renewsAt: time };
+    const resume = prepareWorkspace(canonicalSource, mapping()).prepared!;
+    assert.equal(resume.report.fingerprint, first.report.fingerprint, "source and target fingerprints compare instants, not offset spelling");
     await importPreparedWorkspaces([resume], true);
     assert.equal(resume.report.action, "skipped-identical");
     const collisionSource = { ...fixture(), id: id(101) };

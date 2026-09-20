@@ -7,7 +7,8 @@ import { drizzle } from "drizzle-orm/pglite";
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { applyPaymentEvent, createPaymentLink, paymentEventReference } from "../src/lib/providers/payments";
-import { inspectPaymentEvents, processPaymentReceipt, recoverPaymentEvents, retryPaymentEvent, PAYMENT_MAX_ATTEMPTS } from "../src/lib/db/payment-inbox";
+import { acceptPaymentEvent, inspectPaymentEvents, processPaymentReceipt, recoverPaymentEvents, retryPaymentEvent, PAYMENT_MAX_ATTEMPTS } from "../src/lib/db/payment-inbox";
+import { KMSClient } from "@aws-sdk/client-kms";
 import { POST } from "../src/app/api/webhooks/razorpay/[workspaceId]/route";
 import { createWorkspace } from "../src/lib/seed";
 import { uid } from "../src/lib/domain";
@@ -63,7 +64,7 @@ test("admission webhook enforces streamed byte limits and malformed input withou
   assert.equal((await POST(request(stream), params)).status, 413); assert.equal(cancelled, true);
   assert.equal((await POST(request("{}", { "content-length": "99999999" }), params)).status, 413);
   assert.equal((await POST(request(new Uint8Array([255])), params)).status, 400);
-  assert.equal((await POST(request("{}"), params)).status, 403);
+  assert.equal((await POST(request("{}"), params)).status, 503);
   assert.equal((await POST(request("{}"), { params: Promise.resolve({ workspaceId: "invalid" }) })).status, 400);
 });
 
@@ -115,6 +116,32 @@ test("durable signed payment inbox reconciles out-of-order delivery, failures, c
     assert.equal((await deliver(bad)).status, 400);
     assert.equal((await deliver({ event: "subscription.charged" })).status, 200);
     assert.equal((await db.select().from(schema.eventReceipts)).length, 0); assert.equal(requests, 0);
+  });
+  await t.test("only demos are permanently ignored; missing live identity and disconnected credentials remain retryable", async st => {
+    const kms = st.mock.method(KMSClient.prototype, "send", async () => assert.fail("No KMS for demo delivery"));
+    const before = requests;
+    await db.update(schema.organizations).set({ demo: true }).where(eq(schema.organizations.id, workspace.id));
+    try {
+      const unsigned = new NextRequest(`http://localhost/api/webhooks/razorpay/${workspace.id}`, { method: "POST", body: "not even JSON" });
+      const response = await POST(unsigned, { params: Promise.resolve({ workspaceId: workspace.id }) });
+      assert.equal(response.status, 200); assert.deepEqual(await response.json(), { received: true, ignored: true });
+      const raced = await acceptPaymentEvent(workspace.id, paymentEventReference(event)!, rawFor(event), workspace.connections![0], keyId);
+      assert.deepEqual(raced, { received: true, ignored: true });
+      assert.equal((await db.select().from(schema.eventReceipts)).length, 0);
+      assert.equal(kms.mock.callCount(), 0); assert.equal(requests, before);
+    } finally { await db.update(schema.organizations).set({ demo: false, workosId: null }).where(eq(schema.organizations.id, workspace.id)); }
+    try {
+      assert.equal((await deliver(event)).status, 503);
+      assert.equal((await db.select().from(schema.eventReceipts)).length, 0);
+    } finally { await db.update(schema.organizations).set({ workosId: "org_payments" }).where(eq(schema.organizations.id, workspace.id)); }
+    const connection = workspace.connections![0];
+    await db.update(schema.connections).set({ status: "disconnected", secret: null }).where(eq(schema.connections.id, connection.id));
+    try {
+      const response = await deliver(event);
+      assert.equal(response.status, 503); assert.equal(response.headers.get("retry-after"), "30");
+      assert.equal((await db.select().from(schema.eventReceipts)).length, 0);
+    } finally { await db.update(schema.connections).set({ status: "connected", secret: connection.secret }).where(eq(schema.connections.id, connection.id)); }
+    assert.equal(requests, before);
   });
   await t.test("refund before capture is durable before acknowledgement and reconstructs the payment", async () => {
     const first = refund();

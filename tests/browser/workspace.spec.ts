@@ -402,6 +402,19 @@ test("enquiry pagination, stable bulk owners and saved views use the server cont
   await expect(page.getByRole("heading", { name: "No enquiries in this view" })).toBeVisible();
 });
 
+test("enquiry page cap preserves true totals and accessible table labels", async ({ page }) => {
+  const state = await workspace(page);
+  await page.route("**/api/leads?**", route => route.fulfill({ json: { leads: state.leads.slice(0, 25), total: 25001, page: 1, pageSize: 25, hasMore: true } }));
+  await openPage(page, "/leads");
+  const table = page.getByRole("table", { name: "Enquiries", exact: true });
+  await expect(table).toBeVisible();
+  await expect(table.getByRole("columnheader", { name: "Open enquiry", exact: true })).toBeVisible();
+  await expect(page.locator(".pagination > span")).toHaveText("1 / 1000");
+  await expect(page.locator(".table-footer strong")).toHaveText("25001");
+  await expect(page.getByRole("status").filter({ hasText: "Refine your filters" })).toBeVisible();
+  expect((await page.request.get("/api/leads?page=1001&pageSize=25")).status()).toBe(400);
+});
+
 test("demo integrations and billing expose configuration states without live actions", async ({ page }) => {
   await openPage(page, "/integrations");
   await expect(page.locator(".integration-card")).toHaveCount(6);

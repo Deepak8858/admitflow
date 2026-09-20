@@ -34,6 +34,7 @@ test("real connection routes retain receipt bindings and require verified same-a
   Object.assign(process.env, env);
   const pg = new PGlite();
   let calls = 0, subscriptionPosts = 0, malformed = false, foreign = false;
+  const whatsappSubscriptions = new Set<string>();
   let onFetch: (() => Promise<void>) | undefined;
   t.mock.method(globalThis, "fetch", async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
     calls++;
@@ -43,12 +44,12 @@ test("real connection routes retain receipt bindings and require verified same-a
     if (malformed) return new Response("<html>private provider diagnostic</html>", { status: 200 });
     if (url.pathname.endsWith("/phone_numbers")) return Response.json({ data: [{ id: foreign ? "999" : "111", display_phone_number: "+919876543210", verified_name: "Institute" }] });
     if (url.pathname.endsWith("/oauth/access_token")) return Response.json({ access_token: "test-only-token" });
-    if (url.pathname.endsWith("/debug_token")) return Response.json({ data: { is_valid: true, app_id: "321", scopes: ["leads_retrieval", "pages_manage_metadata"] } });
+    if (url.pathname.endsWith("/debug_token")) return Response.json({ data: { is_valid: true, app_id: "321", scopes: ["leads_retrieval", "pages_manage_metadata", "whatsapp_business_management", "whatsapp_business_messaging"] } });
     if (url.pathname.endsWith("/me")) return Response.json({ id: foreign ? "999" : "333", name: "Institute" });
     if (url.pathname.endsWith("/leadgen_forms")) return Response.json({ data: [] });
     if (url.pathname.endsWith("/subscribed_apps")) {
-      if (init?.method === "POST") subscriptionPosts++;
-      return Response.json(init?.method === "POST" ? { success: true } : { data: [] });
+      if (init?.method === "POST") { subscriptionPosts++; if (url.pathname.includes("/222/")) whatsappSubscriptions.add("222"); }
+      return Response.json(init?.method === "POST" ? { success: true } : { data: url.pathname.includes("/222/") && whatsappSubscriptions.has("222") ? [{ whatsapp_business_api_data: { id: "321" } }] : [] });
     }
     if (url.hostname === "api.openai.com") return Response.json({ id: url.pathname.split("/").at(-1) });
     if (url.hostname === "api.elevenlabs.io") return Response.json({ user_id: "test-user" });
@@ -99,7 +100,7 @@ test("real connection routes retain receipt bindings and require verified same-a
       }
       assert.equal(calls, networkBefore, "foreign-account requests must be blocked before provider side effects");
       foreign = true;
-      try { assert.equal((await post(action)).status, service === "whatsapp" ? 400 : 422); } finally { foreign = false; }
+      try { assert.equal((await post(action)).status, 422); } finally { foreign = false; }
       assert.equal((await current()).connections!.find(item => item.service === service)!.status, "disconnected");
       assert.equal((await post(action)).status, 200);
       const restored = (await current()).connections!.find(item => item.service === service)!;
@@ -132,6 +133,34 @@ test("real connection routes retain receipt bindings and require verified same-a
           assert.ok(!(await current()).connections!.some(item => item.service === action.service));
         }
       } finally { malformed = false; }
+    });
+
+    await t.test("AI/speech platform fallback requires no service record; all saved non-connected states fail closed", async () => {
+      for (const service of ["openai", "elevenlabs"] as const) {
+        const readiness = service === "openai" ? "ai" : "speech";
+        const snapshot = await current();
+        assert.ok(!snapshot.connections!.some(item => item.service === service));
+        const platform = await credentials(snapshot, service);
+        assert.equal(platform.apiKey, env[service === "openai" ? "OPENAI_API_KEY" : "ELEVENLABS_API_KEY"]);
+        assert.equal(integrationStatus(snapshot)[readiness], true);
+        const storedKey = service === "openai" ? "sk-test-only-distinct-key" : "sk_test_only_distinct_key";
+        await saveConnection(workspace.id, service, { apiKey: storedKey }, workspace.id, service);
+        const saved = await current(), connection = saved.connections!.find(item => item.service === service)!;
+        assert.equal((await credentials(saved, service)).apiKey, storedKey);
+        assert.equal(integrationStatus(saved)[readiness], true);
+        for (const status of ["unverified", "error", "disconnected"] as const) {
+          for (const secret of [connection.secret, undefined]) {
+            const blocked = { ...snapshot, connections: [...snapshot.connections!, { ...connection, status, secret }] };
+            await assert.rejects(() => credentials(blocked, service), { status: 409 });
+            assert.equal(integrationStatus(blocked)[readiness], false, `${service}: ${status}`);
+          }
+        }
+        const missingSecret = { ...snapshot, connections: [...snapshot.connections!, { ...connection, secret: undefined }] };
+        await assert.rejects(() => credentials(missingSecret, service), { status: 409 });
+        assert.equal(integrationStatus(missingSecret)[readiness], false);
+        // Restore the no-row fixture for the platform-only disconnect coverage below.
+        await mutatePostgresWorkspace(workspace.id, value => { value.connections = value.connections!.filter(item => item.service !== service); });
+      }
     });
 
     await t.test("explicit AI/speech disconnect disables platform fallback and advertised readiness", async () => {

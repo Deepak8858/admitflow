@@ -21,12 +21,18 @@ Implemented flow:
 
 1. An owner/admin opens Integrations → WhatsApp Business and selects **“I already use the WhatsApp Business app.”** The component uses the configured Meta Embedded Signup ID and requests `featureType: "whatsapp_business_app_onboarding"` with session-info version 3.
 2. The browser accepts signup results from the supported Facebook origins and handles both the normal finish and Business-app onboarding finish events. It combines the authorization code with the WABA and phone-number IDs before calling `whatsapp.exchange`.
-3. The server exchanges the code, verifies the authorized number's WABA ownership, subscribes the app and saves a tenant-encrypted connection. Existing Cloud API credentials can also be verified through the manual form. A successful setup records configuration/account verification; a requested coexistence flag alone is not proof of coexistence.
+3. The server exchanges the code and verifies app identity, required scopes and the authorized number's WABA ownership. Manual credentials and Embedded Signup share a hosted-only coordinator: reserve the original account and callback route, record a permanent dispatch marker before any subscription POST, store positive evidence separately, and activate only the current connection generation. A timeout, restart, disconnect or absent subscription read never permits replay of a recorded POST. A successful setup records configuration/account verification; a requested coexistence flag alone is not proof of coexistence.
 4. Configure the public signed webhook at `<APP_BASE_URL>/api/webhooks/whatsapp`, including the applicable `messages` and `smb_message_echoes` subscriptions. Routing resolves the saved phone-number connection, not a browser-supplied workspace.
 5. A **signed Business-app message echo** is recorded as an observed manual send. It transfers that thread to human ownership/pauses AI and can set `metadata.coexistence = "verified"` with `coexistenceVerifiedAt`. Client metadata and demo simulation cannot set that verified state.
 6. The Integrations UI distinguishes requested coexistence from observed verification. The real phone-app send, webhook arrival, Cloud API reply, template delivery and takeover behavior still need to be exercised with the intended account.
 
 An observed signed echo verifies that event path; it does not certify historical chat import, every account capability or WhatsApp calling. Those are not delivered features of this adapter. Do not present a successful button click, phone label or connection row as live coexistence evidence.
+
+## Subscription recovery
+
+An administrator can inspect **Subscription evidence** in the WhatsApp connection dialog. **Check subscription only** uses fresh credentials to verify the exact app on the original WABA without writing a subscription, retaining those credentials or reconnecting. An observed subscription proves current state, not the historical outcome of a timed-out POST. **Verify and reconnect** is a separate deliberate action and can activate only its current connection generation.
+
+Pending setup routes return retryable webhook failures while messaging is disabled. Disconnect removes credentials and readiness but preserves durable evidence and unresolved callback routing; positive reconciliation of that disconnect restores normal ignored-callback behavior without reconnecting. If Meta reports absent or unreadable state after a recorded attempt, operators must investigate Meta configuration externally. There is no force-reset or automatic uncertain replay. Migration `0012` must be applied before live setup; each WABA/app pair is reserved to one institute.
 
 ## Controlled autonomous behavior
 
@@ -71,7 +77,7 @@ For a credential-free preview, leave `DATABASE_URL` unset and run `npm run dev`.
 
 ## Evidence and remaining provider checks
 
-The [backend verification record](backend-verification.md) covers signed tenant routing, echoes, duplicate/out-of-order callbacks, acceptance races, guarded dispatch, restart/retry behavior, mock speech/media and provider-free demos. The **94 passing backend/service tests** were the historical 12 September count. Use the [README handoff](../README.md) for the later 175-application/8-infrastructure and 38-browser-test record, and [verification](verification.md) for scoped provenance. Neither historical nor later local checks establish live account connectivity.
+The [backend verification record](backend-verification.md) covers signed tenant routing, echoes, duplicate/out-of-order callbacks, acceptance races, guarded dispatch, restart/retry behavior, mock speech/media and provider-free demos. The **94 passing backend/service tests** were the historical 12 September count. Use the dated [README handoff](../README.md) and [verification](verification.md) for subsequent scoped results; those runs do not establish validation of later repairs. Neither historical nor later local checks establish live account connectivity.
 
 A configured pilot must still verify the actual existing number's eligibility, coexistence-enabled Meta config/app permissions, approved templates, both phone-app and Cloud API sends, signed callback delivery, human/AI ownership changes, the selected OpenAI model and ElevenLabs voice, and private R2 media behavior. Actual account review, throughput/limits, fees and provider quality are external deployment inputs, not capabilities certified by this handoff.
 

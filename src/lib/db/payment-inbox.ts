@@ -32,7 +32,8 @@ export async function acceptPaymentEvent(workspaceId: string, reference: Payment
   const payload: State = { version: 1, reference, connectionId: connection.id, keyFingerprint: fingerprint(keyId), attempts: 0, status: "pending", nextAttemptAt: isoNow() };
   return tenantTransaction(workspaceId, async tx => {
     const [org] = await tx.select().from(organizations).where(eq(organizations.id, workspaceId)).for("update");
-    assert(org && !org.demo && org.workosId, "This institute cannot receive hosted payments.", 409);
+    if (org?.demo) return { received: true, ignored: true };
+    assert(org?.workosId, "This institute cannot receive hosted payments. Restore its identity configuration and retry.", 503);
     const [active] = await tx.select().from(connections).where(and(eq(connections.organizationId, workspaceId), eq(connections.id, connection.id), eq(connections.service, "razorpay")));
     assert(active?.status === "connected" && active.secret === connection.secret, "The payment connection changed. Retry delivery.", 503);
     await tx.insert(eventReceipts).values({ id, organizationId: workspaceId, provider: PROVIDER, receivedAt: isoNow(), payload }).onConflictDoNothing();

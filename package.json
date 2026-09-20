@@ -19,6 +19,7 @@
     "verify:browser": "node scripts/verify.mjs --browser",
     "preflight": "tsx scripts/preflight.ts",
     "payments:inspect": "tsx scripts/payments.ts",
+    "intake:retention": "tsx scripts/intake-retention.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:import-sqlite": "tsx scripts/migrate-sqlite.ts",
@@ -75,6 +76,7 @@
     "constructs": "^10.8.1",
     "drizzle-kit": "^0.31.10",
     "esbuild": "0.28.2",
+    "sharp": "^0.35.4",
     "tsx": "latest",
     "typescript": "^5.9.0"
   }

@@ -9,6 +9,7 @@ import { addActivity, isoNow, normalizePhone, uid, type Lead, type Workspace } f
 import { AppError, assert } from "../errors";
 import { loadWorkspace, mutateWorkspace } from "../store";
 import { graph } from "./meta";
+import { INTAKE_MAX_AGE_MS } from "../intake-retention-policy";
 
 const metaId = z.string().regex(/^\d{1,80}$/);
 import { metaLeadFormSchema as leadSchema } from "../intake-types";
@@ -120,13 +121,21 @@ async function processLead(event: MetaLeadEvent) {
     return row;
   });
   if (receipt.processedAt || receipt.organizationId !== route.organizationId) return { duplicate: true };
+  if (Date.parse(receipt.receivedAt) + INTAKE_MAX_AGE_MS <= Date.now()) {
+    await tenantTransaction(route.organizationId, tx => tx.update(eventReceipts).set({ payload: {}, processedAt: isoNow(), error: null }).where(and(eq(eventReceipts.id, receiptId), eq(eventReceipts.organizationId, route.organizationId))));
+    return { expired: true };
+  }
   try {
     const workspace = await loadWorkspace(route.organizationId), connection = connectionFor(workspace, "meta_leads");
     assert(connection?.externalId === event.pageId, "The Meta Page connection needs to be restored before this enquiry can be imported.", 409);
     const { acceptIntake, storedMetaIntake } = await import("../db/intake");
     const stored = await storedMetaIntake(route.organizationId, event.pageId, event.leadgenId);
-    const form = stored?.payload.service === "meta_leads" ? stored.payload.form : leadSchema.parse(await graph(`${event.leadgenId}?fields=id,created_time,field_data,form_id,ad_id`, (await credentials(workspace, "meta_leads")).accessToken));
-    const result = await acceptIntake(route.organizationId, connection.id, event.pageId, { service: "meta_leads", event, form });
+    if (stored && !stored.payload) {
+      await tenantTransaction(route.organizationId, tx => tx.update(eventReceipts).set({ payload: {}, processedAt: isoNow(), error: null }).where(and(eq(eventReceipts.id, receiptId), eq(eventReceipts.organizationId, route.organizationId))));
+      return { duplicate: true, expired: true };
+    }
+    const form = stored?.payload?.service === "meta_leads" ? stored.payload.form : leadSchema.parse(await graph(`${event.leadgenId}?fields=id,created_time,field_data,form_id,ad_id`, (await credentials(workspace, "meta_leads")).accessToken));
+    const result = await acceptIntake(route.organizationId, connection.id, event.pageId, { service: "meta_leads", event, form }, receipt.receivedAt);
     await mutateWorkspace(route.organizationId, current => {
       const active = connectionFor(current, "meta_leads");
       if (active?.id === connection.id && active.externalId === event.pageId) {

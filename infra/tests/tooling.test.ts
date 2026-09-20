@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { AppError } from "../../src/lib/errors";
-import { safeErrorClass, safePaymentError } from "../../scripts/operational-diagnostics";
+import { safeErrorClass, safeJobName, safePaymentError } from "../../scripts/operational-diagnostics";
 import { writeJsonAtomic } from "../../scripts/atomic-json.mjs";
 
 async function temporaryDirectory() {
@@ -28,6 +28,8 @@ test("payment diagnostics preserve only reviewed fixed AppError guidance", () =>
 });
 
 test("worker diagnostics retain known classes without exposing messages or arbitrary names", () => {
+  assert.equal(safeJobName("execute"), "execute");
+  for (const name of [undefined, "fixture-secret", "execute\nfixture-secret", {}]) assert.equal(safeJobName(name), "unknown");
   assert.equal(safeErrorClass(new TypeError("fixture-secret")), "TypeError");
   assert.equal(safeErrorClass(new AppError("fixture-secret")), "AppError");
   assert.equal(safeErrorClass(Object.assign(new Error("fixture-secret"), { name: "fixture-secret" })), "Error");

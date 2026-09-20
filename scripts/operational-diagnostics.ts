@@ -14,6 +14,9 @@ export function safePaymentError(error: unknown): string {
   return "Payment inspection/replay failed. Check arguments, database configuration and the receipt's state; no automatic merchant rebind was performed.";
 }
 
+/** Redis job names are not trusted diagnostic text. */
+export function safeJobName(name: unknown): string { return name === "execute" ? "execute" : "unknown"; }
+
 const errorClasses = new Set(["Error", "TypeError", "RangeError", "SyntaxError", "ReferenceError", "URIError", "EvalError", "AggregateError", "AppError", "ZodError"]);
 /** Error.name is mutable too: unknown classes must not become a channel for sensitive data. */
 export function safeErrorClass(error: unknown): string {

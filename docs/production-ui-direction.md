@@ -1,6 +1,6 @@
 # AdmitFlow — production UI direction
 
-Direction recorded 12 September 2026; documentation refreshed 19 September. **Accepted direction implemented across the light 12-screen workspace.** The [README handoff](../README.md) records **38 local browser tests passed in 9.7 minutes**, including the chart/200% CSS-zoom fix. [Verification](verification.md) preserves earlier attempts and scoped evidence. These are prior recorded runs, not fresh validation of subsequent review repairs or live-provider behavior.
+Direction recorded 12 September 2026; documentation refreshed 19 September. **Accepted direction implemented across the light 12-screen workspace.** Use the [README handoff](../README.md) and [verification ledger](verification.md) for dated browser-test results, commands and scoped evidence, including the chart/200% CSS-zoom fix. Recorded runs do not validate subsequent review repairs or live-provider behavior.
 
 ## Accepted direction and current implementation
 
@@ -74,7 +74,7 @@ Navigation visibility follows permissions. Enquiry links and `/inbox?conversatio
 - Visual foundation: `src/app/tokens.css`, `workspace.css`, `surfaces.css`, `responsive.css`; imported by the root layout/global stylesheet.
 - Screen behavior: `leads.tsx`, `inbox.tsx`, `recovery.tsx`, `appointments.tsx`, `overview.tsx`, `configuration.tsx`, `billing.tsx`, `whatsapp-connect.tsx` and `onboarding.tsx` under `src/components/`.
 
-**Local browser QA is recorded, not pending:** use the README's later 38-test run and the verification ledger for exact coverage and earlier failures. Rerun affected checks after changes to the 12 routes, narrow-screen navigation/table scrolling, dialog focus, role-restricted controls, exact monetary display or demo autonomy/takeover paths. Old nine-test MVP results and old screenshots remain historical only.
+**Local browser QA is recorded, not pending:** use the README and dated verification ledger for the latest run, exact coverage and earlier failures. Rerun affected checks after changes to the 12 routes, narrow-screen navigation/table scrolling, dialog focus, role-restricted controls, exact monetary display or demo autonomy/takeover paths. Old nine-test MVP results and old screenshots remain historical only.
 
 Preserve the implemented distinction between configured accounts, requested/verified coexistence, provider acceptance, actual delivery and unresolved sends. Autonomous mode and a Business-app echo must retain human control; local simulation must stay visibly separate from live verification. Booking acceptance and Google sync confirmation, and recorded versus provider-confirmed money, likewise need distinct labels.
 

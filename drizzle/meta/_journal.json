@@ -71,6 +71,27 @@
       "when": 1789831574262,
       "tag": "0009_connection_binding",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789836949404,
+      "tag": "0010_native_instants",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789837720493,
+      "tag": "0011_intake_retention",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789885800000,
+      "tag": "0012_whatsapp_subscription_operations",
+      "breakpoints": true
     }
   ]
 }

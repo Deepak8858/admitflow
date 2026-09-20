@@ -51,6 +51,11 @@ export function appointmentProposal(workspace: Workspace, action: Record<string,
 
 export function applyAction(workspace: Workspace, action: Record<string, unknown>): unknown {
   hydrateWorkspace(workspace);
+  return applyHydratedAction(workspace, action);
+}
+
+/** Internal dispatch only: the public boundary hydrates exactly once. */
+function applyHydratedAction(workspace: Workspace, action: Record<string, unknown>): unknown {
   switch (action.type) {
     case "lead.create": {
       const input = leadInput.parse(action.lead);
@@ -210,7 +215,7 @@ export function applyAction(workspace: Workspace, action: Record<string, unknown
       const assignment = input.owner !== undefined || input.ownerId !== undefined ? resolveOwner(workspace, input) : {};
       const ids = [...new Set(input.ids)];
       ids.forEach(id => findLead(workspace, id));
-      for (const id of ids) applyAction(workspace, { type: "lead.update", id, changes: { ...assignment, ...(input.stage ? { stage: input.stage } : {}) } });
+      for (const id of ids) applyHydratedAction(workspace, { type: "lead.update", id, changes: { ...assignment, ...(input.stage ? { stage: input.stage } : {}) } });
       return { updated: ids.length };
     }
     case "message.read": {

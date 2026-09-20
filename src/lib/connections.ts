@@ -22,8 +22,8 @@ export function validateConnectionCredentials(service: Connection["service"], se
 }
 export async function credentials(workspace: Workspace, service: Connection["service"]): Promise<Record<string, string>> {
   assert(!workspace.demo, "Demo workspaces do not use live provider credentials.", 409);
-  assert(!workspace.connections?.some(item => item.service === service && item.status === "disconnected"), `Connect ${service} in Integrations first.`, 409);
-  const connection = connectionFor(workspace, service);
+  const connection = workspace.connections?.find(item => item.service === service);
+  assert(!connection || (connection.status === "connected" && connection.secret), `Connect ${service} in Integrations first.`, 409);
   if (connection?.secret) {
     const value = await openSecret(connection.secret, workspace.id);
     validateConnectionCredentials(service, value, connection.externalId, connection.metadata);
@@ -61,7 +61,7 @@ function nextConnectionTime(connection?: Connection) {
   const previous = Date.parse(connection?.updatedAt || "");
   return new Date(Math.max(Date.now(), Number.isFinite(previous) ? previous + 1 : 0)).toISOString();
 }
-/** Retain receipt identity, but never a usable credential or active routing after disconnect. */
+/** Retain identity, never usable credentials. Unresolved setup routes only return retryable callbacks. */
 export async function disconnectConnection(workspaceId: string, service: Connection["service"]) {
   return mutateWorkspace(workspaceId, workspace => {
     let connection = workspace.connections?.find(item => item.service === service);
@@ -73,7 +73,10 @@ export async function disconnectConnection(workspaceId: string, service: Connect
     connection.status = "disconnected";
     delete connection.secret;
     connection.updatedAt = nextConnectionTime(connection);
-    connection.metadata = service === "whatsapp" ? { wabaId: connection.metadata.wabaId || "" } : {};
+    connection.metadata = service === "whatsapp" ? {
+      wabaId: connection.metadata.wabaId || "",
+      ...(connection.metadata.subscriptionPending === "true" ? { subscriptionPending: "true", subscriptionOperationId: connection.metadata.subscriptionOperationId, setupGeneration: connection.metadata.setupGeneration, subscriptionStatus: "disconnected_pending" } : {}),
+    } : {};
   });
 }
 /** Receipt-bearing accounts cannot be silently rebound, even after disconnect. */

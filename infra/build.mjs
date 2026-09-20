@@ -10,6 +10,7 @@ await build({
     migrate: "scripts/migrate.ts",
     "migrate-sqlite": "scripts/migrate-sqlite.ts",
     payments: "scripts/payments.ts",
+    "intake-retention": "scripts/intake-retention.ts",
     preflight: "scripts/preflight.ts",
   },
   outdir: process.argv[2] || "dist", outExtension: { ".js": ".mjs" },

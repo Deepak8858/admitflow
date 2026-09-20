@@ -13,11 +13,11 @@ test("connection migration rejects legacy orphan receipts without deleting or re
     for (const file of (await readdir("drizzle")).filter(file => file.endsWith(".sql") && file < "0009").sort()) await pg.exec(await readFile(`drizzle/${file}`, "utf8"));
     const db = drizzle(pg, { schema }), workspace = createWorkspace(false);
     await db.insert(schema.organizations).values({ id: workspace.id, name: "Legacy institute", ownerName: "Owner", demo: false, sequence: workspace.sequence, ai: workspace.ai!, subscription: workspace.subscription! });
-    await db.insert(schema.intakeInbox).values({ id: "legacy-orphan", organizationId: workspace.id, connectionId: uid(), service: "whatsapp", externalId: "111", contactKey: "+919876543210", receivedAt: isoNow(), state: "deferred", payload: { service: "whatsapp", event: { id: "legacy", from: "919876543210", body: "Retained enquiry", verified: true } } });
-    const before = await db.select().from(schema.intakeInbox);
+    await pg.query("insert into intake_inbox (id, organization_id, connection_id, service, external_id, contact_key, received_at, state, payload) values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)", ["legacy-orphan", workspace.id, uid(), "whatsapp", "111", "+919876543210", isoNow(), "deferred", JSON.stringify({ service: "whatsapp", event: { id: "legacy", from: "919876543210", body: "Retained enquiry", verified: true } })]);
+    const before = (await pg.query("select * from intake_inbox")).rows;
     const migration = await readFile("drizzle/0009_connection_binding.sql", "utf8");
     await assert.rejects(() => pg.transaction(tx => tx.exec(migration)), /foreign key constraint/);
-    assert.deepEqual(await db.select().from(schema.intakeInbox), before);
+    assert.deepEqual((await pg.query("select * from intake_inbox")).rows, before);
     assert.equal((await db.select().from(schema.connections)).length, 0);
     const result = await pg.query<{ present: string | null }>("select to_regclass('public.connections_tenant_binding')::text as present");
     assert.equal(result.rows[0].present, null, "the failed migration rolls back its new index too");

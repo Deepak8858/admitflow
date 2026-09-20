@@ -17,8 +17,11 @@ import { SubscriptionRestricted, jobCapability } from "./subscription-policy";
 type Actor = NonNullable<Workspace["actor"]>;
 export function integrationStatus(workspace: Workspace) {
   const live = !workspace.demo;
-  const platform = (service: "openai" | "elevenlabs", key?: string) => !workspace.connections?.some(item => item.service === service && item.status === "disconnected") && validProviderKey(service, key);
-  return { ai: live && Boolean(connectionFor(workspace, "openai") || platform("openai", process.env.OPENAI_API_KEY)), whatsapp: live && Boolean(connectionFor(workspace, "whatsapp")), template: live && Boolean(connectionFor(workspace, "whatsapp")?.metadata.templateName), storage: live && storageConfigured(), speech: live && Boolean(connectionFor(workspace, "elevenlabs") || platform("elevenlabs", process.env.ELEVENLABS_API_KEY)), calendar: live && Boolean(connectionFor(workspace, "google")), payments: live && Boolean(connectionFor(workspace, "razorpay")), auth: workosConfigured(), metaAppId: process.env.NEXT_PUBLIC_META_APP_ID || "", metaConfigId: process.env.NEXT_PUBLIC_META_CONFIG_ID || "", metaVersion: metaVersion() };
+  const provider = (service: "openai" | "elevenlabs", key?: string) => {
+    const connection = workspace.connections?.find(item => item.service === service);
+    return connection ? connection.status === "connected" && Boolean(connection.secret) : validProviderKey(service, key);
+  };
+  return { ai: live && provider("openai", process.env.OPENAI_API_KEY), whatsapp: live && Boolean(connectionFor(workspace, "whatsapp")), template: live && Boolean(connectionFor(workspace, "whatsapp")?.metadata.templateName), storage: live && storageConfigured(), speech: live && provider("elevenlabs", process.env.ELEVENLABS_API_KEY), calendar: live && Boolean(connectionFor(workspace, "google")), payments: live && Boolean(connectionFor(workspace, "razorpay")), auth: workosConfigured(), metaAppId: process.env.NEXT_PUBLIC_META_APP_ID || "", metaConfigId: process.env.NEXT_PUBLIC_META_CONFIG_ID || "", metaVersion: metaVersion() };
 }
 export function publicWorkspace(workspace: Workspace, actor?: Actor) {
   const scoped = scopeWorkspace(workspace, actor || workspace.actor || { id: workspace.id, name: workspace.userName, email: workspace.email, role: "owner", backend: "local" });

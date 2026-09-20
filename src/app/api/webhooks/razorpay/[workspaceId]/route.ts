@@ -15,10 +15,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { workspaceId } = await params; z.uuid().parse(workspaceId);
     const raw = await readLimitedText(request, 500_000);
+    assert(productionDatabase(), "Hosted payment delivery requires PostgreSQL.", 503);
+    const workspace = await loadWorkspace(workspaceId);
+    // Demo delivery has no business effect and must never open live credentials.
+    if (workspace.demo) return NextResponse.json({ received: true, ignored: true });
     const signature = request.headers.get("x-razorpay-signature") || "";
     if (!/^[a-f0-9]{64}$/.test(signature)) return new NextResponse("Invalid signature", { status: 403 });
-    assert(productionDatabase(), "Hosted payment delivery requires PostgreSQL.", 503);
-    const workspace = await loadWorkspace(workspaceId), secret = await credentials(workspace, "razorpay");
+    const secret = await credentials(workspace, "razorpay");
     assert(secret.webhookSecret, "Payment webhook signing is not configured.", 503);
     if (!validSignature(raw, signature, secret.webhookSecret, "")) return new NextResponse("Invalid signature", { status: 403 });
     const reference = paymentEventReference(JSON.parse(raw));

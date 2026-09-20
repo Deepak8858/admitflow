@@ -72,7 +72,16 @@ test("subscription snapshots form an additive chain without modeled schema drift
   for (const [name, table] of Object.entries(eight.tables)) {
     if (!["public.connections", "public.intake_inbox"].includes(name)) assert.deepEqual(nine.tables[name], table);
   }
-  assert.deepEqual(await generateMigration(nine, generateDrizzleJson(schema, nine.id)), []);
+  const ten = JSON.parse(await readFile("drizzle/meta/0010_snapshot.json", "utf8"));
+  assert.equal(ten.prevId, nine.id);
+  assert.deepEqual(Object.keys(ten.tables), Object.keys(nine.tables));
+  let latest = ten;
+  for (const file of (await readdir("drizzle/meta")).filter(file => /^\d{4}_snapshot\.json$/.test(file) && file > "0010_snapshot.json").sort()) {
+    const snapshot = JSON.parse(await readFile(`drizzle/meta/${file}`, "utf8"));
+    assert.equal(snapshot.prevId, latest.id, `${file} must extend the previous snapshot`);
+    latest = snapshot;
+  }
+  assert.deepEqual(await generateMigration(latest, generateDrizzleJson(schema, latest.id)), []);
   // RLS, immutable-ledger triggers and custom SQL checks are migration-owned, as in prior snapshots.
   // Their behavior is exercised separately against all SQL migrations in PGlite.
 });

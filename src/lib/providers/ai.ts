@@ -30,7 +30,7 @@ export async function generateReply(workspace: Workspace, lead: Lead, question?:
   assert(canonical, "Enquiry not found in your workspace.", 404);
   lead = canonical;
   if (!workspace.demo) await requirePaidCapability(workspace.id);
-  const thread = workspace.messages.filter(message => message.leadId === lead.id && (message.direction === "inbound" || (message.direction === "outbound" && ["sent", "delivered", "read", "demo"].includes(message.status)))).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).slice(-12);
+  const thread = workspace.messages.filter(message => message.leadId === lead.id && (message.direction === "inbound" || (message.direction === "outbound" && ["sent", "delivered", "read", "demo"].includes(message.status)))).sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt)).slice(-12);
   const query = question || thread.filter(message => message.direction === "inbound").at(-1)?.body || lead.notes;
   const { sources, retrievalMode, retrievalNote } = await retrieveKnowledge(workspace, query);
   const settings = { ...DEFAULT_AI, ...workspace.ai };

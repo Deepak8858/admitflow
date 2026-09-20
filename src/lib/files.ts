@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand, CopyObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { assert } from "./errors";
@@ -8,9 +9,13 @@ import { readLimitedBytes } from "./http";
 
 type Actor = NonNullable<Workspace["actor"]>;
 export function storageConfigured() { return Boolean(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_BUCKET); }
+let storageClient: { fingerprint: string; client: S3Client } | undefined;
 function storage() {
+  if (!storageConfigured()) storageClient = undefined;
   assert(storageConfigured(), "Configure Cloudflare R2 to upload files.", 503);
-  return new S3Client({ region: "auto", endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY! } });
+  const fingerprint = createHash("sha256").update(JSON.stringify([process.env.R2_ACCOUNT_ID, process.env.R2_ACCESS_KEY_ID, process.env.R2_SECRET_ACCESS_KEY, process.env.R2_BUCKET])).digest("hex");
+  if (storageClient?.fingerprint !== fingerprint) storageClient = { fingerprint, client: new S3Client({ region: "auto", endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY! } }) };
+  return storageClient.client;
 }
 export const MAX_FILE_SIZE = 10_000_000;
 export const FILE_TYPES = ["application/pdf", "text/plain", "text/csv", "image/jpeg", "image/png", "image/webp", "audio/mpeg", "audio/ogg", "audio/mp4", "audio/webm", "audio/wav", "audio/aac", "audio/amr"];

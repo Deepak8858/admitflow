@@ -6,6 +6,7 @@ export interface WorkspaceStreamOptions {
   validateMembership: () => Promise<boolean>;
   pollMs?: number;
   heartbeatMs?: number;
+  membershipMs?: number;
   lifetimeMs?: number;
 }
 
@@ -16,7 +17,7 @@ export function revisionEvent(workspaceId: string, revision: number) {
 
 /** Dependency-injected so revocation, transport cleanup and revision behavior are testable without a provider. */
 export function workspaceEventStream(options: WorkspaceStreamOptions) {
-  const { signal, workspaceId, readRevision, validateMembership, initialRevision, pollMs = 5000, heartbeatMs = 15000, lifetimeMs = 55000 } = options;
+  const { signal, workspaceId, readRevision, validateMembership, initialRevision, pollMs = 5000, heartbeatMs = 15000, membershipMs = 30000, lifetimeMs = 55000 } = options;
   let cleanup = () => {};
   return new ReadableStream<Uint8Array>({
     start(controller) {
@@ -42,7 +43,7 @@ export function workspaceEventStream(options: WorkspaceStreamOptions) {
         try {
           const next = await readRevision();
           if (closed) return;
-          if (next !== revision || Date.now() - validatedAt >= heartbeatMs) {
+          if (next !== revision || Date.now() - validatedAt >= membershipMs) {
             const allowed = await validateMembership();
             if (closed) return;
             if (!allowed) { send('event: revoked\ndata: {"reason":"membership_changed"}\n\n'); close(); return; }

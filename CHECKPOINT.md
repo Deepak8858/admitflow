@@ -1,10 +1,10 @@
 # AdmitFlow — implementation handoff
 
-Documentation refreshed 19 September 2026. Workspace: `H:\new-app`.
+Documentation refreshed 20 September 2026. Integration workspace: `H:\new-app`.
 
 ## Resume from here
 
-The latest review-repair evidence is the [19 September README handoff](README.md): **236 application tests, 14 infrastructure tests and 38 browser tests in 13.0 minutes**, with full verification/browser exit 0. Workflow lint and redacted history/source scans passed; fresh audits report zero production vulnerabilities and four moderate dev-only findings. Repaired-commit Linux CI/CodeRabbit review and configured-environment gates are still pending. [Verification](docs/verification.md) preserves earlier attempts and scoped evidence; the [deployment runbook](docs/deployment.md) owns current recovery procedures and launch gates. Use the complete [Drizzle journal](drizzle/meta/_journal.json), not a historical migration count.
+Start from the [current README handoff](README.md) and [dated verification ledger](docs/verification.md), not the historical counts below. The complete review repairs passed isolated application/infra/Python tests, typechecks/builds and all 40 browser tests on 20 September. Native timestamps, bounded intake retention and durable WhatsApp recovery are integrated. Repaired-commit Linux CI/fresh CodeRabbit review and configured-environment gates remain pending. The [deployment runbook](docs/deployment.md) owns recovery and launch gates. Apply the complete [Drizzle journal](drizzle/meta/_journal.json), currently through `0012_whatsapp_subscription_operations`.
 
 Subscription enforcement and deferred enquiry intake supersede the earlier paid-access planning below. Live coexistence, provider/cloud setup, independent access review, Docker execution, capacity and restore checks remain separate gates. No historical local test run establishes deployment readiness.
 
@@ -21,7 +21,7 @@ Access repair is implemented in `src/lib/db/team-access.ts`, actual auth/team ro
 Read these current implementation records first:
 
 1. [README](README.md) — practical preview/setup commands.
-2. [Verification](docs/verification.md) — scoped results and historical evidence; the README records the later 38-test browser run.
+2. [Verification](docs/verification.md) — current scoped results, corrected failures and historical evidence.
 3. [Backend verification](docs/backend-verification.md) — API contracts, identity/dispatch/booking behavior and measured projection limits.
 4. [Connected services](docs/connected-services.md) — WorkOS team, Google, Meta intake, SSE and SaaS billing.
 5. [Deployment](docs/deployment.md) — AWS, secrets, images, migrations, import, audit and rollback.

@@ -58,7 +58,9 @@ export function DeferredIntakePanel() {
     <div style={{ padding: "0 23px 24px" }}>
       {query.isError && <p role="alert" className="inline-error">{query.error.message}</p>}
       {query.data && <>
-        <p><strong>{query.data.count}{query.data.capped ? "+" : ""}</strong> events awaiting review.</p>
+        <p><strong>{query.data.count}{query.data.capped ? "+" : ""}</strong> available events awaiting review.</p>
+        <p><strong>{query.data.expiredCount}</strong> expired events. Their payloads are unrecoverable; contact safety holds remain.</p>
+        <p className="field-note">Raw intake expires 30 days after receipt, or seven days after import if earlier. Imported CRM records follow a separate lifecycle.</p>
         <p className="field-note">{query.data.message} Each batch contains up to 25 events, not necessarily 25 new enquiries. Enquiry limits apply to the whole batch.</p>
         {query.data.needsConnection && <p className="field-note">Some events require their original provider connection. Restore that connection before retrying them.</p>}
         <Button action={{ type: "intake.import" }} loading={busy} disabled={!query.data.count || query.isFetching} onClick={() => void importBatch()}>{after ? "Import next batch" : "Import up to 25 events"}</Button>

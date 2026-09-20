@@ -1,8 +1,21 @@
 # AdmitFlow verification and open follow-up
 
-Updated 19 September 2026. Results distinguish the first-release review repairs from earlier subscription/access/payment hardening and UI baselines.
+Updated 20 September 2026. Results distinguish the complete review repairs from earlier release, subscription/access/payment and UI baselines.
 
-## Current release-repair evidence — 19 September
+## Current review-repair evidence — 20 September
+
+- Full isolated `npm run verify` passed: **289 application tests**, infrastructure tests, project/infra typechecks, Next production build, six service bundles, operational syntax/help checks, and the **13-migration dry run through 0012**. Three Python audio-tooling tests also passed. The final chained browser command ran only after verifier success.
+- Fresh isolated `npm run verify:browser`: **40 passed in 13.5 minutes**, one worker and disposable SQLite. This includes WhatsApp evidence/check-only/deliberate-reconnect behavior and capped enquiry pagination with true totals.
+- Native timestamp migration covers the historical 31 columns with strict UTC conversion, safe preflight counts and rollback; later migrations use the same instant adapter. Intake enforces 30 elapsed days from receipt and earlier seven-day post-import redaction, keeps deduplication and keyed safety holds, and prevents Meta payload refetch after expiry.
+- Deterministic deadline regressions cover hydration, per-row application and awaited persistence/receipt writes, including whole-batch rollback and cleanup ordering. The final deadline check is at the end of the transaction callback, not the subsequent database COMMIT/acknowledgment. PGlite serialization is not a live multi-connection PostgreSQL concurrency certification.
+- Durable WhatsApp setup reserves routing before a one-time dispatch marker, preserves positive evidence across disconnect, and separates read-only reconciliation from deliberate activation. Uncertain writes are never automatically replayed.
+- Focused final child checks passed **38 intake/subscription tests** and **24 migration/historical-timestamp tests (18 infrastructure plus six timestamp tests)**, with respective typechecks, before integration and the full rerun.
+- Workflow actionlint passed with optional ShellCheck/Pyflakes disabled. Fully redacted Gitleaks scans found no leaks in six Git commits and a fresh 5.54 MB publishable-source snapshot. Production lockfile audit reported **0 vulnerabilities**; the earlier full-audit dev-only findings below remain historical, not a fresh full-audit claim. No application lint script exists.
+- Retained failures: initial browser verification passed 38/40. The new required-field locator was corrected, and the zoom test now waits for a working theme interaction before modifying the SSR body; its hydration-error assertion remains. A corrected run passed 40/40 in 11.8 minutes, followed by the final 13.5-minute run after both backend patches.
+
+These are local/mock-provider results from session command output. Repaired-commit Linux CI and fresh CodeRabbit review remain publication gates. Live intake additionally requires populated upgrade/key-backfill and scrubbed-restore rehearsals, verified finite backup retention, and configured provider/runtime roles. No production migration, cloud deployment or provider readiness is claimed.
+
+## Earlier release-repair evidence — 19 September
 
 - Uninterrupted `npm run verify`: **236 application tests**, **14 infrastructure tests**, project/infra TypeScript, Next production build, five service bundles, operational syntax/help checks and the **ten-migration dry run through 0009** passed; explicit `VERIFY_EXIT=0`. A separate isolated infrastructure confirmation passed 14/14 with `INFRA_EXIT=0`.
 - Fresh isolated `npm run verify:browser`: **38 passed in 13.0 minutes**, one worker, disposable SQLite, explicit `BROWSER_EXIT=0`. This is automated fixture coverage, not separate manual visual or live-provider acceptance.
@@ -100,10 +113,10 @@ The [deployment runbook](deployment.md) records the eight tooling tests and scop
 - Read-only SQLite input, coherent WAL backup, default offline report, demo exclusion and omission of credential/session content from reports.
 - Repository import round-trip, ID/money/history preservation, preflight collision rejection and resume that refuses changed tenants.
 
-The normal Drizzle journal now includes ten migrations, `0000` through `0009_connection_binding`, including `0008_org_provisioning`; all snapshots are included. Preserve the immutable institute trial ledger and intake receipts during restores; see [subscription rollout and recovery](deployment.md#subscription-rollout-and-recovery). The optional `drizzle/optional/pgvector.sql` remains separate; local tests cover the extension-absent fallback, not a real vector-enabled deployment.
+The normal Drizzle journal includes 13 migrations, `0000` through `0012_whatsapp_subscription_operations`, with linked snapshots. Preserve immutable trial, intake and external-operation evidence during restores; apply the retention scrub before restarting writers. See [subscription rollout and recovery](deployment.md#subscription-rollout-and-recovery). The optional `drizzle/optional/pgvector.sql` remains separate; local tests cover the extension-absent fallback, not a real vector-enabled deployment.
 
-## Browser QA — fresh local/fixture run
-`node scripts/verify.mjs --browser` reports **37 passed in 21.3 minutes** on 19 September, using one worker and default Chromium against disposable SQLite. The 19-test runs on 16–18 September are baseline history. In addition to the subscription regressions documented above, the suite includes:
+## Browser QA — local/fixture coverage
+The latest complete run reports **40 passed in 13.5 minutes** on 20 September, using one worker and default Chromium against disposable SQLite. Earlier runs retain their dates and counts above. In addition to the subscription and final review regressions, coverage includes:
 
 1. CSV → recovery → inbox → counselling → receipt persistence, local registration/sign-in, and cross-origin/cross-workspace rejection checks.
 2. Exact recovery collections and distinct paid-student chart data, including multiple receipts and a refund.

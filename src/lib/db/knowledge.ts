@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { and, eq, inArray, sql, desc } from "drizzle-orm";
 import { tenantTransaction } from "./repository";
-import { knowledgeChunks, articles } from "./schema";
+import { knowledgeChunks, articles, organizations } from "./schema";
 import { articleChunks, lexicalSources } from "./chunks";
 import { type Workspace, uid } from "../domain";
 import { productionDatabase } from "../config";
@@ -20,14 +20,29 @@ export async function vectorAvailable(workspaceId: string) {
     return result.rows[0]?.available === true;
   });
 }
-async function ensureChunks(workspaceId: string, articleId: string) {
+async function ensureChunks(workspaceId: string, articleIds: string[]) {
+  const ids = [...new Set(articleIds)].sort();
+  if (!ids.length) return;
   return tenantTransaction(workspaceId, async tx => {
-    const [article] = await tx.select().from(articles).where(and(eq(articles.organizationId, workspaceId), eq(articles.id, articleId))).for("update");
-    if (!article) return;
-    const [existing] = await tx.select({ id: knowledgeChunks.id }).from(knowledgeChunks).where(and(eq(knowledgeChunks.organizationId, workspaceId), eq(knowledgeChunks.articleId, articleId))).limit(1);
-    if (existing) return;
-    const chunks = articleChunks({ ...article, fileId: article.fileId || undefined });
-    if (chunks.length) await tx.insert(knowledgeChunks).values(chunks.map(chunk => ({ ...chunk, id: uid(), organizationId: workspaceId, articleId })));
+    const indexed = await tx.selectDistinct({ id: knowledgeChunks.articleId }).from(knowledgeChunks).where(and(eq(knowledgeChunks.organizationId, workspaceId), inArray(knowledgeChunks.articleId, ids)));
+    const existingIds = new Set(indexed.map(article => article.id));
+    const missing = ids.filter(id => !existingIds.has(id));
+    if (!missing.length) return;
+    // Match aggregate writers' tenant-first lock order before locking article rows.
+    await tx.select({ id: organizations.id }).from(organizations).where(eq(organizations.id, workspaceId)).for("update");
+    const locked = await tx.select().from(articles).where(and(eq(articles.organizationId, workspaceId), inArray(articles.id, missing))).orderBy(articles.id).for("update");
+    // Another backfill/edit may have won while locks were pending. Never replace its chunks.
+    const indexedAfterLock = await tx.selectDistinct({ id: knowledgeChunks.articleId }).from(knowledgeChunks).where(and(eq(knowledgeChunks.organizationId, workspaceId), inArray(knowledgeChunks.articleId, missing)));
+    const present = new Set(indexedAfterLock.map(article => article.id));
+    const batch: (typeof knowledgeChunks.$inferInsert)[] = [];
+    for (const article of locked) {
+      if (present.has(article.id)) continue;
+      for (const chunk of articleChunks({ ...article, fileId: article.fileId || undefined })) {
+        batch.push({ ...chunk, id: uid(), organizationId: workspaceId, articleId: article.id });
+        if (batch.length === 100) { await tx.insert(knowledgeChunks).values(batch); batch.length = 0; }
+      }
+    }
+    if (batch.length) await tx.insert(knowledgeChunks).values(batch);
   });
 }
 function vectorLiteral(vector: number[]) {
@@ -37,7 +52,7 @@ function vectorLiteral(vector: number[]) {
 export async function indexKnowledgeEmbeddings(workspaceId: string, articleId: string) {
   const workspace = await loadWorkspace(workspaceId);
   if (workspace.demo || !productionDatabase()) return { retrievalMode: "keyword", retrievalNote: "Local keyword retrieval; no provider calls." };
-  await ensureChunks(workspaceId, articleId);
+  await ensureChunks(workspaceId, [articleId]);
   if (process.env.KNOWLEDGE_VECTOR_ENABLED !== "true") return { retrievalMode: "full-text", retrievalNote: "Vector indexing is not enabled." };
   if (!(await vectorAvailable(workspaceId))) return { retrievalMode: "full-text", retrievalNote: "The optional pgvector migration is not installed; full-text retrieval is active." };
   const chunks = await tenantTransaction(workspaceId, tx => tx.select({ id: knowledgeChunks.id, title: knowledgeChunks.title, body: knowledgeChunks.body, contentHash: knowledgeChunks.contentHash }).from(knowledgeChunks).where(and(eq(knowledgeChunks.organizationId, workspaceId), eq(knowledgeChunks.articleId, articleId), sql`embedding is null`)));
@@ -67,9 +82,7 @@ export async function retrieveKnowledge(workspace: Workspace, query: string): Pr
   if (workspace.demo || !productionDatabase()) return { sources: lexicalSources(allowed, query), retrievalMode: "keyword" };
   const ids = allowed.map(article => article.id);
   if (!ids.length) return { sources: [], retrievalMode: "full-text" };
-  const indexedArticles = await tenantTransaction(workspace.id, tx => tx.selectDistinct({ id: knowledgeChunks.articleId }).from(knowledgeChunks).where(and(eq(knowledgeChunks.organizationId, workspace.id), inArray(knowledgeChunks.articleId, ids))));
-  const indexedIds = new Set(indexedArticles.map(article => article.id));
-  for (const id of ids) if (!indexedIds.has(id)) await ensureChunks(workspace.id, id);
+  await ensureChunks(workspace.id, ids);
   const search = (query.match(/[\p{L}\p{N}]{2,}/gu) || []).slice(0, 32).join(" OR ");
   const fallback = await tenantTransaction(workspace.id, async tx => {
     const rank = sql<number>`ts_rank_cd(${knowledgeChunks.search}, websearch_to_tsquery('english', ${search}))`;

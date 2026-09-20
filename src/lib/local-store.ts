@@ -5,6 +5,7 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { createWorkspace } from "./seed";
 import { type Workspace, DAY } from "./domain";
 import { AppError } from "./errors";
+import { normalizeWorkspaceInstants } from "./instants";
 
 const globalStore = globalThis as unknown as { admitflowDb?: DatabaseSync };
 export function database() {
@@ -25,9 +26,10 @@ const digest = (token: string) => createHash("sha256").update(token).digest("hex
 export function loadWorkspace(id: string): Workspace {
   const row = database().prepare("SELECT data FROM workspaces WHERE id = ?").get(id) as { data: string } | undefined;
   if (!row) throw new AppError("Workspace not found. Sign in again.");
-  return JSON.parse(row.data) as Workspace;
+  return normalizeWorkspaceInstants(JSON.parse(row.data) as Workspace);
 }
 export function saveNewWorkspace(workspace: Workspace) {
+  normalizeWorkspaceInstants(workspace);
   database().prepare("INSERT INTO workspaces (id, data) VALUES (?, ?)").run(workspace.id, JSON.stringify(workspace));
 }
 export function mutateWorkspace<T>(id: string, action: (workspace: Workspace) => T): { workspace: Workspace; result: T } {
@@ -36,6 +38,7 @@ export function mutateWorkspace<T>(id: string, action: (workspace: Workspace) =>
   try {
     const workspace = loadWorkspace(id);
     const result = action(workspace);
+    normalizeWorkspaceInstants(workspace);
     db.prepare("UPDATE workspaces SET data = ? WHERE id = ?").run(JSON.stringify(workspace), id);
     db.exec("COMMIT");
     return { workspace, result };
@@ -62,16 +65,24 @@ function passwordMatches(password: string, stored: string) {
   const [salt, hash] = stored.split(":");
   return timingSafeEqual(Buffer.from(hash, "hex"), scryptSync(password, salt, 64));
 }
+const authenticationFailure = () => new AppError("Authentication could not be completed. Please try again.", 400, "AUTHENTICATION_FAILED");
 export function register(email: string, password: string, name: string, institute: string) {
   const db = database();
-  if (db.prepare("SELECT email FROM users WHERE email = ?").get(email)) throw new AppError("This email is already registered. Sign in instead.");
+  if (db.prepare("SELECT email FROM users WHERE email = ?").get(email)) throw authenticationFailure();
   const workspace = createWorkspace(false);
   workspace.name = institute; workspace.userName = name; workspace.email = email; workspace.team = [name];
   const hash = passwordHash(password);
   db.exec("BEGIN IMMEDIATE");
   try {
     saveNewWorkspace(workspace);
-    db.prepare("INSERT INTO users (email, password_hash, workspace_id) VALUES (?, ?, ?)").run(email, hash, workspace.id);
+    try { db.prepare("INSERT INTO users (email, password_hash, workspace_id) VALUES (?, ?, ?)").run(email, hash, workspace.id); }
+    catch (error) {
+      // A second connection can win after the precheck. Only sanitize the users
+      // primary/unique constraint here; unrelated storage errors remain generic 500s.
+      const code = error && typeof error === "object" && "errcode" in error ? error.errcode : undefined;
+      if (code === 1555 || code === 2067) throw authenticationFailure();
+      throw error;
+    }
     const token = createSession(workspace.id);
     db.exec("COMMIT");
     return { workspace, token };

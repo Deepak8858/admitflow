@@ -80,12 +80,14 @@ test("HA context accepts boolean and CLI forms and synthesizes matching service/
 });
 
 test("entrypoint translates secret injection into TLS REDIS_URL without persisting the password field", () => {
-  const env = prepareEnvironment({ ADMITFLOW_PROCESS_ROLE: "worker", DATABASE_URL: "postgres://test", REDIS_HOST: "queue.internal", REDIS_PORT: "6379", REDIS_PASSWORD: "test:/@password", REDIS_TLS: "true" });
+  const INTAKE_CONTACT_KEYS = JSON.stringify([Buffer.alloc(32, 17).toString("base64")]);
+  const env = prepareEnvironment({ ADMITFLOW_PROCESS_ROLE: "worker", DATABASE_URL: "postgres://test", INTAKE_CONTACT_KEYS, REDIS_HOST: "queue.internal", REDIS_PORT: "6379", REDIS_PASSWORD: "test:/@password", REDIS_TLS: "true" });
   const url = new URL(env.REDIS_URL);
   assert.equal(url.protocol, "rediss:");
   assert.equal(url.hostname, "queue.internal");
   assert.equal(decodeURIComponent(url.password), "test:/@password");
   assert(!("REDIS_PASSWORD" in env));
   assert.throws(() => prepareEnvironment({ ADMITFLOW_PROCESS_ROLE: "web" }), /DATABASE_URL/);
-  assert.throws(() => prepareEnvironment({ ADMITFLOW_PROCESS_ROLE: "worker", DATABASE_URL: "postgres://test", REDIS_HOST: "queue.internal", REDIS_PASSWORD: "test", REDIS_TLS: "false" }), /REDIS_TLS/);
+  assert.throws(() => prepareEnvironment({ ADMITFLOW_PROCESS_ROLE: "worker", DATABASE_URL: "postgres://test", INTAKE_CONTACT_KEYS, REDIS_HOST: "queue.internal", REDIS_PASSWORD: "test", REDIS_TLS: "false" }), /REDIS_TLS/);
+  for (const value of ["", "[]", "bad", JSON.stringify(["short"])]) assert.throws(() => prepareEnvironment({ ADMITFLOW_PROCESS_ROLE: "worker", DATABASE_URL: "postgres://test", INTAKE_CONTACT_KEYS: value, REDIS_HOST: "queue.internal", REDIS_PASSWORD: "test", REDIS_TLS: "true" }), /INTAKE_CONTACT_KEYS/);
 });

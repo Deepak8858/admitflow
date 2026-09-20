@@ -156,10 +156,10 @@ test("billing plans, tenant binding, lifecycle projection and checkout redirects
   assert.throws(() => projectBillingSubscription(active, { ...entity, id: "sub_Other" }, "Institute"));
 });
 
-test("SSE validates membership before changes, heartbeats, and closes on revocation", { timeout: 10000 }, async t => {
+test("SSE validates membership before changes, periodically, and closes on revocation", { timeout: 10000 }, async t => {
   const abort = new AbortController(); t.after(() => abort.abort());
   let revision = 4, allowed = true, checks = 0;
-  const reader = workspaceEventStream({ workspaceId: "institute_a", signal: abort.signal, initialRevision: revision, readRevision: async () => revision, validateMembership: async () => { checks++; return allowed; }, pollMs: 10, heartbeatMs: 20, lifetimeMs: 8000 }).getReader();
+  const reader = workspaceEventStream({ workspaceId: "institute_a", signal: abort.signal, initialRevision: revision, readRevision: async () => revision, validateMembership: async () => { checks++; return allowed; }, pollMs: 10, heartbeatMs: 20, membershipMs: 20, lifetimeMs: 8000 }).getReader();
   assert.match(decode((await reader.read()).value), /event: change\ndata: \{"workspaceId":"institute_a","revision":4\}/);
   revision = 5;
   assert.match(decode((await reader.read()).value), /id: 5\nevent: change/);

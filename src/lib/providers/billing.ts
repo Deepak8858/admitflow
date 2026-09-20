@@ -150,6 +150,29 @@ async function planOption(plan: BillingPlan): Promise<BillingPlanOption> {
   assert(result.success && result.data.id === plan.razorpayPlanId, "The configured billing plan could not be verified with Razorpay.", 502);
   return { id: plan.id, name: plan.name, description: plan.description, totalCount: plan.totalCount, amount: result.data.item.amount, currency: result.data.item.currency, period: result.data.period, interval: result.data.interval, limits: normalizedPlanLimits(plan) };
 }
+const OVERVIEW_PLAN_TTL_MS = 5 * 60_000;
+let overviewConfiguration = "";
+const overviewPlans = new Map<string, { promise: Promise<BillingPlanOption>; expiresAt?: number }>();
+function syncOverviewConfiguration() {
+  const fingerprint = createHash("sha256").update(JSON.stringify([process.env.BILLING_RAZORPAY_KEY_ID, process.env.BILLING_RAZORPAY_KEY_SECRET, process.env.BILLING_RAZORPAY_ACCOUNT_ID, process.env.BILLING_RAZORPAY_WEBHOOK_SECRET, process.env.BILLING_PLANS_JSON, process.env.DATABASE_URL])).digest("hex");
+  if (overviewConfiguration !== fingerprint) { overviewPlans.clear(); overviewConfiguration = fingerprint; }
+}
+function overviewPlanOption(plan: BillingPlan): Promise<BillingPlanOption> {
+  const cached = overviewPlans.get(plan.id);
+  if (cached && (cached.expiresAt === undefined || cached.expiresAt > Date.now())) return cached.promise.then(option => structuredClone(option));
+  // Only validated catalog members reach this function (at most 12); failures never remain cached.
+  const entry: { promise: Promise<BillingPlanOption>; expiresAt?: number } = { promise: planOption(plan) };
+  overviewPlans.set(plan.id, entry);
+  entry.promise = entry.promise.then(option => {
+    entry.expiresAt = Date.now() + OVERVIEW_PLAN_TTL_MS;
+    return option;
+  }, error => {
+    if (overviewPlans.get(plan.id) === entry) overviewPlans.delete(plan.id);
+    throw error;
+  });
+  return entry.promise.then(option => structuredClone(option));
+}
+
 export function billingCheckoutUrl(value: string | null | undefined) {
   if (!value) return undefined;
   try {
@@ -483,6 +506,7 @@ export async function listBillingInvoices(workspace: Workspace, page = 1): Promi
 }
 
 export async function billingOverview(workspace: Workspace): Promise<BillingOverview> {
+  syncOverviewConfiguration();
   const subscription = workspace.subscription || { status: "trial" as const, plan: "Pilot" };
   if (workspace.demo) return { mode: "demo", subscription, plans: [], canCancel: false, entitlements: await readBillingEntitlements(workspace), message: "Demo workspace · no subscription is purchased and no payment is collected." };
   let config: ReturnType<typeof billingSetup>;
@@ -492,7 +516,7 @@ export async function billingOverview(workspace: Workspace): Promise<BillingOver
     const latest = subscription.providerId && productionDatabase() && process.env.BILLING_RAZORPAY_KEY_ID && process.env.BILLING_RAZORPAY_KEY_SECRET ? await refreshSubscription(workspace.id, subscription.providerId) : undefined;
     return { mode: "setup", subscription: latest?.subscription || subscription, plans: [], providerStatus: latest?.entity.status, canCancel: Boolean(latest && !terminal(latest.entity.status)), entitlements: await readBillingEntitlements(workspace), message: error instanceof AppError ? error.message : "Platform billing setup is incomplete." };
   }
-  const options = await Promise.all(config.plans.map(planOption));
+  const options = await Promise.all(config.plans.map(overviewPlanOption));
   const latest = subscription.providerId ? await refreshSubscription(workspace.id, subscription.providerId) : undefined;
   const entity = latest?.entity;
   return { mode: config.keyId.startsWith("rzp_test_") ? "test" : "live", subscription: latest?.subscription || subscription, plans: options, providerStatus: entity?.status, checkoutUrl: entity && ["created", "authenticated"].includes(entity.status) ? billingCheckoutUrl(entity.short_url) : undefined, canCancel: Boolean(entity && !terminal(entity.status)), entitlements: await readBillingEntitlements(workspace), message: config.keyId.startsWith("rzp_test_") ? "Razorpay test mode. Test subscriptions do not collect a live payment." : "Your AdmitFlow subscription is billed separately from student fees collected by your institute." };

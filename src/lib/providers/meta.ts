@@ -179,6 +179,8 @@ export async function processMetaPayload(raw: unknown, verified = false) {
       const [route] = await database().select().from(connectionRoutes).where(and(eq(connectionRoutes.service, "whatsapp"), eq(connectionRoutes.externalId, phoneId)));
       if (!route) continue;
       const snapshot = await loadWorkspace(route.organizationId), connection = connectionFor(snapshot, "whatsapp");
+      const retained = snapshot.connections?.find(item => item.service === "whatsapp" && item.externalId === phoneId);
+      assert(retained?.metadata.subscriptionPending !== "true", "WhatsApp setup is pending reconciliation. Retry delivery after setup is completed.", 503);
       if (snapshot.demo || connection?.externalId !== phoneId) continue;
       // Status/safety deliveries are independent of a new enquiry in the same batch.
       if (value.statuses?.length) await mutateWorkspace(route.organizationId, workspace => {

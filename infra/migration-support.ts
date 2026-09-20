@@ -76,9 +76,68 @@ export async function runMigrations(folder = resolve(process.cwd(), "drizzle")) 
   }
 }
 
+// Keep this exact pair allowlist tied to the historical 0010 preflight, not the current schema.
+const legacyInstantColumns = new Set([
+  "activities.created_at", "appointments.starts_at", "articles.updated_at", "campaigns.created_at", "connections.updated_at",
+  "event_receipts.received_at", "event_receipts.processed_at", "files.created_at", "files.finalized_at",
+  "institute_trials.started_at", "institute_trials.ends_at", "intake_inbox.received_at", "intake_inbox.processed_at",
+  "jobs.due_at", "jobs.locked_at", "jobs.dispatched_at", "leads.next_action_at", "leads.created_at", "leads.last_contact_at",
+  "leads.last_inbound_at", "leads.consent_at", "messages.created_at", "messages.received_at", "messages.status_at",
+  "messages.dispatched_at", "organization_provisioning.created_at", "organization_provisioning.updated_at",
+  "organization_provisioning.acknowledged_at", "payments.recorded_at", "refunds.recorded_at", "tasks.due_at",
+]);
+const legacyInstantPrefix = "Invalid legacy instant counts: ";
+
+function legacyInstantDiagnostic(message: string) {
+  if (message.length > 2048 || !message.startsWith(legacyInstantPrefix)) return;
+  const entries = message.slice(legacyInstantPrefix.length).split(", ");
+  if (entries.length > legacyInstantColumns.size) return;
+  const seen = new Set<string>(), counts: string[] = [];
+  for (const entry of entries) {
+    const match = /^([a-z_]+\.[a-z_]+)=([1-9][0-9]{0,15})$/.exec(entry);
+    // Equality also rejects a final newline, which JavaScript's $ anchor permits.
+    if (!match || match[0] !== entry || !legacyInstantColumns.has(match[1]) || seen.has(match[1])) return;
+    const count = Number(match[2]);
+    if (!Number.isSafeInteger(count) || count <= 0) return;
+    seen.add(match[1]); counts.push(`${match[1]}=${count}`);
+  }
+  return legacyInstantPrefix + counts.join(", ");
+}
+
+// Do not invoke getters or coerce arbitrary provider objects while formatting failures.
+function ownErrorValue(error: object, key: string): unknown {
+  const property = Object.getOwnPropertyDescriptor(error, key);
+  if ((property && !("value" in property)) || (!property && key in error)) throw new Error("Invalid error property");
+  return property?.value;
+}
+
+function wrappedLegacyInstantDiagnostic(error: unknown) {
+  const seen = new Set<object>();
+  let current = error;
+  // Eight total objects covers Drizzle/transaction wrappers without unbounded cause walks.
+  for (let depth = 0; depth < 8; depth++) {
+    if (!current || typeof current !== "object" || Array.isArray(current) || seen.has(current)) return;
+    seen.add(current);
+    const message = ownErrorValue(current, "message"), code = ownErrorValue(current, "code"), cause = ownErrorValue(current, "cause");
+    if (typeof message !== "string") return;
+    if (cause === undefined || cause === null) return code === "22007" ? legacyInstantDiagnostic(message) : undefined;
+    // Only a terminal database error qualifies; cycles/malformed tails never expose a partial match.
+    current = cause;
+  }
+}
+
 /** Database/provider errors can include queries or credentials, so only emit reviewed messages/codes. */
 export function safeMigrationError(error: unknown) {
-  if (error instanceof MigrationError) return error.message;
-  const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
-  return `Migration failed${/^[A-Z0-9_]{2,32}$/.test(code) ? ` (${code})` : ""}. Check the database connection, permissions and reviewed migration files.`;
+  let code = "";
+  try {
+    if (error instanceof MigrationError) return error.message;
+    const value = error && typeof error === "object" ? ownErrorValue(error, "code") : undefined;
+    if (typeof value === "string" || (typeof value === "number" && Number.isSafeInteger(value))) {
+      const candidate = String(value);
+      if (/^[A-Z0-9_]{2,32}$/.exec(candidate)?.[0] === candidate) code = candidate;
+    }
+    const diagnostic = wrappedLegacyInstantDiagnostic(error);
+    if (diagnostic) return diagnostic;
+  } catch { /* Malformed wrappers and accessors fail closed without their messages. */ }
+  return `Migration failed${code ? ` (${code})` : ""}. Check the database connection, permissions and reviewed migration files.`;
 }

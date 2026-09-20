@@ -149,7 +149,7 @@ export function resolveOwner(workspace: Workspace, input: { owner?: string; owne
 export function latestInbound(workspace: Workspace, lead: Lead) {
   const messages = workspace.messages.filter(message => message.leadId === lead.id && message.direction === "inbound");
   return messages.find(message => message.id === lead.lastInboundMessageId)
-    || messages.sort((a, b) => a.createdAt.localeCompare(b.createdAt) || (a.receivedAt || a.createdAt).localeCompare(b.receivedAt || b.createdAt) || a.id.localeCompare(b.id)).at(-1);
+    || messages.sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt) || Date.parse(a.receivedAt || a.createdAt) - Date.parse(b.receivedAt || b.createdAt) || a.id.localeCompare(b.id)).at(-1);
 }
 
 export function laterTimestamp(first: string | null | undefined, second: string) {
@@ -231,7 +231,7 @@ export function sortLeads(leads: Lead[], sort: LeadSort = "newest", now = Date.n
   if (!LEAD_SORTS.includes(sort)) throw new Error("Unsupported enquiry sort.");
   const scores = sort === "intent" ? new Map(leads.map(lead => [lead.id, scoreLead(lead, now).score])) : undefined;
   return [...leads].sort((a, b) => (sort === "intent" ? scores!.get(b.id)! - scores!.get(a.id)! : sort === "name" ? codePointOrder(leadNameKey(a.name), leadNameKey(b.name)) : 0)
-    || b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
+    || Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id));
 }
 
 export function recoverableLeads(workspace: Workspace, now = Date.now()) {

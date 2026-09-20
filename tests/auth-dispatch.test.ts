@@ -71,7 +71,8 @@ test("local auth preserves expected errors, valid sessions and logout demo while
   const workspaceId = local.sessionWorkspace(cookie.value)!;
   assert.ok(workspaceId);
   const duplicate = await route.POST(request({ type: "register", ...credentials }));
-  assert.equal(duplicate.status, 400); assert.match((await duplicate.json()).error, /already registered/);
+  assert.equal(duplicate.status, 400); assert.equal((await duplicate.json()).error, "Authentication could not be completed. Please try again.");
+  assert.equal(duplicate.headers.get("set-cookie"), null);
   for (const email of [credentials.email, "missing@example.com"]) {
     const response = await route.POST(request({ type: "login", email, password: "wrong-password" }));
     assert.equal(response.status, 400); assert.equal((await response.json()).error, "Email or password did not match. Please try again.");
@@ -91,6 +92,39 @@ test("local auth preserves expected errors, valid sessions and logout demo while
   const limited = await route.POST(request({ type: "login", email: rateEmail, password: "password-long" }));
   assert.equal(limited.status, 400); assert.match((await limited.json()).error, /Too many sign-in attempts/);
   assert.throws(() => local.loadWorkspace("missing"), AppError);
+});
+
+test("raced local registrations return the same generic error and roll back workspace/session writes", async t => {
+  assert.equal(process.env.ADMITFLOW_DB, ":memory:");
+  const original = await isolatedModule<typeof import("../src/lib/local-store")>("src/lib/local-store.ts", {}, [], {} as typeof globalThis);
+  const db = original.database(); t.after(() => db.close());
+  original.register("race@example.com", "password-long", "Owner", "Institute");
+  const counts = () => ["users", "workspaces", "sessions"].map(table => db.prepare(`SELECT count(*) AS count FROM ${table}`).get()!.count);
+  const before = counts();
+  let unexpected = false;
+  const racedDb = {
+    exec: (sql: string) => db.exec(sql),
+    prepare: (sql: string) => {
+      // Simulate another SQLite connection winning between SELECT and BEGIN.
+      if (sql === "SELECT email FROM users WHERE email = ?") return { get: () => undefined };
+      if (unexpected && sql.startsWith("INSERT INTO users")) return { run: () => { throw new Error(sensitive); } };
+      return db.prepare(sql);
+    },
+  };
+  const local = await isolatedModule<typeof import("../src/lib/local-store")>("src/lib/local-store.ts", {}, [], { admitflowDb: racedDb } as unknown as typeof globalThis);
+  const logs: unknown[][] = [], route = await authRoute(local, false, logs);
+  const response = await route.POST(request({ type: "register", email: "race@example.com", password: "password-long" }));
+  assert.equal(response.status, 400);
+  const body = await response.json();
+  assert.equal(body.error, "Authentication could not be completed. Please try again.");
+  assert.equal(body.code, "AUTHENTICATION_FAILED"); assert.equal(response.headers.get("set-cookie"), null);
+  assert.deepEqual(counts(), before);
+  assert.throws(() => original.register("race@example.com", "password-long", "Owner", "Institute"), (error: unknown) => error instanceof AppError && error.code === body.code && error.message === body.error);
+  unexpected = true;
+  const failed = await route.POST(request({ type: "register", email: "new@example.com", password: "password-long" }));
+  assert.equal(failed.status, 500); assert.equal(failed.headers.get("set-cookie"), null);
+  assert.ok(!(await failed.text()).includes(sensitive)); assert.ok(!JSON.stringify(logs).includes(sensitive));
+  assert.deepEqual(counts(), before, "unexpected insert failures also roll back the newly created workspace");
 });
 
 test("request parse/validation errors remain 400 but unexpected auth execution failures are generic 500", async () => {

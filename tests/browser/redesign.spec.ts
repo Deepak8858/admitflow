@@ -241,6 +241,12 @@ test("200 percent CSS zoom keeps public and workspace content reachable", async 
   for (const route of [...publicRoutes, ...routes]) {
     await page.goto(route);
     await expect(page.locator("h1")).toBeVisible();
+    // A visible SSR heading does not mean hydration has attached handlers yet.
+    const theme = page.getByRole("combobox", { name: "Colour theme" });
+    await theme.selectOption("dark");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await theme.selectOption("light");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await page.evaluate(() => { document.body.style.zoom = "2"; });
     await noOverflow(page);
   }

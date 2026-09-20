@@ -27,7 +27,7 @@ export interface AdmitFlowStackProps extends StackProps {
 
 // Every selected JSON key must exist in the existing secret. Optional providers use empty strings.
 export const SHARED_SECRET_KEYS = [
-  "DATABASE_URL", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET",
+  "DATABASE_URL", "INTAKE_CONTACT_KEYS", "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET",
   "OPENAI_API_KEY", "ELEVENLABS_API_KEY", "ELEVENLABS_VOICE_ID",
   "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
   "BILLING_RAZORPAY_KEY_ID", "BILLING_RAZORPAY_KEY_SECRET", "BILLING_PLANS_JSON",

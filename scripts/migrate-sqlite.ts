@@ -16,6 +16,7 @@ import { createPostgresWorkspace, loadPostgresWorkspace } from "../src/lib/db/re
 import * as tables from "../src/lib/db/schema";
 import { hydrateWorkspace, normalizePhone, STAGES, type Workspace, type Member } from "../src/lib/domain";
 import { MigrationError, migrationPlan, safeMigrationError, unpooledDatabaseUrl, verifyMigrationHistory } from "../infra/migration-support";
+import { normalizeWorkspaceInstants } from "../src/lib/instants";
 
 type TenantTable = PgTable & { id: AnyPgColumn; organizationId: AnyPgColumn };
 export const COLLECTIONS = {
@@ -108,7 +109,8 @@ function storedValue(name: Collection, row: RecordData, key: string, fallback: u
 }
 
 /** Compare all persisted business fields, IDs, relationships and money, allowing database defaults. */
-export function workspaceFingerprint(workspace: Workspace): string {
+export function workspaceFingerprint(source: Workspace): string {
+  const workspace = normalizeWorkspaceInstants(structuredClone(source));
   const collections = Object.fromEntries(collectionNames.map(name => {
     const columns = getTableColumns(COLLECTIONS[name]);
     return [name, rows(workspace, name).map(row => Object.fromEntries(Object.entries(columns)
@@ -145,7 +147,6 @@ function validateRecords(workspace: Workspace, issues: string[]) {
         else if (column.dataType === "string" && typeof value !== "string") issues.push(`${label}.${key}: expected text.`);
         else if (column.dataType === "boolean" && typeof value !== "boolean") issues.push(`${label}.${key}: expected a boolean.`);
         else if (sqlType === "integer" && (typeof value !== "number" || !Number.isInteger(value) || value < -2_147_483_648 || value > 2_147_483_647)) issues.push(`${label}.${key}: outside the PostgreSQL integer range.`);
-        if (key.endsWith("At") && (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T.+(?:Z|[+-]\d{2}:\d{2})$/.test(value) || !Number.isFinite(Date.parse(value)))) issues.push(`${label}.${key}: a timestamp with an explicit UTC offset is required.`);
       }
     }
   }
@@ -282,6 +283,9 @@ export function prepareWorkspace(raw: unknown, mapping: WorkspaceMapping | undef
     if (owner) { workspace.userName = owner.name; workspace.email = owner.email; }
     workspace.team = [...new Set(workspace.members.filter(member => member.status === "active" && member.role !== "analyst").map(member => member.name))];
   }
+  // Validate explicit instant fields before hydration or any fingerprint; never repair audit history.
+  try { normalizeWorkspaceInstants(workspace); }
+  catch (error) { report.issues.push((error as RangeError).message); return { report }; }
   // Set explicit members before hydration: never synthesize identities from names.
   workspace.members ||= [];
   hydrateWorkspace(workspace);

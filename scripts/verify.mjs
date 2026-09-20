@@ -12,6 +12,7 @@ export function verificationEnvironment(parent, template, directory) {
   // Extract variable NAMES only. Empty values prevent Next/dotenv loading .env.local credentials.
   for (const match of template.matchAll(/^\s*(?:#\s*)?([A-Z][A-Z0-9_]*)=/gm)) env[match[1]] = "";
   Object.assign(env, { DATABASE_URL: "", DATABASE_URL_UNPOOLED: "", ADMITFLOW_DB: ":memory:", ADMITFLOW_BROWSER_DB: join(directory, "browser.sqlite"), APP_BASE_URL: "", NEXT_TELEMETRY_DISABLED: "1", KNOWLEDGE_VECTOR_ENABLED: "false", AWS_EC2_METADATA_DISABLED: "true" });
+  env.INTAKE_CONTACT_KEYS = JSON.stringify([Buffer.alloc(32, 17).toString("base64")]);
   return env;
 }
 
@@ -25,7 +26,7 @@ function main() {
   const tsc = ["node_modules/typescript/bin/tsc", "--noEmit", "--incremental", "false"];
   const builds = [["node_modules/typescript/bin/tsc", "-p", "infra/tsconfig.json", "--pretty", "false"],
     ["node_modules/next/dist/bin/next", "build"], ["infra/build.mjs"], ["--check", "dist/worker.mjs"],
-    ["--check", "dist/payments.mjs"], ["--check", "dist/preflight.mjs"], ["dist/payments.mjs", "--help"], ["dist/preflight.mjs", "--help"],
+    ["--check", "dist/payments.mjs"], ["--check", "dist/preflight.mjs"], ["--check", "dist/intake-retention.mjs"], ["dist/intake-retention.mjs", "--help"], ["dist/payments.mjs", "--help"], ["dist/preflight.mjs", "--help"],
     ["node_modules/tsx/dist/cli.mjs", "scripts/migrate.ts", "--dry-run"]];
   const commands = mode === "--payments" ? [["node_modules/tsx/dist/cli.mjs", "--test", "tests/payments.test.ts"], tsc]
     : mode === "--access" ? [["node_modules/tsx/dist/cli.mjs", "--test", "tests/team-access.test.ts", "tests/connected-services.test.ts"], tsc]
@@ -35,6 +36,10 @@ function main() {
     : mode === "--build" ? builds
     : [["node_modules/tsx/dist/cli.mjs", "--test", "tests/*.test.ts"], ["node_modules/tsx/dist/cli.mjs", "--test", "infra/tests/*.test.ts"], tsc, ...builds];
   try {
+    if (mode === "--all") {
+      const python = spawnSync(process.platform === "win32" ? "python" : "python3", ["-m", "unittest", "discover", "-s", "tests", "-p", "tooling_audio_test.py"], { cwd: root, env, stdio: "inherit", timeout: 60000 });
+      if (python.error || python.status !== 0) { process.exitCode = python.status || 1; return; }
+    }
     for (const args of commands) {
       console.log("Verification:", args.join(" "));
       const childEnv = { ...env };

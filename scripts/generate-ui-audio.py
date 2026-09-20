@@ -37,11 +37,11 @@ def generate():
             raise RuntimeError("Existing audio submission needs reconciliation; no automatic retry")
         if target.exists():
             raise RuntimeError("Audio output already exists; refusing to overwrite")
+        payload = {"text": sample["transcript"], "model_id": CONFIG["model_id"], "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}}
+        request = urllib.request.Request("https://api.elevenlabs.io/v1/text-to-speech/" + CONFIG["voice_id"] + "?output_format=mp3_44100_128", data=json.dumps(payload).encode(), headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json", "Accept": "audio/mpeg"})
         record = {**sample, "provider": CONFIG["provider"], "model_id": CONFIG["model_id"], "voice_id": CONFIG["voice_id"], "voice_name": CONFIG["voice_name"], "status": "submitting"}
         with record_path.open("x", encoding="utf-8") as file:
             json.dump(record, file, indent=2)
-        payload = {"text": sample["transcript"], "model_id": CONFIG["model_id"], "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}}
-        request = urllib.request.Request("https://api.elevenlabs.io/v1/text-to-speech/" + CONFIG["voice_id"] + "?output_format=mp3_44100_128", data=json.dumps(payload).encode(), headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Content-Type": "application/json", "Accept": "audio/mpeg"})
         try:
             with images.OPENER.open(request, timeout=120) as response:
                 if "audio/" not in response.headers.get("Content-Type", ""):

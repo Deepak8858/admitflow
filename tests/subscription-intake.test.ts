@@ -181,6 +181,31 @@ test("hosted intake, actual workspace routes and restricted worker recovery", { 
       assert.equal((await acceptIntake(f.workspace.id, connectionId, "5555", payload)).result.duplicate, true);
     });
 
+    await t.test("Meta retries never refetch redacted forms or restart the original receipt deadline", async () => {
+      const { processMetaLeadPayload } = await import("../src/lib/providers/meta-leads");
+      const { cleanIntakeRetention } = await import("../src/lib/db/intake-retention");
+      const { INTAKE_MAX_AGE_MS } = await import("../src/lib/intake-retention-policy");
+      const f = await fixture(); await f.restrict();
+      const connectionId = uid(), pageId = "5566";
+      await mutatePostgresWorkspace(f.workspace.id, current => { current.connections!.push({ id: connectionId, service: "meta_leads", status: "connected", externalId: pageId, label: "Page", updatedAt: isoNow(), metadata: {} }); });
+      const payload: IntakePayload = { service: "meta_leads", event: { pageId, leadgenId: "5567" }, form: { id: "5567", field_data: [{ name: "phone_number", values: ["+919876543216"] }] } };
+      await acceptIntake(f.workspace.id, connectionId, pageId, payload);
+      await tenantTransaction(f.workspace.id, tx => tx.update(schema.intakeInbox).set({ expiresAt: new Date(Date.now() - 1).toISOString() }).where(eq(schema.intakeInbox.connectionId, connectionId)));
+      const deliver = (id: string) => processMetaLeadPayload({ object: "page", entry: [{ id: pageId, changes: [{ field: "leadgen", value: { leadgen_id: id } }] }] });
+      await deliver("5567");
+      assert.ok((await f.rows())[0].payload, "logical expiry works before physical cleanup");
+      await cleanIntakeRetention(f.workspace.id);
+      await deliver("5567");
+      assert.equal((await f.rows())[0].payload, null);
+      const receiptId = `meta_leads:${pageId}:5568`, originalAt = new Date(Date.now() - INTAKE_MAX_AGE_MS - 1).toISOString();
+      await tenantTransaction(f.workspace.id, tx => tx.insert(schema.eventReceipts).values({ id: receiptId, organizationId: f.workspace.id, provider: "meta_leads", receivedAt: originalAt, payload: { pageId, leadgenId: "5568" } }));
+      await deliver("5568"); await deliver("5568");
+      const [receipt] = await tenantTransaction(f.workspace.id, tx => tx.select().from(schema.eventReceipts).where(eq(schema.eventReceipts.id, receiptId)));
+      assert.equal(receipt.receivedAt, originalAt); assert.ok(receipt.processedAt); assert.deepEqual(receipt.payload, {});
+      assert.equal((await f.rows()).length, 1); assert.equal((await loadPostgresWorkspace(f.workspace.id)).leads.length, 0);
+      assert.equal(networkCalls, 0);
+    });
+
     await t.test("tenant RLS and actor checks prevent inbox inspection and recovery across institutes", async () => {
       const a = await fixture(), b = await fixture(); await a.restrict(); await a.accept("private");
       await assert.rejects(() => intakeSummary(a.workspace.id, b.actor), /membership has changed/);

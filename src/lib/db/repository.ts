@@ -8,6 +8,9 @@ import { isDeepStrictEqual } from "node:util";
 import { articleChunks } from "./chunks";
 import { assertActor } from "../permissions";
 import { TRIAL_MS } from "../subscription-policy";
+import { normalizeWorkspaceInstants } from "../instants";
+import { intakeHeldPhones } from "../intake-retention-policy";
+import { MAX_LEAD_PAGE, MAX_LEAD_PAGE_SIZE, hasMoreLeadPages } from "../lead-pagination";
 
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 type Db = Database | Transaction;
@@ -53,16 +56,16 @@ export async function readWorkspace(id: string, db: Db): Promise<Workspace> {
     const [trial] = await db.select({ startedAt: s.instituteTrials.startedAt, endsAt: s.instituteTrials.endsAt, consumed: s.instituteTrials.consumed }).from(s.instituteTrials).where(eq(s.instituteTrials.workosId, org.workosId));
     workspace.trial = trial;
   }
-  const pending = await db.select({ phone: s.leads.phone }).from(s.leads).where(and(eq(s.leads.organizationId, id), sql`exists(select 1 from intake_inbox i where i.organization_id = ${id} and i.contact_key = ${s.leads.phone} and i.state <> 'imported')`));
-  const pendingPhones = new Set(pending.map(row => row.phone));
+  const pending = await db.select({ contactKey: s.intakeInbox.contactKey, contactKeyVersion: s.intakeInbox.contactKeyVersion }).from(s.intakeInbox).where(and(eq(s.intakeInbox.organizationId, id), sql`${s.intakeInbox.state} <> 'imported'`));
+  const pendingPhones = intakeHeldPhones(id, workspace.leads.map(lead => lead.phone), pending);
   for (const lead of workspace.leads) lead.intakePending = pendingPhones.has(lead.phone);
   workspace.leads.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   workspace.activities.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  return hydrateWorkspace(workspace);
+  return normalizeWorkspaceInstants(hydrateWorkspace(workspace));
 }
 
 function orgValues(workspace: Workspace, workosId?: string) {
-  hydrateWorkspace(workspace);
+  normalizeWorkspaceInstants(hydrateWorkspace(workspace));
   return { id: workspace.id, ...(workosId ? { workosId } : {}), name: workspace.name, ownerName: workspace.userName, email: workspace.email, demo: workspace.demo, team: workspace.team, courses: workspace.courses, sequence: workspace.sequence, ai: workspace.ai!, subscription: workspace.subscription!, timezone: workspace.timezone!, revision: workspace.revision! };
 }
 
@@ -110,11 +113,11 @@ async function persist(db: Transaction, before: Workspace, after: Workspace) {
   await sync(s.tasks, before.tasks || [], after.tasks || []);
   await sync(s.connections, before.connections || [], after.connections || []);
   for (const connection of after.connections || []) {
-    if (!connection.externalId || connection.status !== "connected") continue;
+    if (!connection.externalId || !(connection.status === "connected" || (connection.service === "whatsapp" && connection.metadata.subscriptionPending === "true"))) continue;
     const [route] = await db.insert(s.connectionRoutes).values({ service: connection.service, externalId: connection.externalId, organizationId: after.id }).onConflictDoUpdate({ target: [s.connectionRoutes.service, s.connectionRoutes.externalId], set: { organizationId: after.id }, setWhere: eq(s.connectionRoutes.organizationId, after.id) }).returning();
     assert(route, "This provider account is already connected to another institute.", 409);
   }
-  for (const connection of before.connections || []) if (!after.connections?.some(current => current.id === connection.id && current.externalId === connection.externalId && current.status === "connected")) await db.delete(s.connectionRoutes).where(and(eq(s.connectionRoutes.organizationId, after.id), eq(s.connectionRoutes.service, connection.service), eq(s.connectionRoutes.externalId, connection.externalId)));
+  for (const connection of before.connections || []) if (!after.connections?.some(current => current.id === connection.id && current.externalId === connection.externalId && (current.status === "connected" || (current.service === "whatsapp" && current.metadata.subscriptionPending === "true")))) await db.delete(s.connectionRoutes).where(and(eq(s.connectionRoutes.organizationId, after.id), eq(s.connectionRoutes.service, connection.service), eq(s.connectionRoutes.externalId, connection.externalId)));
   await sync(s.savedViews, before.savedViews || [], after.savedViews || []);
 }
 
@@ -142,6 +145,7 @@ export async function mutatePostgresWorkspace<T>(id: string, action: (workspace:
     const result = action(workspace);
     assert(!(result instanceof Promise), "Workspace mutations must be synchronous.", 500);
     assert(workspace.id === id, "A workspace ID cannot be changed.", 403);
+    normalizeWorkspaceInstants(workspace);
     // Guarded identity/team reads must not emit a revision event when nothing changed.
     if (guard && isDeepStrictEqual(before, workspace)) { await commit?.(tx); return { workspace, result }; }
     workspace.revision = (workspace.revision || 0) + 1;
@@ -161,13 +165,14 @@ function leadIntentSql(now: number) {
     + case when ${inArray(s.leads.stage, [...LEAD_RULES.qualifiedStages])} then ${points.qualified} else 0 end
     + case when (${s.leads.notes} collate "C") ~* ${LEAD_RULES.budgetPattern} then ${points.budget} else 0 end
     + case when (${s.leads.notes} collate "C") ~* ${LEAD_RULES.visitPattern} then ${points.visit} else 0 end
-    + case when nullif(${s.leads.lastInboundAt}, '') is not null then
-        case when public.admitflow_timestamp_ms(${s.leads.lastInboundAt}) >= ${now - LEAD_RULES.recentInboundDays * DAY} then ${points.recentInbound}::integer else ${points.pastInbound}::integer end
+    + case when ${s.leads.lastInboundAt} is not null then
+        case when ${s.leads.lastInboundAt} >= ${new Date(now - LEAD_RULES.recentInboundDays * DAY).toISOString()}::timestamptz then ${points.recentInbound}::integer else ${points.pastInbound}::integer end
       else 0 end
     + case when ${inArray(s.leads.source, [...LEAD_RULES.directSources])} then ${points.directSource} else 0 end)`;
 }
 export async function queryPostgresLeads(id: string, actor: NonNullable<Workspace["actor"]>, query: LeadQuery, now = Date.now()): Promise<LeadPage> {
   assert(LEAD_VIEWS.includes(query.view || "all") && LEAD_SORTS.includes(query.sort || "newest"), "Unsupported enquiry view or sort.");
+  assert(Number.isInteger(query.page) && query.page >= 1 && query.page <= MAX_LEAD_PAGE && Number.isInteger(query.pageSize) && query.pageSize >= 1 && query.pageSize <= MAX_LEAD_PAGE_SIZE, "Invalid enquiry pagination.", 400);
   return tenantTransaction(id, async tx => {
     const identity = await readWorkspaceIdentity(id, tx), members = identity.members!;
     const member = assertActor(identity, actor);
@@ -180,7 +185,7 @@ export async function queryPostgresLeads(id: string, actor: NonNullable<Workspac
     if (query.stage) filters.push(eq(s.leads.stage, query.stage));
     const intent = leadIntentSql(now);
     if (query.view === "high-intent") filters.push(sql`${intent} >= ${LEAD_RULES.highIntent}`);
-    if (query.view === "needs-followup") filters.push(and(notInArray(s.leads.stage, [...LEAD_RULES.closedStages]), sql`public.admitflow_timestamp_ms(coalesce(nullif(${s.leads.lastContactAt}, ''), ${s.leads.createdAt})) <= ${now - LEAD_RULES.staleDays * DAY}`)!);
+    if (query.view === "needs-followup") filters.push(and(notInArray(s.leads.stage, [...LEAD_RULES.closedStages]), sql`coalesce(${s.leads.lastContactAt}, ${s.leads.createdAt}) <= ${new Date(now - LEAD_RULES.staleDays * DAY).toISOString()}::timestamptz`)!);
     if (query.view === "admitted") filters.push(eq(s.leads.stage, "Admitted"));
     if (query.q) {
       const search = `%${query.q.replace(/[\\%_]/g, character => `\\${character}`)}%`;
@@ -190,6 +195,6 @@ export async function queryPostgresLeads(id: string, actor: NonNullable<Workspac
     const [total] = await tx.select({ value: count() }).from(s.leads).where(where);
     const primaryOrder = query.sort === "intent" ? [desc(intent)] : query.sort === "name" ? [sql`translate(${s.leads.name}, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz') collate "C" asc`] : [];
     const rows = await tx.select().from(s.leads).where(where).orderBy(...primaryOrder, desc(s.leads.createdAt), desc(s.leads.id)).limit(query.pageSize).offset((query.page - 1) * query.pageSize);
-    return { leads: clean<Lead>(rows).map(lead => ({ ...lead, ownerId: lead.ownerId || null, lastContactAt: lead.lastContactAt || null, lastInboundAt: lead.lastInboundAt || null, consentAt: lead.consentAt || null })), page: query.page, pageSize: query.pageSize, total: total.value, hasMore: query.page * query.pageSize < total.value };
+    return { leads: clean<Lead>(rows).map(lead => ({ ...lead, ownerId: lead.ownerId || null, lastContactAt: lead.lastContactAt || null, lastInboundAt: lead.lastInboundAt || null, consentAt: lead.consentAt || null })), page: query.page, pageSize: query.pageSize, total: total.value, hasMore: hasMoreLeadPages(total.value, query.page, query.pageSize) };
   }, { isolationLevel: "repeatable read" });
 }
