@@ -18,7 +18,7 @@ ECS worker -> durable Neon jobs/outbox -> BullMQ -> Meta / OpenAI / ElevenLabs /
 One-off ECS migration task -> Neon direct migration connection
 ```
 
-`infra/app.ts` synthesizes `AdmitFlow-staging` by default. It does not look up accounts, networks, certificates or secrets, and does not build Docker images during synthesis. `infra/stack.ts` defines:
+`infra/app.ts` synthesizes `AdmitFlow-staging` as an **offline fixture only** by default, not an approved deployment. Production requires the explicit scoped account, region and two custom role ARNs described below. Synthesis does not look up accounts, networks, certificates or secrets, and does not build Docker images. `infra/stack.ts` defines:
 
 | Resource | Baseline | Operational consideration |
 | --- | --- | --- |
@@ -33,7 +33,7 @@ One-off ECS migration task -> Neon direct migration connection
 | KMS | Retained, rotation-enabled tenant credential key | Web/worker task roles can encrypt/decrypt. The application supplies `organizationId` as the encryption context. Preserve the key with Neon backups. |
 | Logs/alarms | 30-day web, worker, migration and Valkey engine log groups | CPU/memory, unhealthy targets, target 5xx, worker failures, queue memory and eviction alarms. Optional existing SNS topic for notification delivery. |
 
-For a more resilient deployment, synthesize/deploy with `-c highAvailability=true`: the default web count becomes two and Valkey gains a replica with Multi-AZ automatic failover. The worker still defaults to one. The baseline does not configure autoscaling, Fargate Spot, Container Insights, NAT gateways, VPC endpoints or an application S3 bucket. Files stay in **R2**. CDK's own bootstrap assets, if used by the deployment environment, are infrastructure artifacts rather than application file storage.
+For a more resilient deployment, synthesize/deploy with `-c highAvailability=true`: the default web count becomes two and Valkey gains a replica with Multi-AZ automatic failover. The worker still defaults to one. The baseline does not configure autoscaling, Fargate Spot, Container Insights, NAT gateways, VPC endpoints or an application S3 bucket. Files stay in **R2**. Scoped production synthesis forbids file/Docker assets and uses a compact inline template, not an ordinary CDK administrator bootstrap.
 
 ### Cost drivers
 
@@ -132,6 +132,24 @@ npm run infra:synth -- --no-lookups --no-notices --output infra/cdk.out -c stage
 
 No AWS credentials or parameter values are needed to construct the template. CDK uses explicit two-AZ names instead of availability-zone lookups. Validate those AZ names in the intended account before deployment. CDK synthesis cannot verify certificate status, permissions, image contents, DNS, quotas or actual regional engine availability.
 
+### Scoped production synthesis and bootstrap gates
+
+Review [the IAM bootstrap runbook](../infra/iam/README.md) before attaching any policies. The production stack uses six explicitly named workload roles with separate bootstrap-owned permission boundaries. Boundary policies cap, but do not grant, access; JSON secret selectors do not isolate IAM access to individual fields.
+
+Offline production synthesis uses the fixed public contract, not credentials:
+
+```powershell
+$env:CDK_CONTEXT_JSON = '{"stage":"prod","account":"543777713748","region":"ap-southeast-1","deployRoleArn":"arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-deploy","cloudFormationExecutionRoleArn":"arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-cfn-exec"}'
+$env:CDK_OUTDIR = 'infra/cdk.out-prod'
+node --import tsx infra/app.ts
+```
+
+Both custom role ARNs are mandatory: the installed BootstraplessSynthesizer otherwise falls back to conventional CDK roles. The synthesizer rejects assets and templates larger than 51,200 UTF-8 bytes; there is no automatic S3 upload fallback. Clear or restore these synthesis environment variables before running other CDK projects.
+
+The application stack no longer owns an account-wide Logs resource policy. A separately approved non-root bootstrap operator must install and read back `admitflow-prod-valkey-logs`, using the reviewed `valkeyLogDeliveryPolicy()` artifact or equivalent IAM bundle document, then detach its account-level write permission. Preserve unrelated policies. Routine CloudFormation receives no PutResourcePolicy/DeleteResourcePolicy authority.
+
+**Deployment remains blocked** until real AWS policy validation, MFA role assumption, provider readiness and resource-provider behavior are verified. In particular resolve KMS tag-at-create authorization without granting the ability to relabel unrelated keys; verify the native cache parameter-group and snapshot naming/tagging against their fail-closed IAM prefixes. `CacheParameterGroupName` returns the actual generated name after creation; it is not configurable as a fixed physical name. A separate key-bootstrap/import design requires review if the current create-time restrictions cannot be satisfied. Passing offline tests is not permission to bypass these gates.
+
 ## Images and release procedure
 
 ### GitHub review, CI and Depot image publishing
@@ -198,14 +216,64 @@ The web runtime command is `node server.js`, with `.next/static` and `public` co
 
 ### Initial deployment and subsequent releases
 
-1. Set up the intended AWS deployment identity, CDK bootstrap environment if required, Neon roles, private R2 bucket, WorkOS app, issued same-region ACM certificate and existing JSON application secret. These external setup operations are outside synthesis.
+1. Complete the scoped non-root IAM bootstrap and all documented authorization gates, precreate the reviewed Valkey log policy, and verify Neon roles, private R2 bucket, production WorkOS app, issued same-region ACM certificate and existing JSON application secret. Do not run ordinary administrator CDK bootstrap. These external setup operations are outside synthesis.
 2. For a new stack, deploy with **both desired counts zero** to create ECR and infrastructure before images exist. The digest parameters still require a syntactically valid `sha256:<64 hex characters>` placeholder; no image is pulled with zero tasks. Supply real digests before increasing counts.
 3. Build web/worker for Linux amd64, authenticate Docker to the output ECR repository using the release identity, tag each image with a unique immutable release tag, push, and resolve its digest. Keep the public build configuration with the release manifest. Do not push from this offline implementation environment.
 4. Update CloudFormation with the real `WebImageDigest` and `WorkerImageDigest`, keeping counts at zero for initial migration/cutover. Review IAM/network changes and the image scan in the release environment.
 5. Run the one-off migration task or the local migration command with the direct migration role. Wait for task completion and check its exit code/log stream before starting services. A successful `ecs run-task` response only means the task was submitted.
 6. If migrating SQLite, complete the rehearsal/cutover below while source and target application writers are stopped.
 7. Run configuration preflight for each role, start web, verify the configured hostname, `/api/health` and `/api/ready`, authenticate with WorkOS, and exercise tenant boundaries and private R2 uploads. Start worker after reviewing held/reconciliation work and confirming provider configuration. Readiness is not a substitute for these live integration checks.
-8. Point the application DNS record at `LoadBalancerDnsName` (or an ALIAS using the output hosted-zone ID). Ensure the application origin, WorkOS callback and provider URLs agree. For SSE, send heartbeats more frequently than the ALB idle timeout.
+8. Use the reviewed, exact-scope [DNS procedure below](#application-dns-preview-and-apply) to publish the application alias only after release acceptance. Ensure the application origin, WorkOS callback and provider URLs agree. For SSE, send heartbeats more frequently than the ALB idle timeout.
+
+### Application DNS preview and apply
+
+`scripts/release-dns.mjs` is specific to account `543777713748`, Singapore `ap-southeast-1`, public zone `Z07524403BCACLCZ72JOD` (`incfrog.ai`) and `admitflow.incfrog.ai`. It cannot publish apex, wildcard, WWW, mail, WorkOS, R2 or arbitrary operator-supplied targets. It does not request certificates or provision infrastructure. No DNS or AWS resource has been created by the implementation/tests.
+
+**Identity and permissions:** install/configure AWS CLI v2 separately. Supply an explicit named profile assuming `arn:aws:iam::543777713748:role/admitflow/bootstrap/admitflow-prod-bootstrap`; the tool verifies the corresponding STS assumed-role ARN and account before resource reads. The current `default` profile is ROOT and must not be used. Root, IAM users, other roles/accounts, omitted profiles and profiles named `default`/`root` are rejected. The deployment/CloudFormation execution roles are not DNS operators. Obtain separately reviewed phase-specific operator permissions; never grant broad administrator permissions to bypass a denial. AWS CLI loads the selected local profile through its normal secure authentication flow; the script neither opens credential files nor prints provider errors. It strips inherited AWS credentials, custom endpoints and unrelated application settings from subprocesses, fixes the AWS region, disables endpoint overrides and automatic retries, and limits each CLI call to 30 seconds. Review the profile's own role/source configuration and use temporary credentials.
+
+The runtime uses `sts:GetCallerIdentity`, `route53:GetHostedZone`, paginated `ListResourceRecordSets`, exact `acm:DescribeCertificate`, and (application phase) `elasticloadbalancing:DescribeLoadBalancers`, `DescribeListeners`, `DescribeTargetGroups`, `DescribeTargetHealth`, and `ecs:DescribeServices`. Apply additionally needs exact-zone `route53:ChangeResourceRecordSets` restricted to CREATE and reviewed names/types, plus `GetChange`. The script's checks do not replace IAM policy review. ELB read actions may require broader resource scope where AWS does not support ARN scoping.
+
+**1. Certificate validation precedes infrastructure HTTPS.** Under separately approved non-root access, the lead must first paginate Singapore's certificate inventory and inspect matching certificate metadata. Reuse an eligible exact-domain Amazon-issued certificate when available. Only if no reusable matching certificate exists, separately approve/request a certificate for exactly `admitflow.incfrog.ai`, DNS validation, no wildcard or extra SANs. Record the actual returned ARN; do not invent ARN suffixes or validation tokens. Wait for ACM to return its real DNS validation CNAME. Requesting a certificate is deliberately not a DNS-tool action.
+
+Preview is the default: it makes read-only AWS and DNS queries, not an offline dry run. It verifies the public zone/NS delegation and AWS-returned exact-domain certificate, then inventories all zone records (including child NS delegations and conflicting routing-policy records). The only validation change permitted is the actual ACM CNAME with TTL 300. Matching records no-op; different TTLs/values/routing policies are conflicts, not automatic repairs. Store review files under ignored `.data` (protected operator ACLs on Windows). The destination must not already exist.
+
+```powershell
+# Only after approval and secure named-profile setup. These variables contain public metadata, not credentials.
+New-Item -ItemType Directory -Force .data | Out-Null
+node scripts/release-dns.mjs --profile $env:ADMITFLOW_DNS_PROFILE --phase validation --certificate-arn $env:ADMITFLOW_CERTIFICATE_ARN --plan .data/dns-validation.json
+```
+
+Inspect the file's exact contract, identity, desired CNAME, changes and fingerprint. Keep the reviewed fingerprint independently in the release record; do not automatically read/copy it from an unreviewed file into apply. Within 15 minutes, repeat the same options and explicitly confirm that fingerprint:
+
+```powershell
+$reviewedFingerprint = Read-Host 'Paste the independently reviewed plan SHA-256'
+node scripts/release-dns.mjs --profile $env:ADMITFLOW_DNS_PROFILE --phase validation --certificate-arn $env:ADMITFLOW_CERTIFICATE_ARN --plan .data/dns-validation.json --apply --confirm $reviewedFingerprint
+```
+
+Apply re-reads identity, zone, certificate, delegation and all records; any inventory/target drift blocks mutation and requires a fresh preview in a new file. Changes are CREATE-only, in one Route53 batch: never UPSERT or DELETE. Wait for the returned change ID to become INSYNC. Public CNAME verification is reported separately and **does not establish ACM issuance**. Separately wait for ACM `ISSUED` and verify the complete certificate ARN/domain/region before passing it to the stack. Retain the validation CNAME for ACM renewal; do not remove it during application rollback.
+
+**2. Application alias follows release acceptance.** Complete migration exit-status checks, web/worker startup, private queue TLS/auth/progress, configured production WorkOS/R2/provider checks, tenant isolation, backup/restore and rollback evidence first. Retain a nonsecret, reviewed release-acceptance record containing image/task-definition identities and these outcomes. `--accept-release` takes its SHA-256 as an explicit operator acknowledgment; the tool does not read/validate that record and the hash is not independent proof of provider acceptance.
+
+The application phase additionally requires an issued certificate valid for more than 24 hours; the actual named `admitflow-prod-alb` must be an active internet-facing application ALB in the expected account/region, with HTTPS 443 using that certificate. Its named web target group must belong to that ALB and all registered targets must be healthy. Both exact web/worker ECS services must have nonzero stable completed deployments. Direct HTTPS checks connect to the returned ALB DNS name with application SNI/Host, normal certificate verification, and bounded `/api/health` and hosted `/api/ready` JSON checks before publishing an alias. These checks do not prove worker progress or external-provider readiness.
+
+```powershell
+# Hash only the already-reviewed, nonsecret acceptance record; retain the record alongside release evidence.
+$acceptanceHash = (Get-FileHash -Algorithm SHA256 $env:ADMITFLOW_RELEASE_ACCEPTANCE_FILE).Hash.ToLowerInvariant()
+node scripts/release-dns.mjs --profile $env:ADMITFLOW_DNS_PROFILE --phase application --certificate-arn $env:ADMITFLOW_CERTIFICATE_ARN --accept-release $acceptanceHash --plan .data/dns-application.json
+# Review this new plan independently before continuing.
+$reviewedFingerprint = Read-Host 'Paste the independently reviewed application plan SHA-256'
+node scripts/release-dns.mjs --profile $env:ADMITFLOW_DNS_PROFILE --phase application --certificate-arn $env:ADMITFLOW_CERTIFICATE_ARN --accept-release $acceptanceHash --plan .data/dns-application.json --apply --confirm $reviewedFingerprint
+```
+
+The IPv4 baseline permits only an A alias for the exact application name, using the actual ALB canonical hosted-zone ID and DNS name with target-health evaluation. AAAA is included only when AWS reports `dualstack`; that mode derives the documented `dualstack.` prefix from the verified ALB DNS name for both aliases. IPv6-only mode is not supported by this release contract. Any conflicting app record, including stale AAAA on an IPv4 ALB, blocks rather than being overwritten. Existing apex/site/mail and unrelated subdomains are preserved; only their inventory digest is stored, not their record contents.
+
+**Submission, verification and recovery:** an INSYNC result means Route53 accepted/propagated the change, not that public DNS, TLS, authentication or the whole release is ready. The tool separately compares resolver-visible CNAME/alias addresses and performs public TLS/health/readiness checks. Validation output explicitly leaves certificate issuance unchecked. DNS verification uses the machine's configured recursive resolver; it is not worldwide propagation evidence. ALB address rotation/caching may conservatively report UNVERIFIED even with a correct alias. Independently verify authoritative delegation, multiple public resolvers, TLS and the user-facing release flows. Exit 2 means submission remains pending or public verification is unverified; it must not be treated as a failed write suitable for blind replay.
+
+The Route53 wait is bounded to 60 polls with five-second intervals plus bounded API latency. A write timeout, missing change ID or polling failure can leave an uncertain applied change: inspect actual records/change status under the same scoped operator before generating a new plan. Never retry mutation blindly. A fresh no-op plan can recheck public DNS/TLS after propagation. Records/targets are checked again on apply, but Route53 provides no compare-and-swap for the whole zone: serialize DNS operators and deployments through review/apply, and retain the submitted change ID. CREATE conflicts protect existing same-type records; concurrent changes to other record types or delegation cannot be made atomically conditional. An acknowledgment/hash is an operator safeguard, not a security boundary against someone who can edit this script or assume broader IAM permissions.
+
+Offline coverage: `infra/tests/release-dns.test.ts` uses only injected AWS/network mocks and is included by existing `test:infra` and isolated `verify` globs. `node scripts/release-dns.mjs --help` and `node --check scripts/release-dns.mjs` do not contact providers. Do not run ordinary preview/apply as an offline test. No extra dependency, package-script or workflow change is required.
+
+References: [Route53 paginated record inventory](https://docs.aws.amazon.com/cli/latest/reference/route53/list-resource-record-sets.html), [ACM certificate metadata](https://docs.aws.amazon.com/cli/latest/reference/acm/describe-certificate.html), [ELB alias and dualstack behavior](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-elb-load-balancer.html).
 
 Required CloudFormation inputs:
 
@@ -221,7 +289,7 @@ Required CloudFormation inputs:
 | `WebDesiredCount`, `WorkerDesiredCount` | Both zero during bootstrap/cutover; baseline one each afterwards |
 | `CacheNodeType` | Defaults to `cache.t4g.small`; choose from supported regional node types |
 
-Contexts are `stage`, `region`, `highAvailability=true`, optional `appSecretKmsKeyArn`, and optional `alarmTopicArn`. Staging and production should use separate stacks, databases/branches, secrets, buckets and provider configurations.
+Contexts are `stage`, `region`, `highAvailability=true`, optional `appSecretKmsKeyArn`, and optional `alarmTopicArn`. Production additionally requires the exact `account`, `deployRoleArn` and `cloudFormationExecutionRoleArn` contract above. Nonproduction synthesis is an offline fixture and rejects deployment account/role inputs; a separately reviewed staging deployment design is required before provisioning staging resources. Keep environments' databases, secrets, buckets and provider configurations separate.
 
 ### Schema migrations
 

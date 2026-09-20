@@ -9,12 +9,14 @@ import {
   aws_ecs as ecs,
   aws_elasticache as elasticache,
   aws_elasticloadbalancingv2 as elbv2,
+  aws_iam as iam,
   aws_kms as kms,
   aws_logs as logs,
   aws_secretsmanager as secretsmanager,
   aws_sns as sns,
 } from "aws-cdk-lib";
 import type { Construct } from "constructs";
+import { PRODUCTION, ScopedBootstraplessSynthesizer } from "./scoped-synthesis";
 
 export interface AdmitFlowStackProps extends StackProps {
   stage: string;
@@ -42,22 +44,35 @@ export const WEB_SECRET_KEYS = [
 /** No lookups, Docker builds, secret reads or provider calls occur while constructing this stack. */
 export class AdmitFlowStack extends Stack {
   constructor(scope: Construct, id: string, props: AdmitFlowStackProps) {
+    if (props.stage === PRODUCTION.stage) {
+      if (props.env?.account !== PRODUCTION.account || props.env?.region !== PRODUCTION.region || (props.stackName ?? id) !== PRODUCTION.stackName) {
+        throw new Error("Production stack must use the approved account, region and stack name.");
+      }
+      if (!(props.synthesizer instanceof ScopedBootstraplessSynthesizer)) {
+        throw new Error("Production requires the scoped, inline-only BootstraplessSynthesizer with both custom roles.");
+      }
+    }
     super(scope, id, props);
+    const production = props.stage === PRODUCTION.stage;
     const prefix = `admitflow-${props.stage}`;
+    // CDK may consult stack AZ context even when the VPC has an explicit AZ list.
+    // Seed the supplied nonsecret AZs rather than requesting an account lookup.
+    if (production) this.node.setContext(`availability-zones:account=${PRODUCTION.account}:region=${PRODUCTION.region}`, props.availabilityZones);
     Tags.of(this).add("Application", "AdmitFlow");
     Tags.of(this).add("Environment", props.stage);
 
     const domain = new CfnParameter(this, "DomainName", {
-      type: "String", description: "Public application hostname, e.g. app.example.com. Configure DNS separately.",
+      type: "String", description: "Public application hostname. Configure DNS separately.",
+      allowedValues: production ? [PRODUCTION.domain] : undefined,
       allowedPattern: "(?=.{1,253}$)([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,63}",
     });
     const certificateArn = new CfnParameter(this, "CertificateArn", {
       type: "String", description: "Existing, issued ACM certificate in the stack region covering DomainName.",
-      allowedPattern: "arn:[^:]+:acm:[^:]+:[0-9]{12}:certificate/.+",
+      allowedPattern: production ? `arn:aws:acm:${PRODUCTION.region}:${PRODUCTION.account}:certificate/[a-f0-9-]+` : "arn:[^:]+:acm:[^:]+:[0-9]{12}:certificate/.+",
     });
     const appSecretArn = new CfnParameter(this, "AppSecretArn", {
       type: "String", noEcho: true, description: "Complete ARN (including six-character suffix) of the existing Secrets Manager JSON secret.",
-      allowedPattern: "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+-[A-Za-z0-9]{6}",
+      allowedPattern: production ? `arn:aws:secretsmanager:${PRODUCTION.region}:${PRODUCTION.account}:secret:admitflow/prod/application-[A-Za-z0-9]{6}` : "arn:[^:]+:secretsmanager:[^:]+:[0-9]{12}:secret:.+-[A-Za-z0-9]{6}",
     });
     const imageDigest = (name: string) => new CfnParameter(this, name, {
       type: "String", allowedPattern: "sha256:[a-f0-9]{64}",
@@ -105,16 +120,8 @@ export class AdmitFlowStack extends Stack {
       logGroupName: `/aws/vendedlogs/admitflow/${props.stage}/valkey`,
       retention: logs.RetentionDays.ONE_MONTH, removalPolicy: RemovalPolicy.RETAIN,
     });
-    const cacheLogPolicy = new logs.CfnResourcePolicy(this, "ValkeyLogDeliveryPolicy", {
-      policyName: `${prefix}-valkey-logs`,
-      policyDocument: this.toJsonString({
-        Version: "2012-10-17", Statement: [{
-          Effect: "Allow", Principal: { Service: "delivery.logs.amazonaws.com" },
-          Action: ["logs:CreateLogStream", "logs:PutLogEvents"], Resource: cacheLogs.logGroupArn,
-          Condition: { StringEquals: { "aws:SourceAccount": this.account }, ArnLike: { "aws:SourceArn": this.formatArn({ service: "logs", resource: "*" }) } },
-        }],
-      }),
-    });
+    // Bootstrap operator must separately precreate the reviewed Valkey log-delivery policy.
+    // Do not give routine CloudFormation account-scoped logs:PutResourcePolicy/DeleteResourcePolicy.
     const tenantKey = new kms.Key(this, "TenantCredentialKey", {
       alias: `alias/${prefix}-tenant-credentials`, description: "AdmitFlow tenant-bound provider credential encryption",
       enableKeyRotation: true, removalPolicy: RemovalPolicy.RETAIN, pendingWindow: Duration.days(30),
@@ -124,13 +131,17 @@ export class AdmitFlowStack extends Stack {
       secretCompleteArn: appSecretArn.valueAsString, encryptionKey: existingSecretKey,
     });
     const queueSecret = new secretsmanager.Secret(this, "QueueAuth", {
+      secretName: `admitflow/${props.stage}/queue-auth`,
       description: `${prefix} Valkey AUTH token`,
       generateSecretString: { secretStringTemplate: "{}", generateStringKey: "password", passwordLength: 48, excludePunctuation: true },
       removalPolicy: RemovalPolicy.RETAIN,
     });
     const cacheSubnetGroup = new elasticache.CfnSubnetGroup(this, "CacheSubnetGroup", {
+      cacheSubnetGroupName: `${prefix}-queue-subnets`,
       description: "Isolated AdmitFlow queue subnets", subnetIds: vpc.isolatedSubnets.map(subnet => subnet.subnetId),
     });
+    // CloudFormation has no name input for this resource; keep its stable logical ID.
+    // Bootstrap policy's candidate physical-name prefix remains a predeployment verification gate.
     const cacheParameters = new elasticache.CfnParameterGroup(this, "CacheParameters", {
       cacheParameterGroupFamily: "valkey7", description: "BullMQ requires noeviction on node-based Valkey",
       properties: { "maxmemory-policy": "noeviction" },
@@ -150,7 +161,8 @@ export class AdmitFlowStack extends Stack {
       snapshotRetentionLimit: 3, snapshotWindow: "18:00-19:00", autoMinorVersionUpgrade: true,
       logDeliveryConfigurations: [{ destinationType: "cloudwatch-logs", destinationDetails: { cloudWatchLogsDetails: { logGroup: cacheLogs.logGroupName } }, logFormat: "json", logType: "engine-log" }],
     });
-    cache.addResourceDependency(cacheLogPolicy);
+    // Explicit names are literals, so keep creation ordering even without a log policy resource.
+    cache.node.addDependency(cacheLogs);
     cache.applyRemovalPolicy(RemovalPolicy.SNAPSHOT);
 
     const repository = new ecr.Repository(this, "Images", {
@@ -170,8 +182,25 @@ export class AdmitFlowStack extends Stack {
       REDIS_HOST: cache.attrPrimaryEndPointAddress, REDIS_PORT: cache.attrPrimaryEndPointPort, REDIS_TLS: "true",
     };
     const secretValues = (keys: readonly string[]) => Object.fromEntries(keys.map(key => [key, ecs.Secret.fromSecretsManager(appSecret, key)]));
+    const role = (name: string, kind: "task" | "execution") => {
+      const roleName = `${prefix}-${name.toLowerCase()}-${kind}`;
+      return new iam.Role(this, `${name}${kind === "task" ? "Task" : "Execution"}Role`, {
+        roleName, path: `/admitflow/workload/${props.stage}/`,
+        assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com", {
+          conditions: {
+            StringEquals: { "aws:SourceAccount": this.account },
+            // ECS currently requires a wildcard after account, not a particular cluster ARN.
+            ArnLike: { "aws:SourceArn": production ? `arn:aws:ecs:${PRODUCTION.region}:${PRODUCTION.account}:*` : this.formatArn({ service: "ecs", resource: "*" }) },
+          },
+        }),
+        // Nonproduction stacks are offline fixtures, not a deployable unbounded production mode.
+        permissionsBoundary: production ? iam.ManagedPolicy.fromManagedPolicyArn(this, `${name}${kind}Boundary`,
+          `arn:aws:iam::${PRODUCTION.account}:policy${PRODUCTION.boundaryPolicyPath}${roleName}-boundary`) : undefined,
+      });
+    };
     const task = (name: string, memory: number) => new ecs.FargateTaskDefinition(this, `${name}Task`, {
       family: `${prefix}-${name.toLowerCase()}`, cpu: 256, memoryLimitMiB: memory,
+      taskRole: role(name, "task"), executionRole: role(name, "execution"),
       runtimePlatform: { cpuArchitecture: ecs.CpuArchitecture.X86_64, operatingSystemFamily: ecs.OperatingSystemFamily.LINUX },
     });
     const webTask = task("Web", 1024), workerTask = task("Worker", 1024), migrationTask = task("Migration", 512);
@@ -220,6 +249,7 @@ export class AdmitFlowStack extends Stack {
 
     const alb = new elbv2.ApplicationLoadBalancer(this, "LoadBalancer", {
       vpc, vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC }, internetFacing: true, securityGroup: albGroup,
+      loadBalancerName: `${prefix}-alb`, ipAddressType: elbv2.IpAddressType.IPV4,
       idleTimeout: Duration.seconds(120), dropInvalidHeaderFields: true,
     });
     alb.addListener("Http", {
@@ -232,7 +262,7 @@ export class AdmitFlowStack extends Stack {
     });
     const targetGroup = https.addTargets("Application", {
       priority: 1, conditions: [elbv2.ListenerCondition.hostHeaders([domain.valueAsString])],
-      port: 3000, protocol: elbv2.ApplicationProtocol.HTTP,
+      targetGroupName: `${prefix}-web`, port: 3000, protocol: elbv2.ApplicationProtocol.HTTP,
       targets: [webService.loadBalancerTarget({ containerName: webContainer.containerName, containerPort: 3000 })],
       // ECS replaces ALB-unhealthy tasks too. Keep liveness here; use /api/ready in release/dependency monitoring.
       healthCheck: { path: "/api/health", healthyHttpCodes: "200", interval: Duration.seconds(30), timeout: Duration.seconds(5), healthyThresholdCount: 2, unhealthyThresholdCount: 3 },
@@ -270,6 +300,8 @@ export class AdmitFlowStack extends Stack {
     output("ApplicationUrl", baseEnvironment.APP_BASE_URL);
     output("LoadBalancerDnsName", alb.loadBalancerDnsName, "Create the application's DNS record pointing here.");
     output("LoadBalancerHostedZoneId", alb.loadBalancerCanonicalHostedZoneId);
+    output("LoadBalancerArn", alb.loadBalancerArn);
+    output("WebTargetGroupArn", targetGroup.targetGroupArn);
     output("ImageRepositoryUri", repository.repositoryUri);
     output("ClusterName", cluster.clusterName);
     output("WebServiceName", webService.serviceName); output("WorkerServiceName", workerService.serviceName);
@@ -278,5 +310,6 @@ export class AdmitFlowStack extends Stack {
     output("TaskSubnetIds", Fn.join(",", vpc.publicSubnets.map(subnet => subnet.subnetId)));
     output("TenantCredentialKeyArn", tenantKey.keyArn);
     output("QueuePrimaryEndpoint", cache.attrPrimaryEndPointAddress);
+    output("CacheParameterGroupName", cacheParameters.ref, "Actual CloudFormation-generated parameter group name; do not invent a fixed physical name.");
   }
 }

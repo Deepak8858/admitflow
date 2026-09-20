@@ -7,6 +7,8 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 import { AdmitFlowStack, SHARED_SECRET_KEYS, WEB_SECRET_KEYS } from "../stack";
 import { prepareEnvironment } from "../entrypoint.mjs";
 import { highAvailabilityContext } from "../context";
+import { configureApplication } from "../configuration";
+import { PRODUCTION } from "../scoped-synthesis";
 
 type IngressRule = { GroupId?: unknown; SourceSecurityGroupId?: unknown; CidrIp?: unknown; CidrIpv6?: unknown; SourcePrefixListId?: unknown; IpProtocol?: string; FromPort?: number; ToPort?: number };
 
@@ -47,13 +49,13 @@ function assertProtectedIngress(template: Template) {
   }
 }
 
-test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selectors and digest-pinned images", async () => {
+test("offline production stack preserves TLS web/worker, isolated noeviction Valkey, secret selectors and digest-pinned images", async () => {
   const root = resolve("infra", ".test-output");
   await mkdir(root, { recursive: true });
   const directory = await mkdtemp(join(root, "cdk-"));
   try {
-    const app = new App({ outdir: directory });
-    const stack = new AdmitFlowStack(app, "OfflineTest", { stage: "test", env: { region: "ap-southeast-1" }, availabilityZones: ["ap-southeast-1a", "ap-southeast-1b"] });
+    const app = new App({ outdir: directory, context: { ...PRODUCTION } });
+    const stack = configureApplication(app);
     const template = Template.fromStack(stack);
     template.resourceCountIs("AWS::ECS::Service", 2);
     template.resourceCountIs("AWS::ECS::TaskDefinition", 3);

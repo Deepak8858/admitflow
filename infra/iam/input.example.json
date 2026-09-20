@@ -1,0 +1,12 @@
+{
+  "account": "543777713748",
+  "region": "ap-southeast-1",
+  "stack": "AdmitFlow-prod",
+  "domain": "admitflow.incfrog.ai",
+  "hostedZoneId": "Z07524403BCACLCZ72JOD",
+  "githubRepository": "Deepak8858/admitflow",
+  "operatorArn": "arn:aws:iam::543777713748:user/admitflow/admitflow-deployer",
+  "deployRoleArn": "arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-deploy",
+  "cfnRoleArn": "arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-cfn-exec",
+  "bootstrapRoleArn": "arn:aws:iam::543777713748:role/admitflow/bootstrap/admitflow-prod-bootstrap"
+}
