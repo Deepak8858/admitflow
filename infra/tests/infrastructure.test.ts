@@ -22,6 +22,15 @@ function assertProtectedIngress(template: Template) {
     ...Object.values(template.findResources("AWS::EC2::SecurityGroupIngress")).map(resource => resource.Properties),
     ...Object.entries(groups).flatMap(([id, resource]) => (resource.Properties.SecurityGroupIngress ?? []).map((rule: IngressRule) => ({ ...rule, GroupId: { "Fn::GetAtt": [id, "GroupId"] } }))),
   ];
+  for (const rule of ingress) {
+    if (rule.CidrIp === undefined && rule.CidrIpv6 === undefined && rule.SourcePrefixListId === undefined) continue;
+    assert.deepEqual(rule.GroupId, reference("AlbSecurityGroup"), "CIDR ingress is allowed only on the ALB");
+    assert.equal(rule.SourcePrefixListId, undefined, "prefix-list ingress is not allowed");
+    assert.equal(rule.SourceSecurityGroupId, undefined, "public ingress must not mix source types");
+    assert.equal(rule.IpProtocol, "tcp", "public ingress must use TCP");
+    assert.ok(rule.FromPort === 80 || rule.FromPort === 443, "public ingress must use port 80 or 443");
+    assert.equal(rule.ToPort, rule.FromPort, "public ingress must not span a port range");
+  }
   const expected = new Map([
     [3000, [["WebSecurityGroup", "AlbSecurityGroup"]]],
     [6379, [["CacheSecurityGroup", "CacheSecurityGroup"], ["CacheSecurityGroup", "WebSecurityGroup"], ["CacheSecurityGroup", "WorkerSecurityGroup"]]],
@@ -146,6 +155,21 @@ test("protected ingress assertions reject missing, public, ranged and wrong-SG r
   };
   for (const inline of [false, true]) {
     assertProtectedIngress(template(rules, inline));
+    const publicRule = (target: string, port: number, source: Partial<IngressRule>): IngressRule => ({ GroupId: { "Fn::GetAtt": [target, "GroupId"] }, IpProtocol: "tcp", FromPort: port, ToPort: port, ...source });
+    const publicSources = [{ CidrIp: "0.0.0.0/0" }, { CidrIpv6: "::/0" }];
+    const albRules = publicSources.flatMap(source => [80, 443].map(port => publicRule("AlbSecurityGroup", port, source)));
+    assertProtectedIngress(template([...rules, ...albRules], inline));
+    for (const target of groupNames) {
+      for (const source of [...publicSources, { SourcePrefixListId: "pl-test" }]) {
+        assert.throws(() => assertProtectedIngress(template([...rules, publicRule(target, 5432, source)], inline)));
+        if (target !== "AlbSecurityGroup" || "SourcePrefixListId" in source) {
+          for (const port of [80, 443]) assert.throws(() => assertProtectedIngress(template([...rules, publicRule(target, port, source)], inline)));
+        }
+      }
+    }
+    for (const replacement of [{ FromPort: 22, ToPort: 22 }, { FromPort: 80, ToPort: 443 }, { IpProtocol: "udp" }, { IpProtocol: "-1" }]) {
+      assert.throws(() => assertProtectedIngress(template([...rules, { ...publicRule("AlbSecurityGroup", 80, { CidrIp: "0.0.0.0/0" }), ...replacement }], inline)));
+    }
     for (const port of [3000, 6379]) {
       assert.throws(() => assertProtectedIngress(template(rules.filter(entry => entry.ToPort !== port), inline)));
       for (const replacement of [
