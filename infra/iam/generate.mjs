@@ -40,7 +40,8 @@ const services = ["web", "worker"].map(name => arn("ecs", `service/admitflow-pro
 const taskDefinitions = ["web", "worker", "migration"].map(name => arn("ecs", `task-definition/admitflow-prod-${name}:*`));
 const queueSecret = arn("secretsmanager", "secret:admitflow/prod/queue-auth-??????");
 const applicationSecret = arn("secretsmanager", "secret:admitflow/prod/application-??????");
-const keyPattern = arn("kms", "key/*");
+const tenantAlias = arn("kms", "alias/admitflow-prod-tenant-credentials");
+const keyIdPattern = "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}";
 const stack = arn("cloudformation", `stack/${CONTRACT.stack}/*`);
 const alb = arn("elasticloadbalancing", "loadbalancer/app/admitflow-prod-alb/*");
 const listeners = arn("elasticloadbalancing", "listener/app/admitflow-prod-alb/*/*");
@@ -54,7 +55,7 @@ const fixedKeys = Object.keys(CONTRACT);
 const extraKeys = ["applicationSecretArn", "applicationSecretKeyMode", "applicationSecretKmsKeyArn", "tenantKeyArn", "queueSecretArn", "certificateArn", "validationRecordName", "loadBalancerArn", "targetGroupArn", "migrationTaskDefinitionArn"];
 function requireValue(input, key, expression) {
   const value = input[key];
-  if (typeof value !== "string" || !expression.test(value)) throw new Error(`Missing or invalid verified identifier: ${key}`);
+  if (typeof value !== "string" || value.trim() !== value || !expression.test(value)) throw new Error(`Missing or invalid verified identifier: ${key}`);
   return value;
 }
 const exactArn = (service, suffix) => new RegExp(`^arn:aws:${service}:${region}:${account}:${suffix}$`);
@@ -62,7 +63,7 @@ function common(input) {
   if (!input || Array.isArray(input) || typeof input !== "object") throw new Error("Input must be an identifier-only object");
   for (const key of Object.keys(input)) if (![...fixedKeys, ...extraKeys].includes(key)) throw new Error("Unexpected input field; never provide secret values");
   for (const key of fixedKeys) if (input[key] !== CONTRACT[key]) throw new Error(`Missing or mismatched contract: ${key}`);
-  if (input.tenantKeyArn !== undefined) requireValue(input, "tenantKeyArn", exactArn("kms", "key/[a-f0-9-]{36}"));
+  if (input.tenantKeyArn !== undefined) tenantKey(input);
   if (input.queueSecretArn !== undefined) requireValue(input, "queueSecretArn", exactArn("secretsmanager", "secret:admitflow/prod/queue-auth-[A-Za-z0-9]{6}"));
 }
 function application(input) {
@@ -71,7 +72,18 @@ function application(input) {
   if (input.applicationSecretKeyMode === "customer-managed") requireValue(input, "applicationSecretKmsKeyArn", exactArn("kms", "key/[a-f0-9-]{36}"));
   else if (input.applicationSecretKmsKeyArn !== undefined) throw new Error("AWS-managed key mode cannot include a customer key ARN");
 }
+const tenantKey = input => requireValue(input, "tenantKeyArn", exactArn("kms", `key/${keyIdPattern}`));
 const certificate = input => requireValue(input, "certificateArn", exactArn("acm", "certificate/[a-f0-9-]{36}"));
+/** Resource '*' in a key policy means only the key to which that policy is attached. */
+function tenantKeyPolicy(temporaryBootstrapGrant) {
+  return document([
+    { Sid: "EnableAccountIamDelegation", Effect: "Allow", Principal: { AWS: iam("root") }, Action: "kms:*", Resource: "*" },
+    ...(temporaryBootstrapGrant ? [{
+      Sid: "TemporaryBootstrapPolicyUpdate", Effect: "Allow", Principal: { AWS: CONTRACT.bootstrapRoleArn },
+      Action: "kms:PutKeyPolicy", Resource: "*", Condition: { Bool: { "kms:BypassPolicyLockoutSafetyCheck": "false" } },
+    }] : []),
+  ]);
+}
 const userTrust = () => document([{
   Sid: "ExactOperatorWithMfa", Effect: "Allow", Principal: { AWS: CONTRACT.operatorArn }, Action: "sts:AssumeRole",
   Condition: { Bool: { "aws:MultiFactorAuthPresent": "true" } },
@@ -111,7 +123,7 @@ function finish(bundle) {
   return bundle;
 }
 function empty(phase) {
-  return { schemaVersion: 1, phase, contract: CONTRACT, policies: {}, trust: {}, attachments: {}, boundaries: {}, resourcePolicies: {}, validation: { status: "OFFLINE_CANDIDATE_NOT_AWS_VALIDATED", required: ["IAM Access Analyzer ValidatePolicy", "AWS IAM simulation including missing context", "CloudFormation resource-provider dependent actions and tag propagation", "Trust/MFA login-flow verification", "Independent review and explicit resource-change approval"] } };
+  return { schemaVersion: 1, phase, contract: CONTRACT, policies: {}, trust: {}, attachments: {}, boundaries: {}, resourcePolicies: {}, requests: {}, validation: { status: "OFFLINE_CANDIDATE_NOT_AWS_VALIDATED", required: ["IAM Access Analyzer ValidatePolicy", "AWS IAM simulation including missing context", "CloudFormation resource-provider dependent actions and tag propagation", "Trust/MFA login-flow verification", "Independent review and explicit resource-change approval"] } };
 }
 function bootstrapTrust(bundle) {
   bundle.trust["bootstrap"] = userTrust();
@@ -146,6 +158,42 @@ export function generate(phase, input) {
       ["ecs.amazonaws.com", "AWSServiceRoleForECS"], ["elasticloadbalancing.amazonaws.com", "AWSServiceRoleForElasticLoadBalancing"], ["elasticache.amazonaws.com", "AWSServiceRoleForElastiCache"],
     ].map(([service, name], index) => statement(`CreateServiceLinkedRole${index}`, "iam:CreateServiceLinkedRole", iam(`role/aws-service-role/${service}/${name}`), { StringEquals: { "iam:AWSServiceName": service } })));
     addFamily(bundle, "bootstrap", "dns-inventory", bootstrapMetadata());
+  } else if (phase === "tenant-key-create") {
+    bootstrapTrust(bundle);
+    addFamily(bundle, "bootstrap", "tenant-key-create", [
+      allow("CreateUntaggedTenantKey", "kms:CreateKey", "*", {
+        StringEquals: { "kms:KeySpec": "SYMMETRIC_DEFAULT", "kms:KeyUsage": "ENCRYPT_DECRYPT", "kms:KeyOrigin": "AWS_KMS" },
+        Bool: { "kms:MultiRegion": "false" }, Null: { "aws:TagKeys": "true" },
+      }),
+      statement("NeverBypassKeyPolicySafety", ["kms:CreateKey", "kms:PutKeyPolicy"], "*", { Bool: { "kms:BypassPolicyLockoutSafetyCheck": "true" } }, "Deny"),
+    ]);
+    bundle.resourcePolicies["tenant-key-initial.json"] = tenantKeyPolicy(true);
+    bundle.requests["create-key.json"] = {
+      Description: "AdmitFlow tenant-bound provider credential encryption", KeySpec: "SYMMETRIC_DEFAULT",
+      KeyUsage: "ENCRYPT_DECRYPT", Origin: "AWS_KMS", MultiRegion: false, BypassPolicyLockoutSafetyCheck: false,
+      Policy: JSON.stringify(bundle.resourcePolicies["tenant-key-initial.json"]),
+    };
+    bundle.validation.required.push("CreateKey is non-idempotent: disable retries, capture actual returned ARN, stop on uncertainty. Review initial policy; arbitrary policy contents and key quantity cannot be constrained by this permission.");
+  } else if (phase === "tenant-key-configure") {
+    const key = tenantKey(input); bootstrapTrust(bundle);
+    addFamily(bundle, "bootstrap", "tenant-key-configure", [
+      allow("ReadExactTenantKey", ["kms:DescribeKey", "kms:GetKeyPolicy", "kms:GetKeyRotationStatus", "kms:ListResourceTags"], key),
+      allow("TagExactTenantKey", "kms:TagResource", key, merge(requestTags, {
+        "ForAllValues:StringEquals": { "aws:TagKeys": ["Application", "Environment"] }, Null: { "aws:TagKeys": "false" },
+      })),
+      allow("EnableExactTenantKeyRotation", "kms:EnableKeyRotation", key),
+      allow("FinalizeExactTenantKeyPolicy", "kms:PutKeyPolicy", key),
+      statement("NeverBypassKeyPolicySafety", "kms:PutKeyPolicy", key, { Bool: { "kms:BypassPolicyLockoutSafetyCheck": "true" } }, "Deny"),
+      allow("CreateOnlyTenantAlias", "kms:CreateAlias", tenantAlias),
+      allow("AliasOnlyExactTenantKey", "kms:CreateAlias", key),
+      allow("ReadRegionalKmsAliasesException", "kms:ListAliases", "*"),
+    ]);
+    bundle.resourcePolicies["tenant-key-final.json"] = tenantKeyPolicy(false);
+    bundle.requests["tag-resource.json"] = { KeyId: key, Tags: [{ TagKey: "Application", TagValue: "AdmitFlow" }, { TagKey: "Environment", TagValue: "prod" }] };
+    bundle.requests["enable-key-rotation.json"] = { KeyId: key };
+    bundle.requests["create-alias.json"] = { AliasName: "alias/admitflow-prod-tenant-credentials", TargetKeyId: key };
+    bundle.requests["put-key-policy.json"] = { KeyId: key, PolicyName: "default", BypassPolicyLockoutSafetyCheck: false, Policy: JSON.stringify(bundle.resourcePolicies["tenant-key-final.json"]) };
+    bundle.validation.required.push("Replace creation permissions, not union them. Verify actual key provenance, tags, rotation and exact alias; remove temporary direct bootstrap key-policy grant with exact-key IAM permission still attached, verify final readback, then detach setup permissions. These request files are not an executable workflow.");
   } else if (phase === "certificate-metadata") {
     certificate(input); bootstrapTrust(bundle);
     addFamily(bundle, "bootstrap", "certificate-metadata", [allow("ActualCertificateMetadata", "acm:DescribeCertificate", input.certificateArn)]);
@@ -180,7 +228,7 @@ export function generate(phase, input) {
     ]);
     bundle.validation.required.push("Choose reviewed non-root attachment identity; migration revision/digest and network review. Service count changes remain CloudFormation operations, not direct UpdateService.");
   } else if (phase === "deployment") {
-    application(input); certificate(input);
+    application(input); certificate(input); tenantKey(input);
     deployment(bundle, input);
   } else throw new Error("Unknown phase");
   return finish(bundle);
@@ -188,8 +236,7 @@ export function generate(phase, input) {
 
 function deployment(bundle, input) {
   const queue = input.queueSecretArn ?? queueSecret;
-  const key = input.tenantKeyArn ?? keyPattern;
-  const keyCondition = input.tenantKeyArn ? {} : resourceTags;
+  const key = input.tenantKeyArn;
   bundle.trust.deploy = userTrust(); bundle.trust.cloudformation = cfnTrust(); bundle.trust.publisher = publisherTrust();
   bundle.trust.workload = taskTrust();
   addFamily(bundle, "operator", "assume-deploy", [statement("AssumeDeployOnlyWithMfa", "sts:AssumeRole", CONTRACT.deployRoleArn, { Bool: { "aws:MultiFactorAuthPresent": "true" } })]);
@@ -200,7 +247,7 @@ function deployment(bundle, input) {
   ]);
   addFamily(bundle, "publisher", "ecr-push", [allow("EcrAuthorizationTokenRegionalException", "ecr:GetAuthorizationToken", "*"), allow("PublishOnlyApplicationRepository", ["ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage", "ecr:DescribeImages", "ecr:InitiateLayerUpload", "ecr:UploadLayerPart", "ecr:CompleteLayerUpload", "ecr:PutImage"], ecr)]);
   for (const role of roles) {
-    const permissions = role.kind === "task" ? (role.service === "migration" ? [statement("NoAwsPermissions", "*", "*", {}, "Deny")] : [allow("TenantCredentialCryptography", ["kms:Encrypt", "kms:Decrypt", "kms:ReEncryptFrom", "kms:ReEncryptTo", "kms:GenerateDataKey", "kms:GenerateDataKeyWithoutPlaintext", "kms:DescribeKey"], key, keyCondition)]) : [
+    const permissions = role.kind === "task" ? (role.service === "migration" ? [statement("NoAwsPermissions", "*", "*", {}, "Deny")] : [allow("TenantCredentialCryptography", ["kms:Encrypt", "kms:Decrypt", "kms:ReEncryptFrom", "kms:ReEncryptTo", "kms:GenerateDataKey", "kms:GenerateDataKeyWithoutPlaintext", "kms:DescribeKey"], key)]) : [
       allow("EcrTokenRegionalException", "ecr:GetAuthorizationToken", "*"),
       allow("PullOnlyApplicationImages", ["ecr:BatchCheckLayerAvailability", "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage"], ecr),
       allow("WriteOnlyOwnLogStreams", ["logs:CreateLogStream", "logs:PutLogEvents"], arn("logs", `log-group:/admitflow/prod/${role.service}:log-stream:*`)),
@@ -269,16 +316,6 @@ function deployment(bundle, input) {
     allow("ManageNamedQueueSecret", ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue", "secretsmanager:PutSecretValue", "secretsmanager:UpdateSecret", "secretsmanager:TagResource", "secretsmanager:UntagResource"], queue),
     allow("RandomPasswordRegionalException", "secretsmanager:GetRandomPassword", "*"),
   ]);
-  addFamily(bundle, "cloudformation", "kms", [
-    allow("ReadRegionalKmsAliasesException", "kms:ListAliases", "*"),
-    allow("CreateTaggedSymmetricKeyRegionalException", "kms:CreateKey", "*", merge(requestTags, { StringEquals: { "kms:KeySpec": "SYMMETRIC_DEFAULT", "kms:KeyUsage": "ENCRYPT_DECRYPT" }, Bool: { "kms:MultiRegion": "false" } })),
-    allow("ManageOnlyApplicationKey", ["kms:DescribeKey", "kms:GetKeyPolicy", "kms:PutKeyPolicy", "kms:EnableKeyRotation", "kms:GetKeyRotationStatus", "kms:UpdateKeyDescription", "kms:ListResourceTags"], key, keyCondition),
-    // Fail closed: existing tags prevent relabeling unrelated keys, but may block CreateKey's
-    // TagResource dependency before tags exist. This bootstrap blocker requires separate review.
-    allow("PreserveApplicationKeyTags", "kms:TagResource", key, merge(requestTags, keyCondition)),
-    allow("OnlyTenantAlias", ["kms:CreateAlias", "kms:DeleteAlias", "kms:UpdateAlias"], arn("kms", "alias/admitflow-prod-tenant-credentials")),
-    allow("AliasOnlyApplicationKey", ["kms:CreateAlias", "kms:DeleteAlias", "kms:UpdateAlias"], key, keyCondition),
-  ]);
   const alarms = ["UnhealthyWeb", "WebServerErrors", "WebCpu", "WebMemory", "WorkerCpu", "WorkerMemory", "WorkerErrors", "QueueMemory1", "QueueMemory2", "QueueEvictions1", "QueueEvictions2"].map(name => arn("cloudwatch", `alarm:admitflow-prod-${name}`));
   addFamily(bundle, "cloudformation", "observability", [
     allow("NamedApplicationLogGroups", ["logs:CreateLogGroup", "logs:PutRetentionPolicy", "logs:DeleteRetentionPolicy", "logs:PutMetricFilter", "logs:DeleteMetricFilter", "logs:DescribeMetricFilters", "logs:ListTagsLogGroup", "logs:TagLogGroup", "logs:UntagLogGroup"], logApiArns),
@@ -292,7 +329,7 @@ export function writeBundle(bundle, directory) {
   const output = resolve(directory);
   if (existsSync(output)) throw new Error("Output directory must not already exist");
   mkdirSync(output, { recursive: true });
-  for (const [group, files] of Object.entries({ policies: bundle.policies, trust: bundle.trust, "resource-policies": bundle.resourcePolicies })) {
+  for (const [group, files] of Object.entries({ policies: bundle.policies, trust: bundle.trust, "resource-policies": bundle.resourcePolicies, requests: bundle.requests })) {
     mkdirSync(join(output, group));
     for (const [name, value] of Object.entries(files)) writeFileSync(join(output, group, name.endsWith(".json") ? name : `${name}.json`), `${JSON.stringify(value, null, 2)}\n`, { flag: "wx" });
   }
@@ -301,7 +338,7 @@ export function writeBundle(bundle, directory) {
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
   try {
     const args = process.argv.slice(2);
-    if (args.length === 1 && args[0] === "--help") console.log("Offline only: node infra/iam/generate.mjs <prerequisites|certificate-metadata|secret-update|deployment|dns-validation|dns-application|release-operator> <identifier-input.json> <new-output-directory>. No credentials, API calls or attachments.");
+    if (args.length === 1 && args[0] === "--help") console.log("Offline only: node infra/iam/generate.mjs <prerequisites|tenant-key-create|tenant-key-configure|certificate-metadata|secret-update|deployment|dns-validation|dns-application|release-operator> <identifier-input.json> <new-output-directory>. No credentials, API calls or attachments.");
     else {
       if (args.length !== 3) throw new Error("Expected phase, identifier input path and new output directory; see --help");
       writeBundle(generate(args[0], JSON.parse(readFileSync(resolve(args[1]), "utf8"))), args[2]);

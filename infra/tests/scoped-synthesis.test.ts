@@ -7,8 +7,9 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 import { configureApplication } from "../configuration";
 import { AdmitFlowStack, SHARED_SECRET_KEYS, WEB_SECRET_KEYS } from "../stack";
 import { compactInlineTemplate, INLINE_TEMPLATE_LIMIT, PRODUCTION, ScopedBootstraplessSynthesizer, valkeyLogDeliveryPolicy } from "../scoped-synthesis";
+import { SYNTHETIC_KEY } from "../iam/fixtures.mjs";
 
-function application(t: TestContext, context: Record<string, unknown> = { ...PRODUCTION }) {
+function application(t: TestContext, context: Record<string, unknown> = { ...PRODUCTION, tenantKeyArn: SYNTHETIC_KEY }) {
   const root = resolve("infra/.test-output");
   mkdirSync(root, { recursive: true });
   const outdir = mkdtempSync(join(root, "scoped-"));
@@ -45,6 +46,43 @@ test("direct production construction cannot bypass scoped entrypoint guards", t 
   assert.throws(() => new AdmitFlowStack(application(t), "WrongStack", props), /stack name/);
   assert.throws(() => new ScopedBootstraplessSynthesizer({ deployRoleArn: "", cloudFormationExecutionRoleArn: PRODUCTION.cloudFormationExecutionRoleArn }), /deployRoleArn/);
   assert.throws(() => new ScopedBootstraplessSynthesizer({ deployRoleArn: PRODUCTION.deployRoleArn, cloudFormationExecutionRoleArn: "" }), /cloudFormationExecutionRoleArn/);
+});
+
+test("production key is required at entrypoint and direct construction; aliases and foreign ARNs fail closed", t => {
+  const invalid = [undefined, null, false, {}, "", "*", SYNTHETIC_KEY.replace("543777713748", "111111111111"),
+    SYNTHETIC_KEY.replace("ap-southeast-1", "us-east-1"), SYNTHETIC_KEY.replace("arn:aws:", "arn:aws-cn:"),
+    SYNTHETIC_KEY.replace(/key\/.+$/, "alias/admitflow-prod-tenant-credentials"),
+    SYNTHETIC_KEY.replace(/key\/.+$/, "key/mrk-22222222222242228222222222222222"),
+    SYNTHETIC_KEY.replace(/key\/.+$/, `key/${"-".repeat(36)}`), `${SYNTHETIC_KEY}\n`, `${SYNTHETIC_KEY}*`];
+  for (const tenantKeyArn of invalid) {
+    assert.throws(() => configureApplication(application(t, { ...PRODUCTION, tenantKeyArn })), /tenantKeyArn/);
+    assert.throws(() => new AdmitFlowStack(application(t), PRODUCTION.stackName, {
+      stage: "prod", env: { account: PRODUCTION.account, region: PRODUCTION.region },
+      availabilityZones: ["ap-southeast-1a", "ap-southeast-1b"], synthesizer: new ScopedBootstraplessSynthesizer(PRODUCTION),
+      tenantKeyArn: tenantKeyArn as string,
+    }), /tenantKeyArn/);
+  }
+  assert.throws(() => configureApplication(application(t, { tenantKeyArn: SYNTHETIC_KEY })), /offline fixtures/);
+});
+
+test("production references the exact bootstrap key in outputs, web/worker environment and grants only", t => {
+  const { template } = production(t);
+  template.resourceCountIs("AWS::KMS::Key", 0); template.resourceCountIs("AWS::KMS::Alias", 0);
+  template.hasOutput("TenantCredentialKeyArn", { Value: SYNTHETIC_KEY });
+  const grants = Object.values(template.findResources("AWS::IAM::Policy")).flatMap(policy => policy.Properties.PolicyDocument.Statement)
+    .filter(statement => JSON.stringify(statement.Action).includes("kms:"));
+  assert.equal(grants.length, 2);
+  for (const statement of grants) {
+    assert.equal(statement.Resource, SYNTHETIC_KEY);
+    assert.deepEqual([...statement.Action].sort(), ["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey*", "kms:ReEncrypt*"].sort());
+  }
+  for (const task of Object.values(template.findResources("AWS::ECS::TaskDefinition"))) {
+    const container = task.Properties.ContainerDefinitions[0];
+    const key = container.Environment.find((entry: { Name: string }) => entry.Name === "KMS_KEY_ID");
+    if (container.Name === "migration") assert.equal(key, undefined);
+    else assert.equal(key.Value, SYNTHETIC_KEY);
+  }
+  assert.ok(!JSON.stringify(template.toJSON()).includes("kms:PutKeyPolicy"));
 });
 
 test("all and only six workload roles have exact names, individual boundaries and confused-deputy protection", t => {
@@ -107,14 +145,15 @@ test("production resources keep approved fixed names, recovery settings and cost
     assert.equal(resource.Properties.Cpu, "256");
     assert.equal(resource.Properties.Memory, resource.Properties.Family.endsWith("migration") ? "512" : "1024");
   }
-  for (const type of ["AWS::KMS::Key", "AWS::SecretsManager::Secret", "AWS::Logs::LogGroup", "AWS::ECR::Repository"]) {
+  for (const type of ["AWS::SecretsManager::Secret", "AWS::Logs::LogGroup", "AWS::ECR::Repository"]) {
     for (const resource of Object.values(template.findResources(type))) {
       assert.equal(resource.DeletionPolicy, "Retain");
       assert.equal(resource.UpdateReplacePolicy, "Retain");
     }
   }
   template.hasResource("AWS::ElastiCache::ReplicationGroup", { DeletionPolicy: "Snapshot", UpdateReplacePolicy: "Snapshot" });
-  template.hasResourceProperties("AWS::KMS::Key", { EnableKeyRotation: true, PendingWindowInDays: 30 });
+  template.resourceCountIs("AWS::KMS::Key", 0);
+  template.resourceCountIs("AWS::KMS::Alias", 0);
   template.resourceCountIs("AWS::CloudWatch::Alarm", 9);
   for (const workload of workloads) template.hasResourceProperties("AWS::Logs::LogGroup", { LogGroupName: `/admitflow/prod/${workload}`, RetentionInDays: 30 });
   template.hasResourceProperties("AWS::Logs::LogGroup", { LogGroupName: "/aws/vendedlogs/admitflow/prod/valkey", RetentionInDays: 30 });

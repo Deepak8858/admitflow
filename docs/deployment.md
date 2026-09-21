@@ -18,7 +18,7 @@ ECS worker -> durable Neon jobs/outbox -> BullMQ -> Meta / OpenAI / ElevenLabs /
 One-off ECS migration task -> Neon direct migration connection
 ```
 
-`infra/app.ts` synthesizes `AdmitFlow-staging` as an **offline fixture only** by default, not an approved deployment. Production requires the explicit scoped account, region and two custom role ARNs described below. Synthesis does not look up accounts, networks, certificates or secrets, and does not build Docker images. `infra/stack.ts` defines:
+`infra/app.ts` synthesizes `AdmitFlow-staging` as an **offline fixture only** by default, not an approved deployment. Production requires the explicit scoped account, region, two custom role ARNs and verified bootstrap-owned `tenantKeyArn` described below. Synthesis does not look up accounts, networks, certificates, keys or secrets, and does not build Docker images. `infra/stack.ts` defines:
 
 | Resource | Baseline | Operational consideration |
 | --- | --- | --- |
@@ -30,7 +30,7 @@ One-off ECS migration task -> Neon direct migration connection
 | ECR | One immutable-tag repository, scan-on-push | Web/worker task definitions pin digests, not `latest`. Untagged images expire after seven days; keep tagged rollback releases until deliberately retired. |
 | Valkey | Node-based ElastiCache 7.2, `cache.t4g.small`, one primary | Isolated subnets, TLS required, AUTH, encryption at rest, custom `valkey7` parameter group with `maxmemory-policy=noeviction`, three days of snapshots. Single-node baseline has no automatic failover. |
 | Secrets | Existing JSON application secret; generated queue AUTH secret | ECS injects specific JSON keys; the application secret itself is not created or populated by CDK. The queue password is never a plaintext task environment value. |
-| KMS | Retained, rotation-enabled tenant credential key | Web/worker task roles can encrypt/decrypt. The application supplies `organizationId` as the encryption context. Preserve the key with Neon backups. |
+| KMS | Reference to an existing, rotation-enabled bootstrap-owned tenant key | No production key/alias resource or CloudFormation retention policy. Web/worker grants and boundaries name its exact ARN. The application supplies `organizationId` as encryption context. Preserve the key independently with Neon backups. |
 | Logs/alarms | 30-day web, worker, migration and Valkey engine log groups | CPU/memory, unhealthy targets, target 5xx, worker failures, queue memory and eviction alarms. Optional existing SNS topic for notification delivery. |
 
 For a more resilient deployment, synthesize/deploy with `-c highAvailability=true`: the default web count becomes two and Valkey gains a replica with Multi-AZ automatic failover. The worker still defaults to one. The baseline does not configure autoscaling, Fargate Spot, Container Insights, NAT gateways, VPC endpoints or an application S3 bucket. Files stay in **R2**. Scoped production synthesis forbids file/Docker assets and uses a compact inline template, not an ordinary CDK administrator bootstrap.
@@ -136,19 +136,27 @@ No AWS credentials or parameter values are needed to construct the template. CDK
 
 Review [the IAM bootstrap runbook](../infra/iam/README.md) before attaching any policies. The production stack uses six explicitly named workload roles with separate bootstrap-owned permission boundaries. Boundary policies cap, but do not grant, access; JSON secret selectors do not isolate IAM access to individual fields.
 
-Offline production synthesis uses the fixed public contract, not credentials:
+Offline production synthesis uses the fixed public contract plus the **actual verified key ARN**, not credentials. Supply `ADMITFLOW_TENANT_KEY_ARN` from the approved nonsecret bootstrap record; never copy the synthetic test ARN into production configuration:
 
 ```powershell
-$env:CDK_CONTEXT_JSON = '{"stage":"prod","account":"543777713748","region":"ap-southeast-1","deployRoleArn":"arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-deploy","cloudFormationExecutionRoleArn":"arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-cfn-exec"}'
+if ([string]::IsNullOrWhiteSpace($env:ADMITFLOW_TENANT_KEY_ARN)) { throw 'Supply the verified bootstrap-owned key ARN first' }
+$env:CDK_CONTEXT_JSON = (@{
+  stage = 'prod'; account = '543777713748'; region = 'ap-southeast-1'
+  deployRoleArn = 'arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-deploy'
+  cloudFormationExecutionRoleArn = 'arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-cfn-exec'
+  tenantKeyArn = $env:ADMITFLOW_TENANT_KEY_ARN
+} | ConvertTo-Json -Compress)
 $env:CDK_OUTDIR = 'infra/cdk.out-prod'
 node --import tsx infra/app.ts
 ```
 
-Both custom role ARNs are mandatory: the installed BootstraplessSynthesizer otherwise falls back to conventional CDK roles. The synthesizer rejects assets and templates larger than 51,200 UTF-8 bytes; there is no automatic S3 upload fallback. Clear or restore these synthesis environment variables before running other CDK projects.
+Both custom role ARNs are mandatory: the installed BootstraplessSynthesizer otherwise falls back to conventional CDK roles. `tenantKeyArn` must be an exact single-region UUID key ARN in the fixed account/region, not an alias, wildcard, multi-region key ID or padded string. This validates syntax only, not resource provenance or configuration. The synthesizer rejects assets and templates larger than 51,200 UTF-8 bytes; there is no automatic S3 upload fallback. Clear or restore these synthesis environment variables before running other CDK projects.
+
+The tenant key and fixed alias are created/configured by the separately scoped non-root bootstrap process in the [IAM runbook](../infra/iam/README.md#tenant-key-bootstrap-and-cleanup). Creation omits tags; setup authorizes only the returned key ARN. Verify metadata, tags, rotation and alias, remove the temporary bootstrap key-policy grant while exact-key IAM permission remains, read back the final policy, then detach setup permissions. IAM detachment alone cannot revoke a direct key-policy grant. Production uses `Key.fromKeyArn`, which is a CDK external reference **not a CloudFormation resource import**; it emits no KMS Key/Alias resources and routine CFN has no KMS permissions. Stack rollback/deletion leaves this bootstrap-owned key and alias untouched. Never create a replacement or delete a key automatically after an uncertain operation; retain historical ciphertext access and key recovery evidence with backups.
 
 The application stack no longer owns an account-wide Logs resource policy. A separately approved non-root bootstrap operator must install and read back `admitflow-prod-valkey-logs`, using the reviewed `valkeyLogDeliveryPolicy()` artifact or equivalent IAM bundle document, then detach its account-level write permission. Preserve unrelated policies. Routine CloudFormation receives no PutResourcePolicy/DeleteResourcePolicy authority.
 
-**Deployment remains blocked** until real AWS policy validation, MFA role assumption, provider readiness and resource-provider behavior are verified. In particular resolve KMS tag-at-create authorization without granting the ability to relabel unrelated keys; verify the native cache parameter-group and snapshot naming/tagging against their fail-closed IAM prefixes. `CacheParameterGroupName` returns the actual generated name after creation; it is not configurable as a fixed physical name. A separate key-bootstrap/import design requires review if the current create-time restrictions cannot be satisfied. Passing offline tests is not permission to bypass these gates.
+**Deployment remains blocked** until real AWS policy validation, MFA role assumption, provider readiness and resource-provider behavior are verified. Validate the separate KMS bootstrap sequence and its final policy cleanup without granting administration of unrelated keys; independently verify the native cache parameter-group and snapshot naming/tagging against their fail-closed IAM prefixes. `CacheParameterGroupName` returns the actual generated name after creation; it is not configurable as a fixed physical name. Passing offline tests is not permission to bypass these gates, start paid builds or perform cloud writes.
 
 ## Images and release procedure
 
@@ -216,7 +224,7 @@ The web runtime command is `node server.js`, with `.next/static` and `public` co
 
 ### Initial deployment and subsequent releases
 
-1. Complete the scoped non-root IAM bootstrap and all documented authorization gates, precreate the reviewed Valkey log policy, and verify Neon roles, private R2 bucket, production WorkOS app, issued same-region ACM certificate and existing JSON application secret. Do not run ordinary administrator CDK bootstrap. These external setup operations are outside synthesis.
+1. Complete the scoped non-root IAM bootstrap and all documented authorization gates, precreate the reviewed Valkey log policy, configure/verify the bootstrap-owned tenant key and alias (including final key-policy cleanup and setup-permission detachment), and verify Neon roles, private R2 bucket, production WorkOS app, issued same-region ACM certificate and existing JSON application secret. Use the same actual tenant key ARN in production context and workload boundaries. Do not run ordinary administrator CDK bootstrap. These external setup operations are outside synthesis.
 2. For a new stack, deploy with **both desired counts zero** to create ECR and infrastructure before images exist. The digest parameters still require a syntactically valid `sha256:<64 hex characters>` placeholder; no image is pulled with zero tasks. Supply real digests before increasing counts.
 3. Build web/worker for Linux amd64, authenticate Docker to the output ECR repository using the release identity, tag each image with a unique immutable release tag, push, and resolve its digest. Keep the public build configuration with the release manifest. Do not push from this offline implementation environment.
 4. Update CloudFormation with the real `WebImageDigest` and `WorkerImageDigest`, keeping counts at zero for initial migration/cutover. Review IAM/network changes and the image scan in the release environment.
@@ -289,7 +297,7 @@ Required CloudFormation inputs:
 | `WebDesiredCount`, `WorkerDesiredCount` | Both zero during bootstrap/cutover; baseline one each afterwards |
 | `CacheNodeType` | Defaults to `cache.t4g.small`; choose from supported regional node types |
 
-Contexts are `stage`, `region`, `highAvailability=true`, optional `appSecretKmsKeyArn`, and optional `alarmTopicArn`. Production additionally requires the exact `account`, `deployRoleArn` and `cloudFormationExecutionRoleArn` contract above. Nonproduction synthesis is an offline fixture and rejects deployment account/role inputs; a separately reviewed staging deployment design is required before provisioning staging resources. Keep environments' databases, secrets, buckets and provider configurations separate.
+Contexts are `stage`, `region`, `highAvailability=true`, optional `appSecretKmsKeyArn`, and optional `alarmTopicArn`. Production additionally requires the exact `account`, `deployRoleArn`, `cloudFormationExecutionRoleArn` contract and actual verified `tenantKeyArn` above. The tenant key ARN is synthesis context, not a CloudFormation parameter. Nonproduction synthesis is an offline fixture and rejects deployment account/role and tenant-key inputs; it retains its fixture-created key. A separately reviewed staging deployment design is required before provisioning staging resources. Keep environments' databases, secrets, buckets and provider configurations separate.
 
 ### Schema migrations
 

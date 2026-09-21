@@ -50,11 +50,56 @@ export function validationCases(input) {
   add("cannot-relabel-vpc", "deployment", "cloudformation", "ec2:CreateTags", vpc, "implicitDeny", requestTags);
   add("create-tagged-vpc", "deployment", "cloudformation", "ec2:CreateVpc", vpc, "allowed", requestTags);
   add("create-untagged-vpc", "deployment", "cloudformation", "ec2:CreateVpc", vpc, "implicitDeny");
-  const key = input.tenantKeyArn ?? ar("kms", "key/33333333-3333-4333-8333-333333333333");
-  add("cannot-relabel-key", "deployment", "cloudformation", "kms:TagResource", key, input.tenantKeyArn ? "allowed" : "implicitDeny", requestTags);
-  add("regional-alias-metadata", "deployment", "cloudformation", "kms:ListAliases", "*", "allowed");
-  add("wrong-region-alias-metadata", "deployment", "cloudformation", "kms:ListAliases", "*", "implicitDeny", { "aws:RequestedRegion": "us-east-1" });
-  add("publisher-no-alias-metadata", "deployment", "publisher", "kms:ListAliases", "*", "implicitDeny");
+  generate("tenant-key-configure", input); // Reject absent/unverified-shape key identifiers before deriving negative vectors.
+  const key = input.tenantKeyArn;
+  const otherKey = `${key.slice(0, -1)}${key.endsWith("0") ? "1" : "0"}`;
+  const alias = ar("kms", "alias/admitflow-prod-tenant-credentials");
+  const createContext = { "kms:KeySpec": "SYMMETRIC_DEFAULT", "kms:KeyUsage": "ENCRYPT_DECRYPT", "kms:KeyOrigin": "AWS_KMS", "kms:MultiRegion": "false", "kms:BypassPolicyLockoutSafetyCheck": "false" };
+  add("bootstrap-create-untagged-key", "tenant-key-create", "bootstrap", "kms:CreateKey", "*", "allowed", createContext);
+  for (const [name, context] of Object.entries({
+    tagged: { "aws:TagKeys": ["Application"], "aws:RequestTag/Application": "AdmitFlow" },
+    asymmetric: { "kms:KeySpec": "RSA_2048" }, signing: { "kms:KeyUsage": "SIGN_VERIFY" },
+    imported: { "kms:KeyOrigin": "EXTERNAL" }, cloudhsm: { "kms:KeyOrigin": "AWS_CLOUDHSM" },
+    multiregion: { "kms:MultiRegion": "true" }, region: { "aws:RequestedRegion": "us-east-1" },
+  })) add(`bootstrap-create-reject-${name}`, "tenant-key-create", "bootstrap", "kms:CreateKey", "*", "implicitDeny", { ...createContext, ...context });
+  add("bootstrap-create-reject-missing-key-context", "tenant-key-create", "bootstrap", "kms:CreateKey", "*", "implicitDeny");
+  add("bootstrap-create-reject-lockout-bypass", "tenant-key-create", "bootstrap", "kms:CreateKey", "*", "explicitDeny", { ...createContext, "kms:BypassPolicyLockoutSafetyCheck": "true" });
+  for (const action of ["kms:TagResource", "kms:PutKeyPolicy", "kms:CreateAlias", "kms:EnableKeyRotation", "kms:Decrypt"]) {
+    add(`creation-no-iam-${action}`, "tenant-key-create", "bootstrap", action, key, "implicitDeny", requestTags);
+  }
+  const tagContext = { ...requestTags, "aws:TagKeys": ["Application", "Environment"] };
+  add("configure-tag-exact-new-key", "tenant-key-configure", "bootstrap", "kms:TagResource", key, "allowed", tagContext);
+  add("configure-cannot-relabel-other-key", "tenant-key-configure", "bootstrap", "kms:TagResource", otherKey, "implicitDeny", { ...tagContext, ...resourceTags });
+  add("configure-reject-extra-tags", "tenant-key-configure", "bootstrap", "kms:TagResource", key, "implicitDeny", { ...tagContext, "aws:TagKeys": ["Application", "Environment", "Other"] });
+  add("configure-reject-wrong-tag", "tenant-key-configure", "bootstrap", "kms:TagResource", key, "implicitDeny", { ...tagContext, "aws:RequestTag/Application": "Other" });
+  add("configure-reject-missing-tag-keys", "tenant-key-configure", "bootstrap", "kms:TagResource", key, "implicitDeny", requestTags);
+  for (const action of ["kms:DescribeKey", "kms:GetKeyPolicy", "kms:ListResourceTags", "kms:EnableKeyRotation", "kms:GetKeyRotationStatus", "kms:PutKeyPolicy", "kms:CreateAlias"]) {
+    add(`configure-exact-${action}`, "tenant-key-configure", "bootstrap", action, key, "allowed");
+    add(`configure-no-other-${action}`, "tenant-key-configure", "bootstrap", action, otherKey, "implicitDeny");
+    add(`configure-no-other-region-${action}`, "tenant-key-configure", "bootstrap", action, key, "implicitDeny", { "aws:RequestedRegion": "us-east-1" });
+  }
+  add("configure-no-policy-lockout-bypass", "tenant-key-configure", "bootstrap", "kms:PutKeyPolicy", key, "explicitDeny", { "kms:BypassPolicyLockoutSafetyCheck": "true" });
+  add("configure-exact-alias", "tenant-key-configure", "bootstrap", "kms:CreateAlias", alias, "allowed");
+  add("configure-no-other-alias", "tenant-key-configure", "bootstrap", "kms:CreateAlias", `${alias}-other`, "implicitDeny");
+  for (const action of ["kms:UpdateAlias", "kms:DeleteAlias", "kms:ScheduleKeyDeletion", "kms:DisableKey", "kms:CreateGrant", "kms:Decrypt"]) {
+    for (const resource of [key, alias]) add(`configure-no-${action}-${resource === key ? "key" : "alias"}`, "tenant-key-configure", "bootstrap", action, resource, "implicitDeny");
+  }
+  add("configure-no-more-keys", "tenant-key-configure", "bootstrap", "kms:CreateKey", "*", "implicitDeny", createContext);
+  add("bootstrap-regional-alias-metadata", "tenant-key-configure", "bootstrap", "kms:ListAliases", "*", "allowed");
+  add("bootstrap-no-other-region-alias-metadata", "tenant-key-configure", "bootstrap", "kms:ListAliases", "*", "implicitDeny", { "aws:RequestedRegion": "us-east-1" });
+  for (const identity of ["cloudformation", "deploy", "publisher"]) {
+    for (const action of ["kms:TagResource", "kms:PutKeyPolicy", "kms:EnableKeyRotation", "kms:ScheduleKeyDeletion", "kms:CreateGrant"]) {
+      add(`${identity}-no-routine-${action}`, "deployment", identity, action, key, "implicitDeny", { ...tagContext, ...resourceTags });
+    }
+    for (const action of ["kms:CreateKey", "kms:ListAliases"]) add(`${identity}-no-routine-${action}`, "deployment", identity, action, "*", "implicitDeny", createContext);
+    for (const action of ["kms:CreateAlias", "kms:UpdateAlias", "kms:DeleteAlias"]) add(`${identity}-no-routine-${action}`, "deployment", identity, action, alias, "implicitDeny");
+  }
+  for (const workload of ["web", "worker"]) {
+    const boundary = `admitflow-prod-${workload}-task-boundary.json`;
+    add(`${workload}-exact-key-crypto`, "deployment", boundary, "kms:Decrypt", key, "allowed");
+    add(`${workload}-no-other-tagged-key-crypto`, "deployment", boundary, "kms:Decrypt", otherKey, "implicitDeny", resourceTags);
+    add(`${workload}-no-key-admin`, "deployment", boundary, "kms:PutKeyPolicy", key, "implicitDeny");
+  }
   add("migration-task-denies-all", "deployment", "admitflow-prod-migration-task-boundary.json", "secretsmanager:GetSecretValue", input.applicationSecretArn, "explicitDeny");
   add("migration-execution-whole-json-limit", "deployment", "admitflow-prod-migration-execution-boundary.json", "secretsmanager:GetSecretValue", input.applicationSecretArn, "allowed");
   add("web-execution-cannot-read-worker-logs", "deployment", "admitflow-prod-web-execution-boundary.json", "logs:PutLogEvents", ar("logs", "log-group:/admitflow/prod/worker:log-stream:worker/test"), "implicitDeny");
@@ -93,7 +138,7 @@ export function simulationInputs(input) {
   return validationCases(input).map(test => ({ id: test.id, expected: test.expected, phase: test.phase, identity: test.identity, input: {
     PolicyInputList: policiesFor(generate(test.phase, input), test.identity).map(policy => JSON.stringify(policy)),
     ActionNames: [test.action], ResourceArns: [test.resource],
-    ContextEntries: Object.entries(test.context).map(([ContextKeyName, value]) => ({ ContextKeyName, ContextKeyValues: Array.isArray(value) ? value : [value], ContextKeyType: Array.isArray(value) ? "stringList" : ["ecs:enable-execute-command", "aws:MultiFactorAuthPresent"].includes(ContextKeyName) ? "boolean" : "string" })),
+    ContextEntries: Object.entries(test.context).map(([ContextKeyName, value]) => ({ ContextKeyName, ContextKeyValues: Array.isArray(value) ? value : [value], ContextKeyType: Array.isArray(value) ? "stringList" : ["ecs:enable-execute-command", "aws:MultiFactorAuthPresent", "kms:MultiRegion", "kms:BypassPolicyLockoutSafetyCheck"].includes(ContextKeyName) ? "boolean" : "string" })),
   } }));
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

@@ -25,6 +25,12 @@ export function requireProductionConfiguration(input: {
   }
 }
 
+/** Shape validation only; bootstrap readback must separately establish ownership and key state. */
+export function requireProductionTenantKeyArn(value: unknown): asserts value is string {
+  const pattern = new RegExp(`^arn:aws:kms:${PRODUCTION.region}:${PRODUCTION.account}:key/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$`);
+  if (typeof value !== "string" || value.trim() !== value || !pattern.test(value)) throw new Error("Production tenantKeyArn must be the verified exact single-region KMS key ARN in the approved account and region.");
+}
+
 /** Enforce the UTF-8 TemplateBody limit, not the length of pretty JSON or JS characters. */
 export function compactInlineTemplate(template: unknown): string {
   const compact = JSON.stringify(template);

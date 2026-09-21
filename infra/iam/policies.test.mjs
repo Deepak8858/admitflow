@@ -43,7 +43,7 @@ test("fail closed for every missing or changed fixed contract field", () => {
   assert.throws(() => generate("unknown", CONTRACT), /Unknown phase/);
 });
 test("missing phase identifiers never produce wildcard substitutes", () => {
-  const required = { deployment: ["applicationSecretArn", "applicationSecretKeyMode", "certificateArn"], "certificate-metadata": ["certificateArn"], "secret-update": ["applicationSecretArn", "applicationSecretKeyMode"], "dns-validation": ["certificateArn", "validationRecordName"], "dns-application": ["certificateArn", "loadBalancerArn", "targetGroupArn"], "release-operator": ["migrationTaskDefinitionArn"] };
+  const required = { deployment: ["applicationSecretArn", "applicationSecretKeyMode", "certificateArn", "tenantKeyArn"], "tenant-key-configure": ["tenantKeyArn"], "certificate-metadata": ["certificateArn"], "secret-update": ["applicationSecretArn", "applicationSecretKeyMode"], "dns-validation": ["certificateArn", "validationRecordName"], "dns-application": ["certificateArn", "loadBalancerArn", "targetGroupArn"], "release-operator": ["migrationTaskDefinitionArn"] };
   for (const [phase, keys] of Object.entries(required)) for (const key of keys) {
     assert.throws(() => generate(phase, { ...SYNTHETIC_INPUT, [key]: undefined }));
     assert.throws(() => generate(phase, { ...SYNTHETIC_INPUT, [key]: "*" }));
@@ -64,6 +64,66 @@ test("customer key and generated ARN tightening require exact verified scope", (
   assert.deepEqual(keyStatement.Resource, [SYNTHETIC_KEY]);
   assert.equal(keyStatement.Condition.StringEquals["kms:EncryptionContext:SecretARN"], input.applicationSecretArn);
   assert.ok(!JSON.stringify(bundle.policies["admitflow-prod-web-task-boundary.json"]).includes("key/*"));
+});
+test("tenant key identifiers reject foreign, alias, multiregion and malformed inputs", () => {
+  for (const phase of ["deployment", "tenant-key-configure"]) for (const tenantKeyArn of [
+    undefined, null, false, {}, "", "*", SYNTHETIC_KEY.replace("543777713748", "111111111111"),
+    SYNTHETIC_KEY.replace("ap-southeast-1", "us-east-1"), SYNTHETIC_KEY.replace("arn:aws:", "arn:aws-cn:"),
+    SYNTHETIC_KEY.replace(/key\/.+$/, "alias/admitflow-prod-tenant-credentials"),
+    SYNTHETIC_KEY.replace(/key\/.+$/, "key/mrk-22222222222242228222222222222222"),
+    SYNTHETIC_KEY.replace(/key\/.+$/, `key/${"-".repeat(36)}`), `${SYNTHETIC_KEY}\n`, `${SYNTHETIC_KEY}*`,
+  ]) assert.throws(() => generate(phase, { ...SYNTHETIC_INPUT, tenantKeyArn }), /tenantKeyArn/);
+});
+test("bootstrap request artifacts omit creation tags and remove the temporary key-policy grant", () => {
+  const creation = generate("tenant-key-create", CONTRACT);
+  const setup = bundles["tenant-key-configure"];
+  const request = creation.requests["create-key.json"];
+  assert.deepEqual(Object.keys(request).sort(), ["Description", "KeySpec", "KeyUsage", "Origin", "MultiRegion", "BypassPolicyLockoutSafetyCheck", "Policy"].sort());
+  assert.equal(request.KeySpec, "SYMMETRIC_DEFAULT"); assert.equal(request.KeyUsage, "ENCRYPT_DECRYPT");
+  assert.equal(request.Origin, "AWS_KMS"); assert.equal(request.MultiRegion, false);
+  assert.equal(request.BypassPolicyLockoutSafetyCheck, false);
+  assert.equal("Tags" in request, false);
+  const initial = JSON.parse(request.Policy);
+  assert.deepEqual(initial, creation.resourcePolicies["tenant-key-initial.json"]);
+  assert.equal(initial.Statement.length, 2);
+  assert.deepEqual(initial.Statement[1], {
+    Sid: "TemporaryBootstrapPolicyUpdate", Effect: "Allow", Principal: { AWS: CONTRACT.bootstrapRoleArn },
+    Action: "kms:PutKeyPolicy", Resource: "*", Condition: { Bool: { "kms:BypassPolicyLockoutSafetyCheck": "false" } },
+  });
+  const finalRequest = setup.requests["put-key-policy.json"];
+  assert.equal(finalRequest.KeyId, SYNTHETIC_KEY); assert.equal(finalRequest.PolicyName, "default");
+  assert.equal(finalRequest.BypassPolicyLockoutSafetyCheck, false);
+  const finalPolicy = JSON.parse(finalRequest.Policy);
+  assert.deepEqual(finalPolicy, setup.resourcePolicies["tenant-key-final.json"]);
+  assert.deepEqual(finalPolicy.Statement, [{ Sid: "EnableAccountIamDelegation", Effect: "Allow", Principal: { AWS: `arn:aws:iam::${CONTRACT.account}:root` }, Action: "kms:*", Resource: "*" }]);
+  assert.ok(!JSON.stringify(finalPolicy).includes(CONTRACT.bootstrapRoleArn));
+  assert.equal(model(policiesFor(setup, "bootstrap"), "kms:PutKeyPolicy", SYNTHETIC_KEY, { "aws:RequestedRegion": CONTRACT.region, "kms:BypassPolicyLockoutSafetyCheck": "false" }), "allowed", "IAM permission remains for final policy safety check before detachment");
+  assert.deepEqual(setup.requests["tag-resource.json"], { KeyId: SYNTHETIC_KEY, Tags: [{ TagKey: "Application", TagValue: "AdmitFlow" }, { TagKey: "Environment", TagValue: "prod" }] });
+  assert.deepEqual(setup.requests["enable-key-rotation.json"], { KeyId: SYNTHETIC_KEY });
+  assert.deepEqual(setup.requests["create-alias.json"], { AliasName: "alias/admitflow-prod-tenant-credentials", TargetKeyId: SYNTHETIC_KEY });
+  assert.deepEqual(policiesFor(creation, "bootstrap").flatMap(policy => policy.Statement).filter(statement => statement.Effect === "Allow").flatMap(statement => statement.Action), ["kms:CreateKey"]);
+});
+test("routine identities have no KMS administration and workload boundaries name one key", () => {
+  for (const identity of ["deploy", "cloudformation", "publisher"]) {
+    const actions = policiesFor(bundles.deployment, identity).flatMap(policy => policy.Statement).flatMap(statement => statement.Action);
+    assert.ok(actions.every(action => !action.startsWith("kms:")));
+  }
+  for (const workload of ["web", "worker"]) {
+    const statements = bundles.deployment.policies[`admitflow-prod-${workload}-task-boundary.json`].Statement;
+    assert.equal(statements.length, 1); assert.deepEqual(statements[0].Resource, [SYNTHETIC_KEY]);
+    assert.deepEqual(statements[0].Condition, { StringEquals: { "aws:RequestedRegion": CONTRACT.region } });
+  }
+});
+test("bootstrap bundle writer preserves review-only request and resource-policy JSON", () => {
+  const directory = mkdtempSync(join(tmpdir(), "admitflow-key-artifacts-"));
+  try {
+    for (const phase of ["tenant-key-create", "tenant-key-configure"]) {
+      const output = join(directory, phase); const bundle = bundles[phase]; writeBundle(bundle, output);
+      for (const [name, request] of Object.entries(bundle.requests)) assert.deepEqual(JSON.parse(readFileSync(join(output, "requests", name), "utf8")), request);
+      for (const [name, policy] of Object.entries(bundle.resourcePolicies)) assert.deepEqual(JSON.parse(readFileSync(join(output, "resource-policies", name), "utf8")), policy);
+      assert.throws(() => writeBundle(bundle, output), /already exist/);
+    }
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 test("managed policy quota, attachments, trust quota and boundary count", () => {
   for (const bundle of Object.values(bundles)) {
@@ -140,6 +200,8 @@ test("AWS simulation export is inputs only, preserving conditions and explicit e
   for (const item of cases) { assert.equal(item.input.ActionNames.length, 1); assert.ok(item.input.PolicyInputList.length); assert.ok(!("EvaluationResults" in item)); }
   assert.ok(cases.some(item => item.expected === "explicitDeny"));
   assert.ok(cases.find(item => item.id === "migration-no-exec").input.ContextEntries.some(entry => entry.ContextKeyName === "ecs:enable-execute-command" && entry.ContextKeyType === "boolean"));
+  for (const key of ["kms:MultiRegion", "kms:BypassPolicyLockoutSafetyCheck"]) assert.ok(cases.find(item => item.id === "bootstrap-create-untagged-key").input.ContextEntries.some(entry => entry.ContextKeyName === key && entry.ContextKeyType === "boolean"));
+  assert.equal(new Set(cases.map(item => item.id)).size, cases.length);
 });
 test("offline bundle writer emits inspectable policy files and refuses overwrite", () => {
   const directory = mkdtempSync(join(tmpdir(), "admitflow-iam-test-"));

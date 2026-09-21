@@ -16,12 +16,14 @@ import {
   aws_sns as sns,
 } from "aws-cdk-lib";
 import type { Construct } from "constructs";
-import { PRODUCTION, ScopedBootstraplessSynthesizer } from "./scoped-synthesis";
+import { PRODUCTION, requireProductionTenantKeyArn, ScopedBootstraplessSynthesizer } from "./scoped-synthesis";
 
 export interface AdmitFlowStackProps extends StackProps {
   stage: string;
   availabilityZones: string[];
   highAvailability?: boolean;
+  /** Bootstrap-owned tenant key; mandatory in production, never created or managed by the production stack. */
+  tenantKeyArn?: string;
   /** Existing CMK, only when the existing application secret uses a customer-managed key. */
   appSecretKmsKeyArn?: string;
   alarmTopicArn?: string;
@@ -51,6 +53,9 @@ export class AdmitFlowStack extends Stack {
       if (!(props.synthesizer instanceof ScopedBootstraplessSynthesizer)) {
         throw new Error("Production requires the scoped, inline-only BootstraplessSynthesizer with both custom roles.");
       }
+      requireProductionTenantKeyArn(props.tenantKeyArn);
+    } else if (props.tenantKeyArn !== undefined) {
+      throw new Error("Nonproduction offline fixtures do not accept a tenantKeyArn.");
     }
     super(scope, id, props);
     const production = props.stage === PRODUCTION.stage;
@@ -122,10 +127,14 @@ export class AdmitFlowStack extends Stack {
     });
     // Bootstrap operator must separately precreate the reviewed Valkey log-delivery policy.
     // Do not give routine CloudFormation account-scoped logs:PutResourcePolicy/DeleteResourcePolicy.
-    const tenantKey = new kms.Key(this, "TenantCredentialKey", {
-      alias: `alias/${prefix}-tenant-credentials`, description: "AdmitFlow tenant-bound provider credential encryption",
-      enableKeyRotation: true, removalPolicy: RemovalPolicy.RETAIN, pendingWindow: Duration.days(30),
-    });
+    // Production references the durable bootstrap-owned key, not a CloudFormation resource import.
+    // Retention and rotation are verified during bootstrap, not managed on this imported reference.
+    const tenantKey = production
+      ? kms.Key.fromKeyArn(this, "TenantCredentialKey", props.tenantKeyArn!)
+      : new kms.Key(this, "TenantCredentialKey", {
+        alias: `alias/${prefix}-tenant-credentials`, description: "OFFLINE FIXTURE: tenant credential encryption",
+        enableKeyRotation: true, removalPolicy: RemovalPolicy.RETAIN, pendingWindow: Duration.days(30),
+      });
     const existingSecretKey = props.appSecretKmsKeyArn ? kms.Key.fromKeyArn(this, "ApplicationSecretKey", props.appSecretKmsKeyArn) : undefined;
     const appSecret = secretsmanager.Secret.fromSecretAttributes(this, "ApplicationSecret", {
       secretCompleteArn: appSecretArn.valueAsString, encryptionKey: existingSecretKey,
