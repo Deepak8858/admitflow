@@ -7,6 +7,9 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 import { AdmitFlowStack, SHARED_SECRET_KEYS, WEB_SECRET_KEYS } from "../stack";
 import { prepareEnvironment } from "../entrypoint.mjs";
 import { highAvailabilityContext } from "../context";
+import { configureApplication } from "../configuration";
+import { PRODUCTION } from "../scoped-synthesis";
+import { SYNTHETIC_KEY } from "../iam/fixtures.mjs";
 
 type IngressRule = { GroupId?: unknown; SourceSecurityGroupId?: unknown; CidrIp?: unknown; CidrIpv6?: unknown; SourcePrefixListId?: unknown; IpProtocol?: string; FromPort?: number; ToPort?: number };
 
@@ -47,13 +50,13 @@ function assertProtectedIngress(template: Template) {
   }
 }
 
-test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selectors and digest-pinned images", async () => {
+test("offline production stack preserves TLS web/worker, isolated noeviction Valkey, secret selectors and digest-pinned images", async () => {
   const root = resolve("infra", ".test-output");
   await mkdir(root, { recursive: true });
   const directory = await mkdtemp(join(root, "cdk-"));
   try {
-    const app = new App({ outdir: directory });
-    const stack = new AdmitFlowStack(app, "OfflineTest", { stage: "test", env: { region: "ap-southeast-1" }, availabilityZones: ["ap-southeast-1a", "ap-southeast-1b"] });
+    const app = new App({ outdir: directory, context: { ...PRODUCTION, tenantKeyArn: SYNTHETIC_KEY } });
+    const stack = configureApplication(app);
     const template = Template.fromStack(stack);
     template.resourceCountIs("AWS::ECS::Service", 2);
     template.resourceCountIs("AWS::ECS::TaskDefinition", 3);
@@ -63,7 +66,9 @@ test("offline stack has TLS web/worker, isolated noeviction Valkey, secret selec
     template.resourceCountIs("AWS::ElastiCache::ServerlessCache", 0);
     template.hasResourceProperties("AWS::ElastiCache::ParameterGroup", { CacheParameterGroupFamily: "valkey7", Properties: { "maxmemory-policy": "noeviction" } });
     template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { Engine: "valkey", TransitEncryptionEnabled: true, TransitEncryptionMode: "required", AtRestEncryptionEnabled: true, ClusterMode: "disabled", NumCacheClusters: 1, AuthToken: Match.anyValue() });
-    template.hasResourceProperties("AWS::KMS::Key", { EnableKeyRotation: true });
+    template.resourceCountIs("AWS::KMS::Key", 0);
+    template.resourceCountIs("AWS::KMS::Alias", 0);
+    template.hasOutput("TenantCredentialKeyArn", { Value: SYNTHETIC_KEY });
     template.hasResourceProperties("AWS::ElasticLoadBalancingV2::Listener", { Port: 443, Protocol: "HTTPS", SslPolicy: "ELBSecurityPolicy-TLS13-1-2-2021-06", Certificates: [{ CertificateArn: { Ref: "CertificateArn" } }] });
     template.hasResourceProperties("AWS::ElasticLoadBalancingV2::TargetGroup", { HealthCheckPath: "/api/health", Port: 3000 });
     template.hasResourceProperties("AWS::ECS::Service", { NetworkConfiguration: { AwsvpcConfiguration: { AssignPublicIp: "ENABLED", SecurityGroups: Match.anyValue(), Subnets: Match.anyValue() } } });

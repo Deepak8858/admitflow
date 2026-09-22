@@ -35,7 +35,7 @@ function main() {
     : mode === "--typecheck" ? [tsc]
     : mode === "--browser" ? [["node_modules/@playwright/test/cli.js", "test"]]
     : mode === "--build" ? builds
-    : [["node_modules/tsx/dist/cli.mjs", "--test", "tests/*.test.ts"], ["node_modules/tsx/dist/cli.mjs", "--test", "infra/tests/*.test.ts"], tsc, ...builds];
+    : [["node_modules/tsx/dist/cli.mjs", "--test", "tests/*.test.ts"], ["node_modules/tsx/dist/cli.mjs", "--test", "infra/tests/*.test.ts"], ["infra/iam/verify.mjs"], tsc, ...builds];
   try {
     if (mode === "--all") {
       const python = spawnSync(process.platform === "win32" ? "python" : "python3", ["-m", "unittest", "discover", "-s", "tests", "-p", "tooling_audio_test.py"], { cwd: root, env, stdio: "inherit", timeout: 60000 });

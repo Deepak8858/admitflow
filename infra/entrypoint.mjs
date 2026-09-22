@@ -5,11 +5,17 @@ import { pathToFileURL } from "node:url";
 export function prepareEnvironment(environment) {
   const env = { ...environment };
   const required = env.ADMITFLOW_PROCESS_ROLE === "migration" ? ["DATABASE_URL_UNPOOLED"] : ["DATABASE_URL"];
-  if (env.ADMITFLOW_PROCESS_ROLE === "web") required.push("WORKOS_API_KEY", "WORKOS_CLIENT_ID", "WORKOS_COOKIE_PASSWORD", "NEXT_PUBLIC_WORKOS_REDIRECT_URI");
+  if (env.ADMITFLOW_PROCESS_ROLE === "web") required.push("WORKOS_API_KEY", "WORKOS_CLIENT_ID", "WORKOS_COOKIE_PASSWORD", "APP_BASE_URL", "NEXT_PUBLIC_WORKOS_REDIRECT_URI");
   if (env.ADMITFLOW_PROCESS_ROLE === "worker") required.push("REDIS_HOST", "REDIS_PASSWORD");
   if (["web", "worker"].includes(env.ADMITFLOW_PROCESS_ROLE)) required.push("INTAKE_CONTACT_KEYS");
   for (const name of required) if (!env[name]) throw new Error(`Missing required runtime variable: ${name}`);
-  if (env.ADMITFLOW_PROCESS_ROLE === "web" && env.WORKOS_COOKIE_PASSWORD.length < 32) throw new Error("WORKOS_COOKIE_PASSWORD must have at least 32 characters.");
+  if (env.ADMITFLOW_PROCESS_ROLE === "web") {
+    if (env.WORKOS_COOKIE_PASSWORD.length < 32) throw new Error("WORKOS_COOKIE_PASSWORD must have at least 32 characters.");
+    let url;
+    try { url = new URL(env.APP_BASE_URL); } catch { /* Report the variable name, never its value. */ }
+    // Reject normalization of paths/credentials/whitespace before AuthKit receives the raw value.
+    if (!url || url.protocol !== "https:" || ![url.origin, `${url.origin}/`].includes(env.APP_BASE_URL)) throw new Error("APP_BASE_URL must be a canonical HTTPS origin.");
+  }
   if (["web", "worker"].includes(env.ADMITFLOW_PROCESS_ROLE)) {
     let keys;
     try { keys = JSON.parse(env.INTAKE_CONTACT_KEYS); } catch { keys = null; }
