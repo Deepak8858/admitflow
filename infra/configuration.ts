@@ -24,6 +24,7 @@ export function configureApplication(app: App): AdmitFlowStack {
     availabilityZones: [`${region}a`, `${region}b`],
     highAvailability: highAvailabilityContext(app.node.tryGetContext("highAvailability")),
     tenantKeyArn: app.node.tryGetContext("tenantKeyArn"),
+    cacheParameterGroupArn: app.node.tryGetContext("cacheParameterGroupArn"),
     appSecretKmsKeyArn: app.node.tryGetContext("appSecretKmsKeyArn"),
     alarmTopicArn: app.node.tryGetContext("alarmTopicArn"),
     description: production ? "AdmitFlow scoped production deployment" : "OFFLINE FIXTURE ONLY: unbounded roles are not approved for deployment",

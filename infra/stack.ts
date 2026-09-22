@@ -16,7 +16,7 @@ import {
   aws_sns as sns,
 } from "aws-cdk-lib";
 import type { Construct } from "constructs";
-import { PRODUCTION, requireProductionTenantKeyArn, ScopedBootstraplessSynthesizer } from "./scoped-synthesis";
+import { PRODUCTION, requireProductionCacheParameterGroupArn, requireProductionTenantKeyArn, ScopedBootstraplessSynthesizer } from "./scoped-synthesis";
 
 export interface AdmitFlowStackProps extends StackProps {
   stage: string;
@@ -24,6 +24,8 @@ export interface AdmitFlowStackProps extends StackProps {
   highAvailability?: boolean;
   /** Bootstrap-owned tenant key; mandatory in production, never created or managed by the production stack. */
   tenantKeyArn?: string;
+  /** Bootstrap-owned parameter group; mandatory in production, managed outside stack lifecycle. */
+  cacheParameterGroupArn?: string;
   /** Existing CMK, only when the existing application secret uses a customer-managed key. */
   appSecretKmsKeyArn?: string;
   alarmTopicArn?: string;
@@ -54,8 +56,10 @@ export class AdmitFlowStack extends Stack {
         throw new Error("Production requires the scoped, inline-only BootstraplessSynthesizer with both custom roles.");
       }
       requireProductionTenantKeyArn(props.tenantKeyArn);
-    } else if (props.tenantKeyArn !== undefined) {
-      throw new Error("Nonproduction offline fixtures do not accept a tenantKeyArn.");
+      requireProductionCacheParameterGroupArn(props.cacheParameterGroupArn);
+    } else {
+      if (props.tenantKeyArn !== undefined) throw new Error("Nonproduction offline fixtures do not accept a tenantKeyArn.");
+      if (props.cacheParameterGroupArn !== undefined) throw new Error("Nonproduction offline fixtures do not accept a cacheParameterGroupArn.");
     }
     super(scope, id, props);
     const production = props.stage === PRODUCTION.stage;
@@ -149,17 +153,19 @@ export class AdmitFlowStack extends Stack {
       cacheSubnetGroupName: `${prefix}-queue-subnets`,
       description: "Isolated AdmitFlow queue subnets", subnetIds: vpc.isolatedSubnets.map(subnet => subnet.subnetId),
     });
-    // CloudFormation has no name input for this resource; keep its stable logical ID.
-    // Bootstrap policy's candidate physical-name prefix remains a predeployment verification gate.
-    const cacheParameters = new elasticache.CfnParameterGroup(this, "CacheParameters", {
-      cacheParameterGroupFamily: "valkey7", description: "BullMQ requires noeviction on node-based Valkey",
-      properties: { "maxmemory-policy": "noeviction" },
-    });
+    // Production bootstrap readback verifies family/tags/noeviction before every deployment.
+    // This literal is an external reference, not a CloudFormation resource import or drift check.
+    const cacheParameterGroupName = production
+      ? PRODUCTION.cacheParameterGroupName
+      : new elasticache.CfnParameterGroup(this, "CacheParameters", {
+        cacheParameterGroupFamily: "valkey7", description: "BullMQ requires noeviction on node-based Valkey",
+        properties: { "maxmemory-policy": "noeviction" },
+      }).ref;
     const replicas = props.highAvailability ? 1 : 0;
     const cache = new elasticache.CfnReplicationGroup(this, "Queue", {
       replicationGroupId: `${prefix}-queue`, replicationGroupDescription: "BullMQ; Neon remains the durable outbox",
       engine: "valkey", engineVersion: "7.2", cacheNodeType: cacheNodeType.valueAsString,
-      cacheParameterGroupName: cacheParameters.ref, cacheSubnetGroupName: cacheSubnetGroup.ref,
+      cacheParameterGroupName, cacheSubnetGroupName: cacheSubnetGroup.ref,
       securityGroupIds: [cacheGroup.securityGroupId], port: 6379,
       // BullMQ connects to a single primary endpoint, not a Redis Cluster client.
       clusterMode: "disabled", numCacheClusters: replicas + 1,
@@ -319,6 +325,8 @@ export class AdmitFlowStack extends Stack {
     output("TaskSubnetIds", Fn.join(",", vpc.publicSubnets.map(subnet => subnet.subnetId)));
     output("TenantCredentialKeyArn", tenantKey.keyArn);
     output("QueuePrimaryEndpoint", cache.attrPrimaryEndPointAddress);
-    output("CacheParameterGroupName", cacheParameters.ref, "Actual CloudFormation-generated parameter group name; do not invent a fixed physical name.");
+    output("CacheParameterGroupName", cacheParameterGroupName, production
+      ? "Bootstrap-owned group outside stack lifecycle; verify family, tags and noeviction before deployment."
+      : "Offline fixture: CloudFormation-generated parameter group name.");
   }
 }

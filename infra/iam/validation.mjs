@@ -44,6 +44,63 @@ export function validationCases(input) {
   add("publisher-no-passrole", "deployment", "publisher", "iam:PassRole", CONTRACT.cfnRoleArn, "implicitDeny", { "iam:PassedToService": "cloudformation.amazonaws.com" });
   const resourceTags = { "aws:ResourceTag/Application": "AdmitFlow", "aws:ResourceTag/Environment": "prod" };
   const requestTags = { "aws:RequestTag/Application": "AdmitFlow", "aws:RequestTag/Environment": "prod" };
+  generate("cache-parameters-configure", input); // Exact identity is mandatory before deriving vectors.
+  const parameters = input.cacheParameterGroupArn;
+  const parameterTagContext = { ...requestTags, "aws:TagKeys": ["Application", "Environment"] };
+  const parameterVariants = {
+    neighbor: `${parameters}-other`, oldPrefix: ar("elasticache", "parametergroup:admitflow-prod-cacheparameters-test"),
+    shortened: ar("elasticache", "parametergroup:admitf-cache-xlqszxaqy5hl"),
+    account: parameters.replace(CONTRACT.account, "111111111111"), region: parameters.replace(CONTRACT.region, "us-east-1"),
+  };
+  for (const action of ["elasticache:CreateCacheParameterGroup", "elasticache:AddTagsToResource"]) {
+    add(`cache-create-${action}`, "cache-parameters-create", "bootstrap", action, parameters, "allowed", parameterTagContext);
+    for (const [name, context] of Object.entries({
+      missingTags: {}, missingApplication: { ...parameterTagContext, "aws:RequestTag/Application": undefined },
+      missingEnvironment: { ...parameterTagContext, "aws:RequestTag/Environment": undefined },
+      wrongApplication: { ...parameterTagContext, "aws:RequestTag/Application": "Other" },
+      wrongEnvironment: { ...parameterTagContext, "aws:RequestTag/Environment": "staging" },
+      extraKeys: { ...parameterTagContext, "aws:TagKeys": ["Application", "Environment", "Other"] },
+      missingKeys: requestTags, emptyKeys: { ...requestTags, "aws:TagKeys": [] },
+      wrongRegion: { ...parameterTagContext, "aws:RequestedRegion": "us-east-1" },
+    })) add(`cache-create-reject-${name}-${action}`, "cache-parameters-create", "bootstrap", action, parameters, "implicitDeny", context);
+    for (const [name, resource] of Object.entries(parameterVariants)) add(`cache-create-reject-${name}-${action}`, "cache-parameters-create", "bootstrap", action, resource, "implicitDeny", parameterTagContext);
+  }
+  // Residual exact-name relabel authority is explicit, not disguised as create-only enforcement.
+  add("cache-create-exact-name-retag-residual", "cache-parameters-create", "bootstrap", "elasticache:AddTagsToResource", parameters, "allowed", { ...parameterTagContext, "aws:ResourceTag/Application": "Other" });
+  for (const phase of ["cache-parameters-create", "cache-parameters-configure"]) {
+    for (const action of ["elasticache:DescribeCacheParameterGroups", "elasticache:DescribeCacheParameters", "elasticache:ListTagsForResource"]) {
+      add(`${phase}-exact-read-${action}`, phase, "bootstrap", action, parameters, "allowed");
+      add(`${phase}-no-inventory-${action}`, phase, "bootstrap", action, "*", "implicitDeny");
+      add(`${phase}-no-other-region-read-${action}`, phase, "bootstrap", action, parameters, "implicitDeny", { "aws:RequestedRegion": "us-east-1" });
+      for (const [name, resource] of Object.entries(parameterVariants)) add(`${phase}-reject-read-${name}-${action}`, phase, "bootstrap", action, resource, "implicitDeny");
+    }
+    for (const action of ["elasticache:DeleteCacheParameterGroup", "elasticache:ResetCacheParameterGroup", "elasticache:RemoveTagsFromResource", "elasticache:CreateCacheCluster", "elasticache:CreateReplicationGroup"]) {
+      for (const [name, resource] of Object.entries({ parameters, cluster: ar("elasticache", "cluster:admitflow-prod-queue-001"), replication: ar("elasticache", "replicationgroup:admitflow-prod-queue") })) {
+        add(`${phase}-no-${name}-${action}`, phase, "bootstrap", action, resource, "implicitDeny", { ...parameterTagContext, ...resourceTags });
+      }
+    }
+  }
+  add("cache-create-no-modify", "cache-parameters-create", "bootstrap", "elasticache:ModifyCacheParameterGroup", parameters, "implicitDeny", resourceTags);
+  for (const action of ["elasticache:CreateCacheParameterGroup", "elasticache:AddTagsToResource"]) add(`cache-configure-no-${action}`, "cache-parameters-configure", "bootstrap", action, parameters, "implicitDeny", { ...parameterTagContext, ...resourceTags });
+  const uses = ["elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup", "elasticache:DescribeCacheParameterGroups", "elasticache:DescribeCacheParameters", "elasticache:ListTagsForResource"];
+  for (const [phase, identity, actions] of [
+    ["cache-parameters-configure", "bootstrap", ["elasticache:ModifyCacheParameterGroup"]],
+    ["deployment", "cloudformation", uses],
+  ]) for (const action of actions) {
+    add(`${phase}-tagged-cache-${action}`, phase, identity, action, parameters, "allowed", resourceTags);
+    for (const [name, context] of Object.entries({
+      missing: {}, application: { ...resourceTags, "aws:ResourceTag/Application": "Other" },
+      environment: { ...resourceTags, "aws:ResourceTag/Environment": "staging" },
+      missingApplication: { "aws:ResourceTag/Environment": "prod" }, missingEnvironment: { "aws:ResourceTag/Application": "AdmitFlow" },
+      region: { ...resourceTags, "aws:RequestedRegion": "us-east-1" },
+    })) add(`${phase}-reject-cache-${name}-${action}`, phase, identity, action, parameters, "implicitDeny", context);
+    for (const [name, resource] of Object.entries(parameterVariants)) add(`${phase}-reject-cache-resource-${name}-${action}`, phase, identity, action, resource, "implicitDeny", resourceTags);
+  }
+  for (const identity of ["cloudformation", "deploy", "publisher", ...WORKLOAD_ROLES.map(role => `${role.name}-boundary.json`)]) {
+    for (const action of ["elasticache:CreateCacheParameterGroup", "elasticache:ModifyCacheParameterGroup", "elasticache:DeleteCacheParameterGroup", "elasticache:ResetCacheParameterGroup", "elasticache:AddTagsToResource", "elasticache:RemoveTagsFromResource"]) {
+      add(`${identity}-no-cache-admin-${action}`, "deployment", identity, action, parameters, identity === "admitflow-prod-migration-task-boundary.json" ? "explicitDeny" : "implicitDeny", { ...parameterTagContext, ...resourceTags });
+    }
+  }
   const vpc = ar("ec2", "vpc/vpc-11111111111111111");
   add("own-vpc-delete", "deployment", "cloudformation", "ec2:DeleteVpc", vpc, "allowed", resourceTags);
   add("unrelated-vpc-delete", "deployment", "cloudformation", "ec2:DeleteVpc", vpc, "implicitDeny");
@@ -138,7 +195,7 @@ export function simulationInputs(input) {
   return validationCases(input).map(test => ({ id: test.id, expected: test.expected, phase: test.phase, identity: test.identity, input: {
     PolicyInputList: policiesFor(generate(test.phase, input), test.identity).map(policy => JSON.stringify(policy)),
     ActionNames: [test.action], ResourceArns: [test.resource],
-    ContextEntries: Object.entries(test.context).map(([ContextKeyName, value]) => ({ ContextKeyName, ContextKeyValues: Array.isArray(value) ? value : [value], ContextKeyType: Array.isArray(value) ? "stringList" : ["ecs:enable-execute-command", "aws:MultiFactorAuthPresent", "kms:MultiRegion", "kms:BypassPolicyLockoutSafetyCheck"].includes(ContextKeyName) ? "boolean" : "string" })),
+    ContextEntries: Object.entries(test.context).filter(([, value]) => value !== undefined && !(Array.isArray(value) && value.length === 0)).map(([ContextKeyName, value]) => ({ ContextKeyName, ContextKeyValues: Array.isArray(value) ? value : [value], ContextKeyType: Array.isArray(value) ? "stringList" : ["ecs:enable-execute-command", "aws:MultiFactorAuthPresent", "kms:MultiRegion", "kms:BypassPolicyLockoutSafetyCheck"].includes(ContextKeyName) ? "boolean" : "string" })),
   } }));
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
