@@ -67,7 +67,7 @@ Next inlines these values into the web build:
 
 Pass them when building the **web** target. Runtime CloudFormation `MetaAppId`, `MetaConfigId` and `DomainName` must match the image's values. Changing only an ECS environment variable does not rewrite compiled browser code. Rebuild the web image for a changed Meta app/config ID or WorkOS callback/domain. Public identifiers are not secret credentials; Meta app secrets and access tokens never become build arguments.
 
-CDK sets `APP_BASE_URL=https://<DomainName>`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://<DomainName>/callback`, and the server-side `META_APP_ID` alias. Use a distinct web image for staging if public configuration differs from production. The worker bundle keeps runtime environment lookups rather than inlining them.
+CDK sets `APP_BASE_URL=https://<DomainName>`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://<DomainName>/callback`, and the server-side `META_APP_ID` alias. The web container entrypoint requires `APP_BASE_URL` to be a canonical HTTPS origin (optional trailing slash); missing values, credentials, paths, queries, fragments and normalization-dependent spellings fail before the server starts. Keep hostnames lowercase and omit the default HTTPS port. Use a distinct web image for staging if public configuration differs from production. The worker bundle keeps runtime environment lookups rather than inlining them.
 
 ### Queue configuration
 
