@@ -8,6 +8,7 @@ import { ArrowRight, Building2, Check, Layers3, LogOut, Plus, RefreshCw, ShieldC
 import { Badge, Brand, Button, Field, PanelHeader } from "./ui";
 import type { ProvisioningStatus } from "@/lib/provisioning-types";
 import { readJsonBody } from "@/lib/client-response";
+import { signOutAction } from "@/app/auth/actions";
 
 interface Organization { id: string; name: string; role?: string }
 interface OrganizationList { organizations: Organization[]; current?: string; name?: string; scope: string; provisioning: ProvisioningStatus | null }
@@ -88,7 +89,7 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
     <a href="#onboarding-content" className="skip-link">Skip to institute setup</a>
     <header style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "24px clamp(20px, 5vw, 72px)", borderBottom: "1px solid var(--color-rule)" }}>
       <Link href="/welcome" aria-label="AdmitFlow home"><Brand /></Link><ThemeSelect />
-      {configured ? <a href="/logout" className="button ghost"><LogOut size={15} />Sign out</a> : <Badge>Local preview</Badge>}
+      {configured ? <form action={signOutAction}><Button type="submit" variant="ghost"><LogOut size={15} />Sign out</Button></form> : <Badge>Local preview</Badge>}
     </header>
     <main id="onboarding-content" style={{ width: "min(1060px, 100%)", margin: "auto", padding: "clamp(32px, 7vw, 88px) 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))", gap: "clamp(32px, 7vw, 84px)", alignItems: "start" }}>
       <section aria-labelledby="onboarding-title">

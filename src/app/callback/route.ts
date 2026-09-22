@@ -1,2 +1,7 @@
 import { handleAuth } from "@workos-inc/authkit-nextjs";
-export const GET = handleAuth({ returnPathname: "/onboarding" });
+import type { NextRequest } from "next/server";
+import { appUrl } from "@/lib/config";
+
+export async function GET(request: NextRequest) {
+  return handleAuth({ returnPathname: "/onboarding", baseURL: appUrl() })(request);
+}

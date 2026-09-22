@@ -31,6 +31,78 @@ async function isolatedModule<T>(file: string, overrides: Record<string, unknown
   );
   return module.exports as T;
 }
+test("hosted logout rejects missing, malformed and foreign origins before any session mutation", async () => {
+  let calls = 0;
+  const origins = [null, "", "null", "https://foreign.invalid", "http://admitflow.example", "https://admitflow.example:8443", "https://admitflow.example.foreign.invalid", "https://admitflow.example@foreign.invalid", "https://foreign.invalid@admitflow.example", "https://admitflow.example/", "https://admitflow.example/path", "https://admitflow.example?next=1", "https://admitflow.example#fragment", "https://admitflow.example, https://foreign.invalid"];
+  for (const origin of origins) {
+    const action = await isolatedModule<typeof import("../src/app/auth/actions")>("src/app/auth/actions.ts", {
+      "@workos-inc/authkit-nextjs": { signOut: async () => { calls++; } },
+      "@/lib/config": { productionDatabase: () => true, workosConfigured: () => true, appUrl: () => "https://admitflow.example" },
+      "next/headers": { headers: async () => new Headers({ ...(origin === null ? {} : { origin }), host: "foreign.invalid", "x-forwarded-host": "foreign.invalid", "sec-fetch-site": "same-origin" }) },
+    });
+    await assert.rejects(action.signOutAction(), /same-origin request/);
+  }
+  assert.equal(calls, 0);
+});
+
+test("hosted logout fails closed in local or partially configured mode without falling back to SQLite", async () => {
+  let calls = 0;
+  for (const [database, workos] of [[false, false], [false, true], [true, false]]) {
+    const action = await isolatedModule<typeof import("../src/app/auth/actions")>("src/app/auth/actions.ts", {
+      "@workos-inc/authkit-nextjs": { signOut: async () => { calls++; } },
+      "@/lib/config": { productionDatabase: () => database, workosConfigured: () => workos, appUrl: () => "https://admitflow.example" },
+      "next/headers": { headers: async () => new Headers({ origin: "https://admitflow.example" }) },
+      "@/lib/store": { endSession: () => assert.fail("Hosted action must not mutate local sessions") },
+    });
+    await assert.rejects(action.signOutAction(), /not configured/);
+  }
+  assert.equal(calls, 0);
+});
+
+test("hosted logout uses the runtime public URL and propagates the SDK redirect unchanged", async () => {
+  let base = "https://build.example", origin = "https://runtime.example";
+  const calls: unknown[] = [], redirect = new Error("NEXT_REDIRECT");
+  const action = await isolatedModule<typeof import("../src/app/auth/actions")>("src/app/auth/actions.ts", {
+    "@workos-inc/authkit-nextjs": { signOut: async (options: unknown) => { calls.push(options); throw redirect; } },
+    "@/lib/config": { productionDatabase: () => true, workosConfigured: () => true, appUrl: () => base },
+    "next/headers": { headers: async () => new Headers({ origin, host: "container.internal:3000", "x-forwarded-host": "foreign.invalid" }) },
+  });
+  base = origin;
+  await assert.rejects(action.signOutAction(), error => error === redirect);
+  base = origin = "https://second-runtime.example";
+  await assert.rejects(action.signOutAction(), error => error === redirect);
+  assert.deepEqual(calls, [{ returnTo: "https://runtime.example/onboarding" }, { returnTo: "https://second-runtime.example/onboarding" }]);
+});
+
+test("callback passes runtime baseURL and the unchanged request to AuthKit rather than trusting container hosts", async () => {
+  let base = "https://build.example";
+  const calls: unknown[] = [];
+  const response = new Response(null, { status: 307 });
+  const route = await isolatedModule<typeof import("../src/app/callback/route")>("src/app/callback/route.ts", {
+    "@/lib/config": { appUrl: () => base },
+    "@workos-inc/authkit-nextjs": { handleAuth: (options: unknown) => {
+      calls.push(options); return async (request: NextRequest) => { calls.push(request); return response; };
+    } },
+  });
+  assert.deepEqual(calls, [], "callback configuration must not freeze at module initialization");
+  const request = new NextRequest("http://container.internal:3000/callback?code=synthetic&state=fixture", { headers: { "x-forwarded-host": "foreign.invalid" } });
+  for (base of ["https://runtime.example", "https://second-runtime.example"]) assert.equal(await route.GET(request), response);
+  assert.deepEqual(calls, [{ returnPathname: "/onboarding", baseURL: "https://runtime.example" }, request, { returnPathname: "/onboarding", baseURL: "https://second-runtime.example" }, request]);
+});
+
+test("both hosted logout controls use a POST server action and the GET logout surface is absent", async () => {
+  await assert.rejects(readFile("src/app/logout/route.ts"), { code: "ENOENT" });
+  const action = await readFile("src/app/auth/actions.ts", "utf8");
+  assert.match(action, /^"use server";/);
+  assert.doesNotMatch(action, /(?:local-store|lib\/store)/);
+  for (const file of ["src/components/onboarding.tsx", "src/components/configuration.tsx"]) {
+    const source = await readFile(file, "utf8");
+    assert.match(source, /import \{ signOutAction \} from "@\/app\/auth\/actions"/);
+    assert.match(source, /<form action=\{signOutAction\}><Button type="submit"/);
+    assert.doesNotMatch(source, /["']\/logout["']/);
+  }
+});
+
 function request(body: unknown, cookie?: string, raw = false) {
   return new NextRequest("http://127.0.0.1/api/auth", { method: "POST", headers: { host: "127.0.0.1", origin: "http://127.0.0.1", "content-type": "application/json", ...(cookie ? { cookie: `admitflow_session=${cookie}` } : {}) }, body: raw ? String(body) : JSON.stringify(body) });
 }
