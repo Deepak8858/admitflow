@@ -1,12 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import { prepareEnvironment } from "../entrypoint.mjs";
 import { verificationEnvironment } from "../../scripts/verify.mjs";
 
 const web = {
-  ADMITFLOW_PROCESS_ROLE: "web", DATABASE_URL: "postgresql://fixture:fixture@database.invalid/admitflow",
+  ADMITFLOW_PROCESS_ROLE: "web", DATABASE_URL: "postgresql://database.invalid/admitflow",
   WORKOS_API_KEY: "fixture-only", WORKOS_CLIENT_ID: "client_fixture", WORKOS_COOKIE_PASSWORD: "x".repeat(32),
   NEXT_PUBLIC_WORKOS_REDIRECT_URI: "https://admitflow.incfrog.ai/callback",
   INTAKE_CONTACT_KEYS: JSON.stringify([Buffer.alloc(32, 17).toString("base64")]),
@@ -41,7 +42,7 @@ test("web entrypoint accepts canonical HTTPS origins with optional trailing slas
 test("origin validation does not change migration and worker configuration contracts", () => {
   const migration = { ADMITFLOW_PROCESS_ROLE: "migration", DATABASE_URL_UNPOOLED: web.DATABASE_URL };
   assert.deepEqual(prepareEnvironment(migration), migration);
-  const worker = { ADMITFLOW_PROCESS_ROLE: "worker", DATABASE_URL: web.DATABASE_URL, INTAKE_CONTACT_KEYS: web.INTAKE_CONTACT_KEYS, REDIS_HOST: "queue.invalid", REDIS_PASSWORD: "fixture", REDIS_TLS: "true" };
+  const worker = { ADMITFLOW_PROCESS_ROLE: "worker", DATABASE_URL: web.DATABASE_URL, INTAKE_CONTACT_KEYS: web.INTAKE_CONTACT_KEYS, REDIS_HOST: "queue.invalid", REDIS_PASSWORD: randomUUID(), REDIS_TLS: "true" };
   assert.equal(new URL(prepareEnvironment(worker).REDIS_URL).protocol, "rediss:");
 });
 
