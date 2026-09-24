@@ -2,14 +2,15 @@ import test, { type TestContext } from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { App, BootstraplessSynthesizer, CfnResource, FileAssetPackaging, Stack } from "aws-cdk-lib";
+import { App, BootstraplessSynthesizer, CfnResource, FileAssetPackaging, Stack, Token } from "aws-cdk-lib";
 import { Match, Template } from "aws-cdk-lib/assertions";
 import { configureApplication } from "../configuration";
 import { AdmitFlowStack, SHARED_SECRET_KEYS, WEB_SECRET_KEYS } from "../stack";
-import { compactInlineTemplate, INLINE_TEMPLATE_LIMIT, PRODUCTION, ScopedBootstraplessSynthesizer, valkeyLogDeliveryPolicy } from "../scoped-synthesis";
+import { compactInlineTemplate, INLINE_TEMPLATE_LIMIT, PRODUCTION, PRODUCTION_CACHE_PARAMETER_GROUP_ARN, ScopedBootstraplessSynthesizer, valkeyLogDeliveryPolicy } from "../scoped-synthesis";
 import { SYNTHETIC_KEY } from "../iam/fixtures.mjs";
+import { CACHE_PARAMETERS } from "../iam/generate.mjs";
 
-function application(t: TestContext, context: Record<string, unknown> = { ...PRODUCTION, tenantKeyArn: SYNTHETIC_KEY }) {
+function application(t: TestContext, context: Record<string, unknown> = { ...PRODUCTION, tenantKeyArn: SYNTHETIC_KEY, cacheParameterGroupArn: PRODUCTION_CACHE_PARAMETER_GROUP_ARN }) {
   const root = resolve("infra/.test-output");
   mkdirSync(root, { recursive: true });
   const outdir = mkdtempSync(join(root, "scoped-"));
@@ -63,6 +64,57 @@ test("production key is required at entrypoint and direct construction; aliases 
     }), /tenantKeyArn/);
   }
   assert.throws(() => configureApplication(application(t, { tenantKeyArn: SYNTHETIC_KEY })), /offline fixtures/);
+});
+
+test("production requires the exact external parameter group at entrypoint and direct construction", t => {
+  const arn = PRODUCTION_CACHE_PARAMETER_GROUP_ARN;
+  const invalid = [undefined, null, false, {}, 1, "", "*", PRODUCTION.cacheParameterGroupName,
+    arn.replace(PRODUCTION.account, "111111111111"), arn.replace(PRODUCTION.region, "us-east-1"),
+    arn.replace("arn:aws:", "arn:aws-cn:"), arn.replace("-v1", "-v2"), arn.toUpperCase(),
+    arn.replace(PRODUCTION.cacheParameterGroupName, "admitf-cache-xlqszxaqy5hl"),
+    `${arn}*`, `${arn}-other`, ` ${arn}`, `${arn}\n`, Token.asString({ Ref: "UnverifiedGroup" })];
+  for (const cacheParameterGroupArn of invalid) {
+    assert.throws(() => configureApplication(application(t, { ...PRODUCTION, tenantKeyArn: SYNTHETIC_KEY, cacheParameterGroupArn })), /cacheParameterGroupArn/);
+    assert.throws(() => new AdmitFlowStack(application(t), PRODUCTION.stackName, {
+      stage: "prod", env: { account: PRODUCTION.account, region: PRODUCTION.region },
+      availabilityZones: ["ap-southeast-1a", "ap-southeast-1b"], synthesizer: new ScopedBootstraplessSynthesizer(PRODUCTION),
+      tenantKeyArn: SYNTHETIC_KEY, cacheParameterGroupArn: cacheParameterGroupArn as string,
+    }), /cacheParameterGroupArn/);
+  }
+});
+
+test("synthesis and IAM agree on the external group without resource ownership or a mutable parameter", t => {
+  assert.equal(PRODUCTION_CACHE_PARAMETER_GROUP_ARN, CACHE_PARAMETERS.arn);
+  assert.equal(PRODUCTION.cacheParameterGroupName, CACHE_PARAMETERS.name);
+  assert.equal(CACHE_PARAMETERS.family, "valkey7");
+  const app = application(t);
+  const stack = new AdmitFlowStack(app, PRODUCTION.stackName, {
+    stage: "prod", env: { account: PRODUCTION.account, region: PRODUCTION.region },
+    availabilityZones: ["ap-southeast-1a", "ap-southeast-1b"], synthesizer: new ScopedBootstraplessSynthesizer(PRODUCTION),
+    tenantKeyArn: SYNTHETIC_KEY, cacheParameterGroupArn: PRODUCTION_CACHE_PARAMETER_GROUP_ARN,
+  });
+  const template = Template.fromStack(stack);
+  template.resourceCountIs("AWS::ElastiCache::ParameterGroup", 0);
+  template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { CacheParameterGroupName: CACHE_PARAMETERS.name });
+  template.hasOutput("CacheParameterGroupName", { Value: CACHE_PARAMETERS.name });
+  assert.equal(template.toJSON().Parameters.CacheParameterGroupName, undefined);
+  assert.equal(template.toJSON().Parameters.CacheParameterGroupArn, undefined);
+  assert.ok(!JSON.stringify(template.toJSON()).includes('"Ref":"CacheParameters"'));
+});
+
+test("offline fixtures retain their native noeviction group and reject external group inputs", t => {
+  for (const cacheParameterGroupArn of [PRODUCTION_CACHE_PARAMETER_GROUP_ARN, null, false, ""]) {
+    assert.throws(() => configureApplication(application(t, { cacheParameterGroupArn })), /offline fixtures.*cacheParameterGroupArn/);
+    assert.throws(() => new AdmitFlowStack(application(t, {}), "Fixture", {
+      stage: "test", env: { region: PRODUCTION.region }, availabilityZones: ["ap-southeast-1a", "ap-southeast-1b"],
+      cacheParameterGroupArn: cacheParameterGroupArn as string,
+    }), /offline fixtures.*cacheParameterGroupArn/);
+  }
+  const template = Template.fromStack(configureApplication(application(t, {})));
+  template.resourceCountIs("AWS::ElastiCache::ParameterGroup", 1);
+  template.hasResourceProperties("AWS::ElastiCache::ParameterGroup", { CacheParameterGroupFamily: "valkey7", Properties: { "maxmemory-policy": "noeviction" } });
+  template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { CacheParameterGroupName: { Ref: "CacheParameters" } });
+  template.hasOutput("CacheParameterGroupName", { Value: { Ref: "CacheParameters" } });
 });
 
 test("production references the exact bootstrap key in outputs, web/worker environment and grants only", t => {
@@ -124,12 +176,9 @@ test("production resources keep approved fixed names, recovery settings and cost
   template.hasResourceProperties("AWS::ECR::Repository", { RepositoryName: "admitflow-prod", ImageTagMutability: "IMMUTABLE" });
   template.hasResourceProperties("AWS::ECS::Cluster", { ClusterName: "admitflow-prod" });
   template.hasResourceProperties("AWS::ElastiCache::SubnetGroup", { CacheSubnetGroupName: "admitflow-prod-queue-subnets" });
-  assert.deepEqual(Object.keys(template.findResources("AWS::ElastiCache::ParameterGroup")), ["CacheParameters"]);
-  template.hasResourceProperties("AWS::ElastiCache::ParameterGroup", {
-    CacheParameterGroupName: Match.absent(),
-    Tags: Match.arrayWith([{ Key: "Application", Value: "AdmitFlow" }, { Key: "Environment", Value: "prod" }]),
-  });
-  template.hasOutput("CacheParameterGroupName", { Value: { Ref: "CacheParameters" } });
+  template.resourceCountIs("AWS::ElastiCache::ParameterGroup", 0);
+  template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { CacheParameterGroupName: PRODUCTION.cacheParameterGroupName });
+  template.hasOutput("CacheParameterGroupName", { Value: PRODUCTION.cacheParameterGroupName });
   template.hasResourceProperties("AWS::ElasticLoadBalancingV2::LoadBalancer", { Name: "admitflow-prod-alb", IpAddressType: "ipv4", Scheme: "internet-facing" });
   template.hasResourceProperties("AWS::ElasticLoadBalancingV2::TargetGroup", { Name: "admitflow-prod-web" });
   template.hasResourceProperties("AWS::SecretsManager::Secret", { Name: "admitflow/prod/queue-auth", GenerateSecretString: { PasswordLength: 48 } });

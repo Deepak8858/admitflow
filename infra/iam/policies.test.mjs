@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, mkdtempSync, rmSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CONTRACT, WORKLOAD_ROLES, generate, splitManagedPolicies, writeBundle } from "./generate.mjs";
+import { CACHE_PARAMETERS, CONTRACT, WORKLOAD_ROLES, generate, splitManagedPolicies, writeBundle } from "./generate.mjs";
 import { PHASES, SYNTHETIC_INPUT, SYNTHETIC_KEY } from "./fixtures.mjs";
 import { validationCases, policiesFor, simulationInputs } from "./validation.mjs";
 
@@ -43,7 +43,7 @@ test("fail closed for every missing or changed fixed contract field", () => {
   assert.throws(() => generate("unknown", CONTRACT), /Unknown phase/);
 });
 test("missing phase identifiers never produce wildcard substitutes", () => {
-  const required = { deployment: ["applicationSecretArn", "applicationSecretKeyMode", "certificateArn", "tenantKeyArn"], "tenant-key-configure": ["tenantKeyArn"], "certificate-metadata": ["certificateArn"], "secret-update": ["applicationSecretArn", "applicationSecretKeyMode"], "dns-validation": ["certificateArn", "validationRecordName"], "dns-application": ["certificateArn", "loadBalancerArn", "targetGroupArn"], "release-operator": ["migrationTaskDefinitionArn"] };
+  const required = { deployment: ["applicationSecretArn", "applicationSecretKeyMode", "certificateArn", "tenantKeyArn", "cacheParameterGroupArn"], "cache-parameters-configure": ["cacheParameterGroupArn"], "tenant-key-configure": ["tenantKeyArn"], "certificate-metadata": ["certificateArn"], "secret-update": ["applicationSecretArn", "applicationSecretKeyMode"], "dns-validation": ["certificateArn", "validationRecordName"], "dns-application": ["certificateArn", "loadBalancerArn", "targetGroupArn"], "release-operator": ["migrationTaskDefinitionArn"] };
   for (const [phase, keys] of Object.entries(required)) for (const key of keys) {
     assert.throws(() => generate(phase, { ...SYNTHETIC_INPUT, [key]: undefined }));
     assert.throws(() => generate(phase, { ...SYNTHETIC_INPUT, [key]: "*" }));
@@ -74,6 +74,51 @@ test("tenant key identifiers reject foreign, alias, multiregion and malformed in
     SYNTHETIC_KEY.replace(/key\/.+$/, `key/${"-".repeat(36)}`), `${SYNTHETIC_KEY}\n`, `${SYNTHETIC_KEY}*`,
   ]) assert.throws(() => generate(phase, { ...SYNTHETIC_INPUT, tenantKeyArn }), /tenantKeyArn/);
 });
+test("cache parameter identifiers reject missing, foreign, wildcard and normalized substitutes", () => {
+  const arn = CACHE_PARAMETERS.arn;
+  for (const phase of ["deployment", "cache-parameters-configure"]) for (const cacheParameterGroupArn of [
+    undefined, null, false, {}, [], 1, "", "*", CACHE_PARAMETERS.name, `${arn}*`, `${arn}-other`, `${arn}\n`, ` ${arn}`,
+    arn.replace(CONTRACT.account, "111111111111"), arn.replace(CONTRACT.region, "us-east-1"),
+    arn.replace("arn:aws:", "arn:aws-cn:"), arn.replace("-v1", "-v2"), arn.toUpperCase(),
+    arn.replace(CACHE_PARAMETERS.name, "admitf-cache-xlqszxaqy5hl"),
+  ]) assert.throws(() => generate(phase, { ...SYNTHETIC_INPUT, cacheParameterGroupArn }), /cacheParameterGroupArn/);
+  assert.throws(() => generate("cache-parameters-create", { ...CONTRACT, cacheParameterGroupArn: `${arn}-other` }), /cacheParameterGroupArn/);
+  const { cacheParameterGroupArn: ignored, ...missing } = SYNTHETIC_INPUT;
+  assert.throws(() => simulationInputs(missing), /cacheParameterGroupArn/);
+});
+test("cache requests and phase action sets are exact, isolated and review-only", () => {
+  const create = generate("cache-parameters-create", CONTRACT);
+  const configure = generate("cache-parameters-configure", { ...CONTRACT, cacheParameterGroupArn: CACHE_PARAMETERS.arn });
+  assert.deepEqual(create.requests, { "create-cache-parameter-group.json": {
+    CacheParameterGroupName: "admitflow-prod-queue-valkey7-v1", CacheParameterGroupFamily: "valkey7",
+    Description: "BullMQ requires noeviction on node-based Valkey",
+    Tags: [{ Key: "Application", Value: "AdmitFlow" }, { Key: "Environment", Value: "prod" }],
+  } });
+  assert.deepEqual(configure.requests, { "modify-cache-parameter-group.json": {
+    CacheParameterGroupName: CACHE_PARAMETERS.name,
+    ParameterNameValues: [{ ParameterName: "maxmemory-policy", ParameterValue: "noeviction" }],
+  } });
+  const reads = ["elasticache:DescribeCacheParameterGroups", "elasticache:DescribeCacheParameters", "elasticache:ListTagsForResource"];
+  for (const [bundle, writes] of [[create, ["elasticache:CreateCacheParameterGroup", "elasticache:AddTagsToResource"]], [configure, ["elasticache:ModifyCacheParameterGroup"]]]) {
+    const statements = policiesFor(bundle, "bootstrap").flatMap(policy => policy.Statement);
+    assert.deepEqual(statements.flatMap(statement => statement.Action).sort(), [...reads, ...writes].sort());
+    for (const statement of statements) assert.deepEqual(statement.Resource, [CACHE_PARAMETERS.arn]);
+    assert.equal(bundle.validation.status, "OFFLINE_CANDIDATE_NOT_AWS_VALIDATED");
+    assert.deepEqual(bundle.trust.bootstrap, bundles.prerequisites.trust.bootstrap);
+    assert.deepEqual(bundle.boundaries, {}); assert.deepEqual(bundle.resourcePolicies, {});
+  }
+  assert.ok(!JSON.stringify(bundles.prerequisites.policies).includes("parametergroup:"));
+  assert.ok(!JSON.stringify(bundles.deployment.policies).includes("admitflow-prod-cacheparameters-"));
+  const statements = policiesFor(bundles.deployment, "cloudformation").flatMap(policy => policy.Statement)
+    .filter(statement => statement.Resource.some(resource => resource.includes(":parametergroup:")));
+  assert.equal(statements.length, 2);
+  for (const statement of statements) {
+    assert.deepEqual(statement.Resource, [CACHE_PARAMETERS.arn]);
+    assert.deepEqual(statement.Condition, { StringEquals: { "aws:RequestedRegion": CONTRACT.region, "aws:ResourceTag/Application": "AdmitFlow", "aws:ResourceTag/Environment": "prod" } });
+  }
+  assert.deepEqual(statements.flatMap(statement => statement.Action).sort(), [...reads, "elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup"].sort());
+});
+
 test("bootstrap request artifacts omit creation tags and remove the temporary key-policy grant", () => {
   const creation = generate("tenant-key-create", CONTRACT);
   const setup = bundles["tenant-key-configure"];
@@ -117,7 +162,7 @@ test("routine identities have no KMS administration and workload boundaries name
 test("bootstrap bundle writer preserves review-only request and resource-policy JSON", () => {
   const directory = mkdtempSync(join(tmpdir(), "admitflow-key-artifacts-"));
   try {
-    for (const phase of ["tenant-key-create", "tenant-key-configure"]) {
+    for (const phase of ["tenant-key-create", "tenant-key-configure", "cache-parameters-create", "cache-parameters-configure"]) {
       const output = join(directory, phase); const bundle = bundles[phase]; writeBundle(bundle, output);
       for (const [name, request] of Object.entries(bundle.requests)) assert.deepEqual(JSON.parse(readFileSync(join(output, "requests", name), "utf8")), request);
       for (const [name, policy] of Object.entries(bundle.resourcePolicies)) assert.deepEqual(JSON.parse(readFileSync(join(output, "resource-policies", name), "utf8")), policy);
@@ -202,6 +247,14 @@ test("AWS simulation export is inputs only, preserving conditions and explicit e
   assert.ok(cases.find(item => item.id === "migration-no-exec").input.ContextEntries.some(entry => entry.ContextKeyName === "ecs:enable-execute-command" && entry.ContextKeyType === "boolean"));
   for (const key of ["kms:MultiRegion", "kms:BypassPolicyLockoutSafetyCheck"]) assert.ok(cases.find(item => item.id === "bootstrap-create-untagged-key").input.ContextEntries.some(entry => entry.ContextKeyName === key && entry.ContextKeyType === "boolean"));
   assert.equal(new Set(cases.map(item => item.id)).size, cases.length);
+  for (const item of cases) for (const entry of item.input.ContextEntries) {
+    assert.ok(entry.ContextKeyValues.length > 0);
+    assert.ok(entry.ContextKeyValues.every(value => typeof value === "string"));
+  }
+  const missingApplication = cases.find(item => item.id === "cache-create-reject-missingApplication-elasticache:CreateCacheParameterGroup");
+  assert.ok(!missingApplication.input.ContextEntries.some(entry => entry.ContextKeyName === "aws:RequestTag/Application"));
+  const emptyKeys = cases.find(item => item.id === "cache-create-reject-emptyKeys-elasticache:CreateCacheParameterGroup");
+  assert.ok(!emptyKeys.input.ContextEntries.some(entry => entry.ContextKeyName === "aws:TagKeys"));
 });
 test("offline bundle writer emits inspectable policy files and refuses overwrite", () => {
   const directory = mkdtempSync(join(tmpdir(), "admitflow-iam-test-"));

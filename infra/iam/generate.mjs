@@ -13,6 +13,11 @@ export const CONTRACT = Object.freeze({
 });
 const { account, region } = CONTRACT;
 const arn = (service, resource) => `arn:aws:${service}:${region}:${account}:${resource}`;
+export const CACHE_PARAMETERS = Object.freeze({
+  name: "admitflow-prod-queue-valkey7-v1",
+  arn: arn("elasticache", "parametergroup:admitflow-prod-queue-valkey7-v1"),
+  family: "valkey7",
+});
 const iam = resource => `arn:aws:iam::${account}:${resource}`;
 const roles = ["web", "worker", "migration"].flatMap(service => ["task", "execution"].map(kind => ({
   service, kind, name: `admitflow-prod-${service}-${kind}`,
@@ -52,7 +57,7 @@ const logArns = logNames.map(name => arn("logs", `log-group:${name}`));
 const logApiArns = logArns.map(value => `${value}:*`);
 const zoneArn = `arn:aws:route53:::hostedzone/${CONTRACT.hostedZoneId}`;
 const fixedKeys = Object.keys(CONTRACT);
-const extraKeys = ["applicationSecretArn", "applicationSecretKeyMode", "applicationSecretKmsKeyArn", "tenantKeyArn", "queueSecretArn", "certificateArn", "validationRecordName", "loadBalancerArn", "targetGroupArn", "migrationTaskDefinitionArn"];
+const extraKeys = ["applicationSecretArn", "applicationSecretKeyMode", "applicationSecretKmsKeyArn", "tenantKeyArn", "cacheParameterGroupArn", "queueSecretArn", "certificateArn", "validationRecordName", "loadBalancerArn", "targetGroupArn", "migrationTaskDefinitionArn"];
 function requireValue(input, key, expression) {
   const value = input[key];
   if (typeof value !== "string" || value.trim() !== value || !expression.test(value)) throw new Error(`Missing or invalid verified identifier: ${key}`);
@@ -64,6 +69,7 @@ function common(input) {
   for (const key of Object.keys(input)) if (![...fixedKeys, ...extraKeys].includes(key)) throw new Error("Unexpected input field; never provide secret values");
   for (const key of fixedKeys) if (input[key] !== CONTRACT[key]) throw new Error(`Missing or mismatched contract: ${key}`);
   if (input.tenantKeyArn !== undefined) tenantKey(input);
+  if (input.cacheParameterGroupArn !== undefined) cacheParameters(input);
   if (input.queueSecretArn !== undefined) requireValue(input, "queueSecretArn", exactArn("secretsmanager", "secret:admitflow/prod/queue-auth-[A-Za-z0-9]{6}"));
 }
 function application(input) {
@@ -73,6 +79,10 @@ function application(input) {
   else if (input.applicationSecretKmsKeyArn !== undefined) throw new Error("AWS-managed key mode cannot include a customer key ARN");
 }
 const tenantKey = input => requireValue(input, "tenantKeyArn", exactArn("kms", `key/${keyIdPattern}`));
+function cacheParameters(input) {
+  if (input.cacheParameterGroupArn !== CACHE_PARAMETERS.arn) throw new Error("Missing or invalid verified identifier: cacheParameterGroupArn");
+  return input.cacheParameterGroupArn;
+}
 const certificate = input => requireValue(input, "certificateArn", exactArn("acm", "certificate/[a-f0-9-]{36}"));
 /** Resource '*' in a key policy means only the key to which that policy is attached. */
 function tenantKeyPolicy(temporaryBootstrapGrant) {
@@ -158,6 +168,32 @@ export function generate(phase, input) {
       ["ecs.amazonaws.com", "AWSServiceRoleForECS"], ["elasticloadbalancing.amazonaws.com", "AWSServiceRoleForElasticLoadBalancing"], ["elasticache.amazonaws.com", "AWSServiceRoleForElastiCache"],
     ].map(([service, name], index) => statement(`CreateServiceLinkedRole${index}`, "iam:CreateServiceLinkedRole", iam(`role/aws-service-role/${service}/${name}`), { StringEquals: { "iam:AWSServiceName": service } })));
     addFamily(bundle, "bootstrap", "dns-inventory", bootstrapMetadata());
+  } else if (phase === "cache-parameters-create" || phase === "cache-parameters-configure") {
+    const creating = phase === "cache-parameters-create";
+    const parameters = creating ? CACHE_PARAMETERS.arn : cacheParameters(input);
+    bootstrapTrust(bundle);
+    const tagConditions = merge(requestTags, {
+      "ForAllValues:StringEquals": { "aws:TagKeys": ["Application", "Environment"] },
+      Null: { "aws:TagKeys": "false" },
+    });
+    addFamily(bundle, "bootstrap", phase, [
+      allow("ReadExactCacheParameters", ["elasticache:DescribeCacheParameterGroups", "elasticache:DescribeCacheParameters", "elasticache:ListTagsForResource"], parameters),
+      ...(creating ? [
+        allow("CreateExactTaggedCacheParameters", "elasticache:CreateCacheParameterGroup", parameters, tagConditions),
+        // Exact ARN plus request tags: existing resource tags cannot be required at creation.
+        // This also permits tagging an existing exact-name group; preflight conflicts must stop.
+        allow("TagExactCacheParametersAtCreation", "elasticache:AddTagsToResource", parameters, tagConditions),
+      ] : [allow("ConfigureExactTaggedCacheParameters", "elasticache:ModifyCacheParameterGroup", parameters, resourceTags)]),
+    ]);
+    bundle.requests[creating ? "create-cache-parameter-group.json" : "modify-cache-parameter-group.json"] = creating ? {
+      CacheParameterGroupName: CACHE_PARAMETERS.name, CacheParameterGroupFamily: CACHE_PARAMETERS.family,
+      Description: "BullMQ requires noeviction on node-based Valkey",
+      Tags: [{ Key: "Application", Value: "AdmitFlow" }, { Key: "Environment", Value: "prod" }],
+    } : {
+      CacheParameterGroupName: CACHE_PARAMETERS.name,
+      ParameterNameValues: [{ ParameterName: "maxmemory-policy", ParameterValue: "noeviction" }],
+    };
+    bundle.validation.required.push("Separately approve live execution and cleanup. Inventory exact name before creation; stop on conflicts and reconcile uncertain writes without blind retries. Creation tagging can relabel an existing exact-name group; IAM does not constrain family/description/parameter payloads. Replace creation with configuration authority, verify actual ARN/family/tags/noeviction, then detach setup permissions. External group survives stack rollback/deletion and needs readback before every deployment. No deletion or automatic recovery is authorized.");
   } else if (phase === "tenant-key-create") {
     bootstrapTrust(bundle);
     addFamily(bundle, "bootstrap", "tenant-key-create", [
@@ -228,7 +264,7 @@ export function generate(phase, input) {
     ]);
     bundle.validation.required.push("Choose reviewed non-root attachment identity; migration revision/digest and network review. Service count changes remain CloudFormation operations, not direct UpdateService.");
   } else if (phase === "deployment") {
-    application(input); certificate(input); tenantKey(input);
+    application(input); certificate(input); tenantKey(input); cacheParameters(input);
     deployment(bundle, input);
   } else throw new Error("Unknown phase");
   return finish(bundle);
@@ -298,20 +334,17 @@ function deployment(bundle, input) {
   const replication = arn("elasticache", "replicationgroup:admitflow-prod-queue");
   const cacheCluster = arn("elasticache", "cluster:admitflow-prod-queue-*");
   const subnet = arn("elasticache", "subnetgroup:admitflow-prod-queue-subnets");
-  // Native CFN generates this physical name. Prefix is a fail-closed candidate, not a verified naming guarantee.
-  const parameters = arn("elasticache", "parametergroup:admitflow-prod-cacheparameters-*");
+  // Bootstrap owns this exact group; routine CFN can read/use it, never administer it.
+  const parameters = input.cacheParameterGroupArn;
   const snapshots = arn("elasticache", "snapshot:admitflow-prod-queue-*");
   addFamily(bundle, "cloudformation", "queue", [
     allow("NamedCacheSubnetGroup", ["elasticache:CreateCacheSubnetGroup", "elasticache:ModifyCacheSubnetGroup", "elasticache:DeleteCacheSubnetGroup", "elasticache:DescribeCacheSubnetGroups"], subnet),
-    allow("CreateCandidateTaggedParameterGroup", "elasticache:CreateCacheParameterGroup", parameters, requestTags),
-    allow("CandidateTaggedParameterGroup", ["elasticache:ModifyCacheParameterGroup", "elasticache:DeleteCacheParameterGroup", "elasticache:DescribeCacheParameterGroups", "elasticache:DescribeCacheParameters"], parameters, resourceTags),
-    allow("UseCandidateTaggedParameterGroup", ["elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup"], parameters, resourceTags),
+    allow("ReadExactTaggedParameterGroup", ["elasticache:DescribeCacheParameterGroups", "elasticache:DescribeCacheParameters", "elasticache:ListTagsForResource"], parameters, resourceTags),
+    allow("UseExactTaggedParameterGroup", ["elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup"], parameters, resourceTags),
     allow("NamedReplicationGroup", ["elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup", "elasticache:DeleteReplicationGroup", "elasticache:DescribeReplicationGroups"], [replication, cacheCluster, subnet, snapshots]),
     allow("SnapshotNamedQueue", ["elasticache:CreateSnapshot", "elasticache:DescribeSnapshots"], [replication, cacheCluster, snapshots]),
     allow("ReadNamedCacheMembers", "elasticache:DescribeCacheClusters", cacheCluster),
     allow("TagNamedCacheResources", ["elasticache:AddTagsToResource", "elasticache:RemoveTagsFromResource", "elasticache:ListTagsForResource"], [replication, cacheCluster, subnet, snapshots]),
-    allow("PreserveCandidateParameterGroupTags", "elasticache:AddTagsToResource", parameters, merge(requestTags, resourceTags)),
-    allow("ReadCandidateParameterGroupTags", "elasticache:ListTagsForResource", parameters, resourceTags),
     allow("CreateNamedQueueSecret", "secretsmanager:CreateSecret", queue, { StringEquals: { "secretsmanager:Name": "admitflow/prod/queue-auth" } }),
     allow("ManageNamedQueueSecret", ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue", "secretsmanager:PutSecretValue", "secretsmanager:UpdateSecret", "secretsmanager:TagResource", "secretsmanager:UntagResource"], queue),
     allow("RandomPasswordRegionalException", "secretsmanager:GetRandomPassword", "*"),
@@ -338,7 +371,7 @@ export function writeBundle(bundle, directory) {
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
   try {
     const args = process.argv.slice(2);
-    if (args.length === 1 && args[0] === "--help") console.log("Offline only: node infra/iam/generate.mjs <prerequisites|tenant-key-create|tenant-key-configure|certificate-metadata|secret-update|deployment|dns-validation|dns-application|release-operator> <identifier-input.json> <new-output-directory>. No credentials, API calls or attachments.");
+    if (args.length === 1 && args[0] === "--help") console.log("Offline only: node infra/iam/generate.mjs <prerequisites|cache-parameters-create|cache-parameters-configure|tenant-key-create|tenant-key-configure|certificate-metadata|secret-update|deployment|dns-validation|dns-application|release-operator> <identifier-input.json> <new-output-directory>. No credentials, API calls or attachments.");
     else {
       if (args.length !== 3) throw new Error("Expected phase, identifier input path and new output directory; see --help");
       writeBundle(generate(args[0], JSON.parse(readFileSync(resolve(args[1]), "utf8"))), args[2]);

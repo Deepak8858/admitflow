@@ -8,7 +8,7 @@ import { AdmitFlowStack, SHARED_SECRET_KEYS, WEB_SECRET_KEYS } from "../stack";
 import { prepareEnvironment } from "../entrypoint.mjs";
 import { highAvailabilityContext } from "../context";
 import { configureApplication } from "../configuration";
-import { PRODUCTION } from "../scoped-synthesis";
+import { PRODUCTION, PRODUCTION_CACHE_PARAMETER_GROUP_ARN } from "../scoped-synthesis";
 import { SYNTHETIC_KEY } from "../iam/fixtures.mjs";
 
 type IngressRule = { GroupId?: unknown; SourceSecurityGroupId?: unknown; CidrIp?: unknown; CidrIpv6?: unknown; SourcePrefixListId?: unknown; IpProtocol?: string; FromPort?: number; ToPort?: number };
@@ -55,7 +55,7 @@ test("offline production stack preserves TLS web/worker, isolated noeviction Val
   await mkdir(root, { recursive: true });
   const directory = await mkdtemp(join(root, "cdk-"));
   try {
-    const app = new App({ outdir: directory, context: { ...PRODUCTION, tenantKeyArn: SYNTHETIC_KEY } });
+    const app = new App({ outdir: directory, context: { ...PRODUCTION, tenantKeyArn: SYNTHETIC_KEY, cacheParameterGroupArn: PRODUCTION_CACHE_PARAMETER_GROUP_ARN } });
     const stack = configureApplication(app);
     const template = Template.fromStack(stack);
     template.resourceCountIs("AWS::ECS::Service", 2);
@@ -64,7 +64,8 @@ test("offline production stack preserves TLS web/worker, isolated noeviction Val
     template.resourceCountIs("AWS::EC2::NatGateway", 0);
     template.resourceCountIs("AWS::S3::Bucket", 0);
     template.resourceCountIs("AWS::ElastiCache::ServerlessCache", 0);
-    template.hasResourceProperties("AWS::ElastiCache::ParameterGroup", { CacheParameterGroupFamily: "valkey7", Properties: { "maxmemory-policy": "noeviction" } });
+    template.resourceCountIs("AWS::ElastiCache::ParameterGroup", 0);
+    template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { CacheParameterGroupName: PRODUCTION.cacheParameterGroupName });
     template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { Engine: "valkey", TransitEncryptionEnabled: true, TransitEncryptionMode: "required", AtRestEncryptionEnabled: true, ClusterMode: "disabled", NumCacheClusters: 1, AuthToken: Match.anyValue() });
     template.resourceCountIs("AWS::KMS::Key", 0);
     template.resourceCountIs("AWS::KMS::Alias", 0);

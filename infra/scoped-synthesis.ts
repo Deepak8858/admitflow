@@ -13,7 +13,15 @@ export const PRODUCTION = {
   cloudFormationExecutionRoleArn: "arn:aws:iam::543777713748:role/admitflow/deployment/admitflow-prod-cfn-exec",
   workloadRolePath: "/admitflow/workload/prod/",
   boundaryPolicyPath: "/admitflow/boundaries/prod/",
+  cacheParameterGroupName: "admitflow-prod-queue-valkey7-v1",
 } as const;
+
+export const PRODUCTION_CACHE_PARAMETER_GROUP_ARN = `arn:aws:elasticache:${PRODUCTION.region}:${PRODUCTION.account}:parametergroup:${PRODUCTION.cacheParameterGroupName}`;
+
+/** Exact identity only; live readback must establish ownership, family, tags and noeviction. */
+export function requireProductionCacheParameterGroupArn(value: unknown): asserts value is string {
+  if (value !== PRODUCTION_CACHE_PARAMETER_GROUP_ARN) throw new Error("Production cacheParameterGroupArn must explicitly match the verified bootstrap-owned parameter group ARN.");
+}
 
 export const INLINE_TEMPLATE_LIMIT = 51_200;
 
