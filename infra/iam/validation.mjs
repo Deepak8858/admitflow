@@ -5,6 +5,7 @@ import { CONTRACT, WORKLOAD_ROLES, generate } from "./generate.mjs";
 
 const regional = { "aws:RequestedRegion": CONTRACT.region };
 const ar = (service, resource) => `arn:aws:${service}:${CONTRACT.region}:${CONTRACT.account}:${resource}`;
+/** Build expected IAM authorization cases from the verified deployment identifiers. */
 export function validationCases(input) {
   const cases = [];
   const add = (id, phase, identity, action, resource, expected, context = {}) => cases.push({ id, phase, identity, action, resource, expected, context: { ...regional, ...context } });

@@ -270,6 +270,7 @@ export function generate(phase, input) {
   return finish(bundle);
 }
 
+/** Add deployment roles, trust policies, and scoped permissions to the bundle. */
 function deployment(bundle, input) {
   const queue = input.queueSecretArn ?? queueSecret;
   const key = input.tenantKeyArn;
