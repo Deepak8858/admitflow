@@ -5,8 +5,31 @@ import { CONTRACT, WORKLOAD_ROLES, generate } from "./generate.mjs";
 
 const regional = { "aws:RequestedRegion": CONTRACT.region };
 const ar = (service, resource) => `arn:aws:${service}:${CONTRACT.region}:${CONTRACT.account}:${resource}`;
-export function validationCases(input) {
+export function workloadLookupCases() {
   const cases = [];
+  for (const [index, role] of WORKLOAD_ROLES.entries()) {
+    const pathless = `arn:aws:iam::${CONTRACT.account}:role/${role.name}`;
+    const context = { "iam:PermissionsBoundary": role.boundaryArn, "iam:PassedToService": "ecs-tasks.amazonaws.com" };
+    const add = (label, action, resource, expected) => cases.push({ id: `workload-lookup-${index}-${label}`, phase: "deployment", identity: "cloudformation", action, resource, expected, context });
+    add("path-qualified", "iam:GetRole", role.arn, "allowed");
+    add("pathless", "iam:GetRole", pathless, "allowed");
+    for (const [label, resource] of Object.entries({
+      neighbor: `${pathless}-other`, foreignPath: pathless.replace("role/", "role/other/"),
+      account: pathless.replace(CONTRACT.account, "111111111111"),
+      partition: pathless.replace("arn:aws:", "arn:aws-cn:"),
+      qualifiedAccount: role.arn.replace(CONTRACT.account, "111111111111"),
+      qualifiedNeighbor: `${role.arn}-other`, inventory: "*",
+    })) add(`reject-${label}`, "iam:GetRole", resource, "implicitDeny");
+    // Supply permissive boundary/service context: the root-path resource must still be denied.
+    for (const action of ["iam:CreateRole", "iam:PutRolePolicy", "iam:UpdateAssumeRolePolicy", "iam:TagRole", "iam:UntagRole", "iam:DeleteRolePolicy", "iam:DeleteRole", "iam:PassRole", "iam:GetRolePolicy", "iam:ListRolePolicies", "iam:ListAttachedRolePolicies", "iam:ListRoleTags"])
+      add(`no-pathless-${action}`, action, pathless, "implicitDeny");
+    for (const action of ["iam:PutRolePermissionsBoundary", "iam:DeleteRolePermissionsBoundary", "iam:AttachRolePolicy"])
+      add(`deny-pathless-${action}`, action, pathless, "explicitDeny");
+  }
+  return cases;
+}
+export function validationCases(input) {
+  const cases = workloadLookupCases();
   const add = (id, phase, identity, action, resource, expected, context = {}) => cases.push({ id, phase, identity, action, resource, expected, context: { ...regional, ...context } });
   const stack = ar("cloudformation", "stack/AdmitFlow-prod/offline-stack-id");
   add("own-stack", "deployment", "deploy", "cloudformation:CreateChangeSet", stack, "allowed", { "cloudformation:RoleArn": CONTRACT.cfnRoleArn });

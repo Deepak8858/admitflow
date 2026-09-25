@@ -301,6 +301,10 @@ function deployment(bundle, input) {
     statement("PassOnlyWorkloadRolesToTasks", "iam:PassRole", roles.map(role => role.arn), { StringEquals: { "iam:PassedToService": "ecs-tasks.amazonaws.com" } }),
     statement("NeverChangeBootstrapBoundaries", ["iam:PutRolePermissionsBoundary", "iam:DeleteRolePermissionsBoundary", "iam:CreatePolicy", "iam:CreatePolicyVersion", "iam:SetDefaultPolicyVersion", "iam:DeletePolicy", "iam:DeletePolicyVersion", "iam:AttachRolePolicy"], "*", {}, "Deny"),
   ]);
+  // Keep name-only existence reads separate from path-qualified mutation permissions.
+  addFamily(bundle, "cloudformation", "workload-lookup", [
+    statement("ReadExactWorkloadRoleNames", "iam:GetRole", roles.map(role => iam(`role/${role.name}`))),
+  ]);
   const networkTypes = ["vpc", "subnet", "route-table", "internet-gateway", "security-group"];
   const network = networkTypes.map(type => arn("ec2", `${type}/*`));
   const creates = ["CreateVpc", "CreateSubnet", "CreateRouteTable", "CreateInternetGateway", "CreateSecurityGroup"];
