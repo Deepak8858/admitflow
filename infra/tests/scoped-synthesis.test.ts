@@ -180,6 +180,42 @@ test("production queue keeps the stack and logical ID used by snapshot IAM scope
   assert.equal(queues.Queue.UpdateReplacePolicy, "Snapshot");
 });
 
+test("production recovery preserves all five logical IDs with both Retain policies", t => {
+  const { template } = production(t);
+  for (const [type, logicalId] of [
+    ["AWS::EC2::VPC", "Vpc8378EB38"],
+    ["AWS::EC2::InternetGateway", "VpcIGWD7BA715C"],
+    ["AWS::ECS::Cluster", "ClusterEB0386A7"],
+    ["AWS::ECR::Repository", "Images2D38C313"],
+    ["AWS::SecretsManager::Secret", "QueueAuth5BFC0E63"],
+  ] as const) {
+    const resources = template.findResources(type);
+    assert.deepEqual(Object.keys(resources), [logicalId]);
+    assert.equal(resources[logicalId].DeletionPolicy, "Retain", logicalId);
+    assert.equal(resources[logicalId].UpdateReplacePolicy, "Retain", logicalId);
+  }
+  for (const type of ["AWS::EC2::Subnet", "AWS::EC2::RouteTable", "AWS::EC2::Route", "AWS::EC2::VPCGatewayAttachment"]) {
+    const resources = Object.values(template.findResources(type));
+    assert.ok(resources.length > 0, type);
+    for (const resource of resources) {
+      assert.equal(resource.DeletionPolicy, undefined, type);
+      assert.equal(resource.UpdateReplacePolicy, undefined, type);
+    }
+  }
+});
+
+test("recovery retention does not change nonproduction VPC, gateway or cluster lifecycle", t => {
+  const template = Template.fromStack(configureApplication(application(t, {})));
+  for (const type of ["AWS::EC2::VPC", "AWS::EC2::InternetGateway", "AWS::ECS::Cluster"]) {
+    const resources = Object.values(template.findResources(type));
+    assert.equal(resources.length, 1);
+    for (const resource of resources) {
+      assert.equal(resource.DeletionPolicy, undefined, type);
+      assert.equal(resource.UpdateReplacePolicy, undefined, type);
+    }
+  }
+});
+
 test("production resources keep approved fixed names, recovery settings and cost baseline", t => {
   const { template } = production(t);
   template.hasResourceProperties("AWS::ECR::Repository", { RepositoryName: "admitflow-prod", ImageTagMutability: "IMMUTABLE" });

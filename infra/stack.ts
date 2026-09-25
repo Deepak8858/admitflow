@@ -106,6 +106,13 @@ export class AdmitFlowStack extends Stack {
       // Services use dedicated groups; leaving the unused default group alone avoids a custom resource.
       restrictDefaultSecurityGroup: false,
     });
+    if (production) {
+      vpc.applyRemovalPolicy(RemovalPolicy.RETAIN);
+      // The gateway is a separate L1 resource; VPC retention does not propagate to it.
+      const gateway = vpc.node.findChild("IGW");
+      if (!(gateway instanceof ec2.CfnInternetGateway)) throw new Error("Production recovery requires the existing VPC internet gateway construct.");
+      gateway.applyRemovalPolicy(RemovalPolicy.RETAIN);
+    }
     const albGroup = new ec2.SecurityGroup(this, "AlbSecurityGroup", { vpc, allowAllOutbound: false });
     const webGroup = new ec2.SecurityGroup(this, "WebSecurityGroup", { vpc, allowAllOutbound: false });
     const workerGroup = new ec2.SecurityGroup(this, "WorkerSecurityGroup", { vpc, allowAllOutbound: false });
@@ -186,6 +193,7 @@ export class AdmitFlowStack extends Stack {
       lifecycleRules: [{ tagStatus: ecr.TagStatus.UNTAGGED, maxImageAge: Duration.days(7) }],
     });
     const cluster = new ecs.Cluster(this, "Cluster", { vpc, clusterName: prefix, containerInsightsV2: ecs.ContainerInsights.DISABLED });
+    if (production) cluster.applyRemovalPolicy(RemovalPolicy.RETAIN);
     const baseEnvironment = {
       NODE_ENV: "production", AWS_REGION: this.region, APP_BASE_URL: Fn.join("", ["https://", domain.valueAsString]),
       KMS_KEY_ID: tenantKey.keyArn, DATABASE_POOL_SIZE: "8", NEXT_TELEMETRY_DISABLED: "1",
