@@ -200,6 +200,29 @@ test("bootstrap bundle writer preserves review-only request and resource-policy 
     }
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
+test("workload lookup exception is an isolated six-name GetRole-only family", () => {
+  const filename = "cloudformation-workload-lookup-1.json";
+  assert.deepEqual(bundles.deployment.policies[filename], {
+    Version: "2012-10-17",
+    Statement: [{ Sid: "ReadExactWorkloadRoleNames", Effect: "Allow", Action: ["iam:GetRole"], Resource: [
+      "arn:aws:iam::543777713748:role/admitflow-prod-web-task",
+      "arn:aws:iam::543777713748:role/admitflow-prod-web-execution",
+      "arn:aws:iam::543777713748:role/admitflow-prod-worker-task",
+      "arn:aws:iam::543777713748:role/admitflow-prod-worker-execution",
+      "arn:aws:iam::543777713748:role/admitflow-prod-migration-task",
+      "arn:aws:iam::543777713748:role/admitflow-prod-migration-execution",
+    ] }],
+  });
+  assert.equal(bundles.deployment.attachments.cloudformation.length, 7);
+  for (const [identity, files] of Object.entries(bundles.deployment.attachments))
+    assert.equal(files.includes(filename), identity === "cloudformation");
+  for (const [phase, bundle] of Object.entries(bundles))
+    assert.equal(Object.hasOwn(bundle.policies, filename), phase === "deployment");
+  assert.equal(bundles.deployment.sizes["cloudformation-workload-iam-1.json"], 6006);
+  const statements = bundles.deployment.policies["cloudformation-workload-iam-1.json"].Statement;
+  assert.deepEqual(statements.find(item => item.Sid === "ReadAndRemoveOnlyWorkloadRoles").Resource, WORKLOAD_ROLES.map(role => role.arn));
+});
+
 test("managed policy quota, attachments, trust quota and boundary count", () => {
   for (const bundle of Object.values(bundles)) {
     for (const policy of Object.values(bundle.policies)) assert.ok(JSON.stringify(policy).length <= 6144);
