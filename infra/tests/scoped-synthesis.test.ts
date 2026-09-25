@@ -171,6 +171,15 @@ test("all and only six workload roles have exact names, individual boundaries an
   }
 });
 
+test("production queue keeps the stack and logical ID used by snapshot IAM scope", t => {
+  const { stack, template } = production(t);
+  assert.equal(stack.stackName, "AdmitFlow-prod");
+  const queues = template.findResources("AWS::ElastiCache::ReplicationGroup");
+  assert.deepEqual(Object.keys(queues), ["Queue"]);
+  assert.equal(queues.Queue.DeletionPolicy, "Snapshot");
+  assert.equal(queues.Queue.UpdateReplacePolicy, "Snapshot");
+});
+
 test("production resources keep approved fixed names, recovery settings and cost baseline", t => {
   const { template } = production(t);
   template.hasResourceProperties("AWS::ECR::Repository", { RepositoryName: "admitflow-prod", ImageTagMutability: "IMMUTABLE" });

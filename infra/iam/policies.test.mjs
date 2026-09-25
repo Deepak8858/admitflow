@@ -119,6 +119,26 @@ test("cache requests and phase action sets are exact, isolated and review-only",
   assert.deepEqual(statements.flatMap(statement => statement.Action).sort(), [...reads, "elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup"].sort());
 });
 
+test("queue snapshot resources use only the observed CFN stack and logical ID prefix", () => {
+  const statements = policiesFor(bundles.deployment, "cloudformation").flatMap(policy => policy.Statement)
+    .filter(statement => statement.Resource.some(resource => resource.includes(":snapshot:")));
+  assert.deepEqual(statements.map(statement => statement.Sid).sort(), ["NamedReplicationGroup", "SnapshotNamedQueue", "TagNamedCacheResources"].sort());
+  const resource = name => `arn:aws:elasticache:ap-southeast-1:543777713748:${name}`;
+  const sources = [resource("replicationgroup:admitflow-prod-queue"), resource("cluster:admitflow-prod-queue-*")];
+  const snapshot = resource("snapshot:admitflow-prod-snapshot-queue-*");
+  const actions = {
+    NamedReplicationGroup: ["elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup", "elasticache:DeleteReplicationGroup", "elasticache:DescribeReplicationGroups"],
+    SnapshotNamedQueue: ["elasticache:CreateSnapshot", "elasticache:DescribeSnapshots"],
+    TagNamedCacheResources: ["elasticache:AddTagsToResource", "elasticache:RemoveTagsFromResource", "elasticache:ListTagsForResource"],
+  };
+  for (const statement of statements) {
+    assert.equal(statement.Effect, "Allow");
+    assert.deepEqual(statement.Action, actions[statement.Sid]);
+    assert.deepEqual(statement.Resource, [...sources, ...(statement.Sid === "SnapshotNamedQueue" ? [] : [resource("subnetgroup:admitflow-prod-queue-subnets")]), snapshot]);
+    assert.deepEqual(statement.Condition, { StringEquals: { "aws:RequestedRegion": CONTRACT.region } });
+  }
+});
+
 test("bootstrap request artifacts omit creation tags and remove the temporary key-policy grant", () => {
   const creation = generate("tenant-key-create", CONTRACT);
   const setup = bundles["tenant-key-configure"];

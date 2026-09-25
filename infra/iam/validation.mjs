@@ -101,6 +101,28 @@ export function validationCases(input) {
       add(`${identity}-no-cache-admin-${action}`, "deployment", identity, action, parameters, identity === "admitflow-prod-migration-task-boundary.json" ? "explicitDeny" : "implicitDeny", { ...parameterTagContext, ...resourceTags });
     }
   }
+  // Production-equivalent name from the 2026-09-25 CFN denial; not an existing snapshot.
+  const snapshot = ar("elasticache", "snapshot:admitflow-prod-snapshot-queue-16l0wasktxzb6");
+  const snapshotVariants = {
+    oldPrefix: ar("elasticache", "snapshot:admitflow-prod-queue-16l0wasktxzb6"),
+    probeStack: ar("elasticache", "snapshot:admitflow-lifecycle-20260925-snapshot-queue-16l0wasktxzb6"),
+    neighborStack: snapshot.replace("prod-snapshot", "prod-other-snapshot"),
+    logicalId: snapshot.replace("snapshot-queue-", "snapshot-queueauth-"),
+    account: snapshot.replace(CONTRACT.account, "111111111111"),
+    region: snapshot.replace(CONTRACT.region, "us-east-1"),
+    partition: snapshot.replace("arn:aws:", "arn:aws-cn:"),
+    inventory: "*",
+  };
+  const snapshotActions = ["elasticache:DeleteReplicationGroup", "elasticache:CreateSnapshot", "elasticache:DescribeSnapshots", "elasticache:AddTagsToResource", "elasticache:RemoveTagsFromResource", "elasticache:ListTagsForResource"];
+  for (const action of snapshotActions) {
+    add(`queue-snapshot-${action}`, "deployment", "cloudformation", action, snapshot, "allowed");
+    for (const [name, resource] of Object.entries(snapshotVariants)) add(`queue-snapshot-reject-${name}-${action}`, "deployment", "cloudformation", action, resource, "implicitDeny");
+    add(`queue-snapshot-reject-requested-region-${action}`, "deployment", "cloudformation", action, snapshot, "implicitDeny", { "aws:RequestedRegion": "us-east-1" });
+  }
+  for (const [name, resource] of Object.entries({ snapshot, ...snapshotVariants })) add(`queue-snapshot-no-delete-${name}`, "deployment", "cloudformation", "elasticache:DeleteSnapshot", resource, "implicitDeny");
+  for (const [name, resource] of Object.entries({ replication: ar("elasticache", "replicationgroup:admitflow-prod-queue"), member: ar("elasticache", "cluster:admitflow-prod-queue-001") })) {
+    for (const action of ["elasticache:DeleteReplicationGroup", "elasticache:CreateSnapshot", "elasticache:AddTagsToResource"]) add(`queue-snapshot-source-${name}-${action}`, "deployment", "cloudformation", action, resource, "allowed");
+  }
   const vpc = ar("ec2", "vpc/vpc-11111111111111111");
   add("own-vpc-delete", "deployment", "cloudformation", "ec2:DeleteVpc", vpc, "allowed", resourceTags);
   add("unrelated-vpc-delete", "deployment", "cloudformation", "ec2:DeleteVpc", vpc, "implicitDeny");

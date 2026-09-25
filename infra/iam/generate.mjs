@@ -336,7 +336,7 @@ function deployment(bundle, input) {
   const subnet = arn("elasticache", "subnetgroup:admitflow-prod-queue-subnets");
   // Bootstrap owns this exact group; routine CFN can read/use it, never administer it.
   const parameters = input.cacheParameterGroupArn;
-  const snapshots = arn("elasticache", "snapshot:admitflow-prod-queue-*");
+  const snapshots = arn("elasticache", "snapshot:admitflow-prod-snapshot-queue-*");
   addFamily(bundle, "cloudformation", "queue", [
     allow("NamedCacheSubnetGroup", ["elasticache:CreateCacheSubnetGroup", "elasticache:ModifyCacheSubnetGroup", "elasticache:DeleteCacheSubnetGroup", "elasticache:DescribeCacheSubnetGroups"], subnet),
     allow("ReadExactTaggedParameterGroup", ["elasticache:DescribeCacheParameterGroups", "elasticache:DescribeCacheParameters", "elasticache:ListTagsForResource"], parameters, resourceTags),
