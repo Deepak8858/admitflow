@@ -119,6 +119,36 @@ test("cache requests and phase action sets are exact, isolated and review-only",
   assert.deepEqual(statements.flatMap(statement => statement.Action).sort(), [...reads, "elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup"].sort());
 });
 
+test("queue snapshot resources use only the observed CFN stack and logical ID prefix", () => {
+  const statements = policiesFor(bundles.deployment, "cloudformation").flatMap(policy => policy.Statement)
+    .filter(statement => statement.Resource.some(resource => resource.includes(":snapshot:")));
+  assert.deepEqual(statements.map(statement => statement.Sid).sort(), ["NamedReplicationGroup", "SnapshotNamedQueue", "TagNamedCacheResources"].sort());
+  const resource = name => `arn:aws:elasticache:ap-southeast-1:543777713748:${name}`;
+  const sources = [resource("replicationgroup:admitflow-prod-queue"), resource("cluster:admitflow-prod-queue-*")];
+  const snapshot = resource("snapshot:admitflow-prod-snapshot-queue-*");
+  const actions = {
+    NamedReplicationGroup: ["elasticache:CreateReplicationGroup", "elasticache:ModifyReplicationGroup", "elasticache:DeleteReplicationGroup", "elasticache:DescribeReplicationGroups"],
+    SnapshotNamedQueue: ["elasticache:CreateSnapshot", "elasticache:DescribeSnapshots"],
+    TagNamedCacheResources: ["elasticache:AddTagsToResource", "elasticache:RemoveTagsFromResource", "elasticache:ListTagsForResource"],
+  };
+  for (const statement of statements) {
+    assert.equal(statement.Effect, "Allow");
+    assert.deepEqual(statement.Action, actions[statement.Sid]);
+    assert.deepEqual(statement.Resource, [...sources, ...(statement.Sid === "SnapshotNamedQueue" ? [] : [resource("subnetgroup:admitflow-prod-queue-subnets")]), snapshot]);
+    assert.deepEqual(statement.Condition, { StringEquals: { "aws:RequestedRegion": CONTRACT.region } });
+  }
+});
+
+test("positive snapshot simulation vectors use AWS-supported action resource types", () => {
+  const cases = validationCases(SYNTHETIC_INPUT).filter(item => item.id.startsWith("queue-snapshot-") && item.expected === "allowed");
+  assert.equal(cases.length, 11);
+  for (const item of cases) assert.ok(sar[item.action].resources.includes(item.resource.split(":")[5]), `${item.id}: unsupported action/resource pair`);
+  for (const action of ["elasticache:DeleteReplicationGroup", "elasticache:CreateSnapshot", "elasticache:AddTagsToResource"]) {
+    const types = cases.filter(item => item.action === action).map(item => item.resource.split(":")[5]).sort();
+    assert.deepEqual(types, action === "elasticache:DeleteReplicationGroup" ? ["replicationgroup", "snapshot"] : ["cluster", "replicationgroup", "snapshot"]);
+  }
+});
+
 test("bootstrap request artifacts omit creation tags and remove the temporary key-policy grant", () => {
   const creation = generate("tenant-key-create", CONTRACT);
   const setup = bundles["tenant-key-configure"];
