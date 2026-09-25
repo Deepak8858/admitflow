@@ -121,7 +121,9 @@ export function validationCases(input) {
   }
   for (const [name, resource] of Object.entries({ snapshot, ...snapshotVariants })) add(`queue-snapshot-no-delete-${name}`, "deployment", "cloudformation", "elasticache:DeleteSnapshot", resource, "implicitDeny");
   for (const [name, resource] of Object.entries({ replication: ar("elasticache", "replicationgroup:admitflow-prod-queue"), member: ar("elasticache", "cluster:admitflow-prod-queue-001") })) {
-    for (const action of ["elasticache:DeleteReplicationGroup", "elasticache:CreateSnapshot", "elasticache:AddTagsToResource"]) add(`queue-snapshot-source-${name}-${action}`, "deployment", "cloudformation", action, resource, "allowed");
+    // DeleteReplicationGroup supports replicationgroup/snapshot, not member cluster ARNs.
+    const actions = ["elasticache:CreateSnapshot", "elasticache:AddTagsToResource", ...(name === "replication" ? ["elasticache:DeleteReplicationGroup"] : [])];
+    for (const action of actions) add(`queue-snapshot-source-${name}-${action}`, "deployment", "cloudformation", action, resource, "allowed");
   }
   const vpc = ar("ec2", "vpc/vpc-11111111111111111");
   add("own-vpc-delete", "deployment", "cloudformation", "ec2:DeleteVpc", vpc, "allowed", resourceTags);

@@ -139,6 +139,16 @@ test("queue snapshot resources use only the observed CFN stack and logical ID pr
   }
 });
 
+test("positive snapshot simulation vectors use AWS-supported action resource types", () => {
+  const cases = validationCases(SYNTHETIC_INPUT).filter(item => item.id.startsWith("queue-snapshot-") && item.expected === "allowed");
+  assert.equal(cases.length, 11);
+  for (const item of cases) assert.ok(sar[item.action].resources.includes(item.resource.split(":")[5]), `${item.id}: unsupported action/resource pair`);
+  for (const action of ["elasticache:DeleteReplicationGroup", "elasticache:CreateSnapshot", "elasticache:AddTagsToResource"]) {
+    const types = cases.filter(item => item.action === action).map(item => item.resource.split(":")[5]).sort();
+    assert.deepEqual(types, action === "elasticache:DeleteReplicationGroup" ? ["replicationgroup", "snapshot"] : ["cluster", "replicationgroup", "snapshot"]);
+  }
+});
+
 test("bootstrap request artifacts omit creation tags and remove the temporary key-policy grant", () => {
   const creation = generate("tenant-key-create", CONTRACT);
   const setup = bundles["tenant-key-configure"];
