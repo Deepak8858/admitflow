@@ -270,6 +270,7 @@ export function generate(phase, input) {
   return finish(bundle);
 }
 
+/** Add the deployment policies, boundaries, trust, and attachments to a phase bundle. */
 function deployment(bundle, input) {
   const queue = input.queueSecretArn ?? queueSecret;
   const key = input.tenantKeyArn;

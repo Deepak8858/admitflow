@@ -5,6 +5,7 @@ import { CONTRACT, WORKLOAD_ROLES, generate } from "./generate.mjs";
 
 const regional = { "aws:RequestedRegion": CONTRACT.region };
 const ar = (service, resource) => `arn:aws:${service}:${CONTRACT.region}:${CONTRACT.account}:${resource}`;
+/** Build focused validation cases for path-qualified and exact-name workload role lookups. */
 export function workloadLookupCases() {
   const cases = [];
   for (const [index, role] of WORKLOAD_ROLES.entries()) {
