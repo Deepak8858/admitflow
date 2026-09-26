@@ -31,7 +31,7 @@ Settings also offers local evaluation registration/sign-in. Local team invitatio
 
 ## Workspace screens
 
-`/` Overview · `/leads` Enquiries · `/pipeline` Admissions pipeline · `/inbox` Shared inbox · `/appointments` Counselling · `/recovery` Recovery campaigns · `/automations` AI & automations · `/knowledge` Knowledge base · `/analytics` Revenue analytics · `/team` Team & access · `/integrations` Integrations · `/settings` Settings, including billing.
+`/overview` Overview · `/leads` Enquiries · `/pipeline` Admissions pipeline · `/inbox` Shared inbox · `/appointments` Counselling · `/recovery` Recovery campaigns · `/automations` AI & automations · `/knowledge` Knowledge base · `/analytics` Revenue analytics · `/team` Team & access · `/integrations` Integrations · `/settings` Settings, including billing.
 
 Navigation/actions follow owner, admin, counsellor and analyst permissions. **Ctrl/Cmd K** opens search; `?lead=<id>` opens the enquiry drawer. Hosted onboarding/institute switching is at `/onboarding`.
 
