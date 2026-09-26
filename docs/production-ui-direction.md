@@ -15,7 +15,7 @@ The earlier local MVP's visual direction has been replaced. The application now 
 - Earlier broad searches are not included in this count. This is a focused shortlist, not a claim to have completed a 100-screen review.
 - The earlier reference review used direct Mobbin tools; its observations are retained below. The user subsequently authorized parent-assigned subagents for implementation.
 - This document contains source links and observations; screenshots are not embedded or bundled with the application.
-- **These eight references are sufficient.** Resume from the current components/CSS and recorded browser-QA findings; do not fetch new Mobbin images or load skills for another design-selection pass.
+- The original eight-reference review remains the primary design direction. The 26 September audit added two inspected references at the user's request; see the supplementary review below.
 
 ## Inspected references
 
@@ -34,7 +34,7 @@ The visible-evidence column preserves the prior screenshot observations, not a n
 
 ## Applied principles
 
-1. **Daily work has a clear starting point.** The current landing route is Overview, with receipt-backed metrics, recovery priorities, upcoming counselling and open tasks. Dedicated Today/team-performance routes remain future concepts.
+1. **Daily work has a clear starting point.** The public landing page is `/`; the workspace starts at `/overview`, with receipt-backed metrics, recovery priorities, upcoming counselling and open tasks. Dedicated Today/team-performance routes remain future concepts.
 2. **The enquiry list is the centre of the application.** `/api/leads` supplies bounded, server-filtered rows; search, sorting, selection and bulk actions stay together. The query-linked drawer opens within the current page.
 3. **Context travels with the work.** Enquiry identity, owner and next step are available in the record drawer, inbox and booking flow. Server checks use stable member IDs and current permissions.
 4. **Each screen has one dominant task.** Lists prioritise rows; inbox prioritises the thread; reports prioritise a chart and its underlying records.
@@ -61,16 +61,17 @@ These values come from the applied application source/CSS, not measurements of t
 
 ## Implemented information architecture
 
-- **Workspace:** Overview (`/`), Enquiries (`/leads`), Admissions pipeline (`/pipeline`), Shared inbox (`/inbox`), Counselling (`/appointments`).
+- **Public:** Landing (`/`, with `/welcome` retained as an alias), Product (`/product`), Pricing (`/pricing`), Getting started (`/help`).
+- **Workspace:** Overview (`/overview`), Enquiries (`/leads`), Admissions pipeline (`/pipeline`), Shared inbox (`/inbox`), Counselling (`/appointments`).
 - **Growth engine:** Recovery campaigns (`/recovery`), AI & automations (`/automations`), Knowledge base (`/knowledge`), Revenue analytics (`/analytics`).
 - **Manage:** Team & access (`/team`), Integrations (`/integrations`), Settings (`/settings`, including BillingPanel).
-- **Hosted account flow:** `/login`, `/signup`, `/callback`, `/logout`, and `/onboarding` for institute selection/creation. These are additional account flows, not extra main workspace screens.
+- **Hosted account flow:** `/login`, `/signup`, `/callback`, `/auth/error`, `/logout`, and `/onboarding` for institute selection/creation. These are additional account flows, not extra main workspace screens.
 
 Navigation visibility follows permissions. Enquiry links and `/inbox?conversation=<id>` resolve within the authenticated workspace; the server independently checks access. The current shell still fetches the full authorized workspace projection, including when Enquiries also requests a paginated list.
 
 ## Implementation locations and remaining QA
 
-- Shared shell/routing: `src/components/workspace.tsx`, `src/app/[[...view]]/page.tsx`.
+- Shared shell/routing: `src/components/workspace.tsx`, `src/app/[...view]/page.tsx`, `src/lib/workspace-routes.ts`. Only the 12 known workspace paths mount the workspace provider; unknown paths return a standalone 404.
 - Visual foundation: `src/app/tokens.css`, `workspace.css`, `surfaces.css`, `responsive.css`; imported by the root layout/global stylesheet.
 - Screen behavior: `leads.tsx`, `inbox.tsx`, `recovery.tsx`, `appointments.tsx`, `overview.tsx`, `configuration.tsx`, `billing.tsx`, `whatsapp-connect.tsx` and `onboarding.tsx` under `src/components/`.
 
@@ -81,3 +82,14 @@ Preserve the implemented distinction between configured accounts, requested/veri
 The full-workspace projection cost remains a follow-up. Saved-view `view`/`sort` now persist server-side, and Admissions charts/headlines share distinct-student reporting; those former defects are not current roadmap items. Broader workflow publishing, configurable stages and a separate full-page record view remain roadmap features.
 
 Current implementation scope: [production-plan.md](production-plan.md). QA ledger: [verification.md](verification.md). Backend/UI contracts: [backend-verification.md](backend-verification.md).
+
+## Supplementary review — 26 September 2026
+
+Two additional Mobbin images were visually inspected during the public-entry and page-alignment audit. They support refinement of the existing system rather than replacing the accepted primary reference.
+
+| Reference | Inspected evidence | Application |
+| --- | --- | --- |
+| [Circle dashboard](https://mobbin.com/screens/8d64bd7b-02f4-4d61-9e20-7d1174de8433) | A bounded white content column, sidebar, equally sized metric cards, aligned tabs/search/table, and slim separators. | Align the workspace header with the content column, give metric cards consistent height, and align table toolbars with cell padding. |
+| [SuperHi dashboard](https://mobbin.com/screens/c0386dae-a33a-4f18-a6e4-e6540601760a) | A pale-blue surface, prominent heading, pill navigation, and a large green course panel beside smaller history/community cards. | Retain clear heading and primary-content hierarchy without copying this course dashboard's visual treatment into the CRM. |
+
+The additional marketing search returned reference links without inspectable images; no visual claims or changes are based on those unseen images.

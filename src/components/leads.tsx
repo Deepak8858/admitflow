@@ -7,7 +7,7 @@ import { Search, Plus, Upload, Download, ChevronRight, ChevronLeft, SlidersHoriz
 import Papa from "papaparse";
 import { useData, assignableMembers, workspaceAccess, recordOwnerId, ownerLabel, memberLabel, canWorkRecord, paidActionBlocked } from "./provider";
 import { Avatar, Badge, Button, Dialog, EmptyState, Field, PageHeading, Score, SelectField, TextareaField, IconButton, download } from "./ui";
-import { type Lead, type Consent, type SavedView, type LeadView, type LeadSort, STAGES, currency, dateLabel, relativeTime, scoreLead, isStale, leadMatchesView, sortLeads, normalizePhone, exportLeads, resolveSavedViewPreferences } from "@/lib/domain";
+import { type Lead, type Consent, type SavedView, type LeadView, type LeadSort, STAGES, currency, dateLabel, relativeTime, scoreLead, isStale, normalizePhone, exportLeads, resolveSavedViewPreferences } from "@/lib/domain";
 
 import { MAX_LEAD_PAGE, leadPageCount } from "@/lib/lead-pagination";
 
@@ -88,19 +88,19 @@ export function LeadsPage({ onOpen, onAdd, onImport }: { onOpen: (id: string) =>
   const table = useReactTable({
     data: rows, columns, state: { sorting, pagination, rowSelection: selection, columnVisibility: visibility },
     getRowId: row => row.id, onRowSelectionChange: setSelection, onColumnVisibilityChange: setVisibility,
-    onPaginationChange: setPagination, onSortingChange: next => {
+    onPaginationChange: next => {
+      const updated = typeof next === "function" ? next(pagination) : next;
+      if (updated.pageIndex !== pagination.pageIndex || updated.pageSize !== pagination.pageSize) setSelection({});
+      setPagination(updated);
+    }, onSortingChange: next => {
       const value = typeof next === "function" ? next(sorting) : next;
       chooseSort(sortFor(value));
     },
     getCoreRowModel: getCoreRowModel(), manualPagination: true, manualSorting: true,
     rowCount: page.data?.total || 0, pageCount: leadPageCount(page.data?.total || 0, pagination.pageSize), enableSortingRemoval: false,
   });
-  const selectedIds = Object.keys(selection).filter(id => selection[id]);
-  const exportRows = sortLeads(data.leads.filter(lead => selectedIds.length ? selectedIds.includes(lead.id)
-    : (!filters.query.trim() || `${lead.name}\n${lead.phone}\n${lead.email}`.toLowerCase().includes(filters.query.trim().toLowerCase()))
-      && (!filters.course || lead.course === filters.course) && (!filters.stage || lead.stage === filters.stage)
-      && (!filters.ownerId || (filters.ownerId === "unassigned" ? !recordOwnerId(data, lead) : recordOwnerId(data, lead) === filters.ownerId))
-      && leadMatchesView(lead, filters.view)), sort);
+  const selectedIds = rows.filter(lead => selection[lead.id]).map(lead => lead.id);
+  const exportRows = selectedIds.length ? rows.filter(lead => selection[lead.id]) : rows;
   return <>
     <div className="page-eyebrow"><span>RELATIONSHIPS START HERE</span><span className="inline-subtle"><span className="live-dot" />{data.leads.length} enquiries, one shared workspace</span></div>
     <PageHeading title="Every enquiry. A possibility." description="A little context makes your next conversation a better one.">
@@ -119,12 +119,12 @@ export function LeadsPage({ onOpen, onAdd, onImport }: { onOpen: (id: string) =>
           <label className="compact-select"><span className="sr-only">Filter counsellor</span><select value={filters.ownerId} onChange={event => updateFilters({ ownerId: event.target.value })}><option value="">{access.role === "counsellor" ? "My enquiries" : "All counsellors"}</option>{access.role !== "counsellor" && <option value="unassigned">Unassigned</option>}{members.filter(member => access.role !== "counsellor" || member.id === access.memberId).map(member => <option key={member.id} value={member.id}>{memberLabel(member, members)}</option>)}{filters.ownerId && filters.ownerId !== "unassigned" && !members.some(member => member.id === filters.ownerId) && <option value={filters.ownerId}>Saved counsellor filter</option>}</select></label>
           <label className="compact-select"><ArrowDownWideNarrow size={14} /><span className="sr-only">Sort enquiries</span><select value={sort} onChange={event => chooseSort(event.target.value as LeadSort)}><option value="intent">Highest intent</option><option value="newest">Newest enquiry</option><option value="name">Student name</option></select></label>
           <Dropdown.Root><Dropdown.Trigger asChild><button className="button secondary display-button"><SlidersHorizontal size={14} />Display</button></Dropdown.Trigger><Dropdown.Portal><Dropdown.Content className="dropdown-menu" align="end" sideOffset={6}><Dropdown.Label className="dropdown-label">VISIBLE COLUMNS</Dropdown.Label>{table.getAllLeafColumns().filter(column => column.getCanHide()).map(column => <Dropdown.CheckboxItem key={column.id} className="dropdown-item" checked={column.getIsVisible()} onCheckedChange={value => column.toggleVisibility(value)}><span className="menu-check">{column.getIsVisible() && <Check size={13} />}</span>{String(column.columnDef.header)}</Dropdown.CheckboxItem>)}</Dropdown.Content></Dropdown.Portal></Dropdown.Root>
-          <IconButton label="Export enquiries" disabled={page.isPending || page.isError || !exportRows.length} onClick={() => download(exportLeads(exportRows), "admitflow-enquiries.csv")}><Download size={16} /></IconButton>
+          <IconButton label={selectedIds.length ? "Export selected enquiries on this page" : "Export current enquiry page"} disabled={page.isFetching || page.isError || !exportRows.length} onClick={() => download(exportLeads(exportRows), "admitflow-enquiries.csv")}><Download size={16} /></IconButton>
         </div>
       </div>
       {page.isError ? <EmptyState title="This view couldn’t load" body={page.error.message} action={<Button onClick={() => void page.refetch()} loading={page.isFetching}><RefreshCw size={15} />Retry enquiry search</Button>} /> : page.isPending ? <div className="empty-state" role="status"><RefreshCw size={21} className="spin" /><p>Loading this enquiry view…</p></div> : rows.length ? <>
         <div className="data-table-wrap"><table className="data-table enquiries-table"><caption className="sr-only">Enquiries</caption><thead>{table.getHeaderGroups().map(group => <tr key={group.id}>{group.headers.map(header => <th key={header.id} className={header.id === "select" ? "check-cell" : ""} aria-sort={header.column.getIsSorted() ? header.column.getIsSorted() === "asc" ? "ascending" : "descending" : undefined}>{header.column.getCanSort() ? <button className="column-sort" onClick={header.column.getToggleSortingHandler()}>{flexRender(header.column.columnDef.header, header.getContext())}{header.column.getIsSorted() && <ArrowDownWideNarrow size={12} />}</button> : flexRender(header.column.columnDef.header, header.getContext())}</th>)}</tr>)}</thead><tbody>{table.getRowModel().rows.map(row => <tr key={row.id} className={row.getIsSelected() ? "selected" : ""}>{row.getVisibleCells().map(cell => <td key={cell.id} className={cell.column.id === "select" ? "check-cell" : ""}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>)}</tr>)}</tbody></table></div>
-        <footer className="table-footer"><span>Showing {pagination.pageIndex * pagination.pageSize + 1}–{pagination.pageIndex * pagination.pageSize + rows.length} of <strong>{page.data?.total}</strong> enquiries</span><div className="pagination"><label className="compact-select"><span className="sr-only">Enquiries per page</span><select value={pagination.pageSize} onChange={event => setPagination({ pageIndex: 0, pageSize: Number(event.target.value) })}>{[25, 50, 100].map(size => <option key={size} value={size}>{size} / page</option>)}</select></label><IconButton label="Previous enquiry page" disabled={!table.getCanPreviousPage() || page.isFetching} onClick={() => table.previousPage()}><ChevronLeft size={15} /></IconButton><span>{pagination.pageIndex + 1} / {Math.max(1, table.getPageCount())}</span><IconButton label="Next enquiry page" disabled={!page.data?.hasMore || pagination.pageIndex + 1 >= MAX_LEAD_PAGE || page.isFetching} onClick={() => table.nextPage()}><ChevronRight size={15} /></IconButton></div></footer>
+        <footer className="table-footer"><span>Showing {pagination.pageIndex * pagination.pageSize + 1}–{pagination.pageIndex * pagination.pageSize + rows.length} of <strong>{page.data?.total}</strong> enquiries · export covers this page</span><div className="pagination"><label className="compact-select"><span className="sr-only">Enquiries per page</span><select value={pagination.pageSize} onChange={event => { setSelection({}); setPagination({ pageIndex: 0, pageSize: Number(event.target.value) }); }}>{[25, 50, 100].map(size => <option key={size} value={size}>{size} / page</option>)}</select></label><IconButton label="Previous enquiry page" disabled={!table.getCanPreviousPage() || page.isFetching} onClick={() => table.previousPage()}><ChevronLeft size={15} /></IconButton><span>{pagination.pageIndex + 1} / {Math.max(1, table.getPageCount())}</span><IconButton label="Next enquiry page" disabled={!page.data?.hasMore || pagination.pageIndex + 1 >= MAX_LEAD_PAGE || page.isFetching} onClick={() => table.nextPage()}><ChevronRight size={15} /></IconButton></div></footer>
         {(page.data?.total || 0) > MAX_LEAD_PAGE * pagination.pageSize && <p className="field-note" role="status">Showing at most {MAX_LEAD_PAGE.toLocaleString()} pages. Refine your filters to reach more enquiries.</p>}
       </> : <EmptyState title="No enquiries in this view" body="Try another search, adjust your filters, or add your first student enquiry." action={access.canWork && <Button action={{ type: "lead.create" }} onClick={onAdd}><Plus size={15} />Add enquiry</Button>} />}
     </section>

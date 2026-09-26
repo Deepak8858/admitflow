@@ -76,7 +76,7 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
         throw new Error(result.error || "Your institute could not be opened. Please retry.");
       }
       // Only a successful session switch navigates; 202 or a ready receipt is not session activation.
-      if (result.id) window.location.assign("/");
+      if (result.id) window.location.assign("/overview");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Your institute could not be opened."); }
     finally { submitting.current = false; setSaving(false); }
   }
@@ -88,8 +88,8 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
   return <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
     <a href="#onboarding-content" className="skip-link">Skip to institute setup</a>
     <header style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "24px clamp(20px, 5vw, 72px)", borderBottom: "1px solid var(--color-rule)" }}>
-      <Link href="/welcome" aria-label="AdmitFlow home"><Brand /></Link><ThemeSelect />
-      {configured ? <form action={signOutAction}><Button type="submit" variant="ghost"><LogOut size={15} />Sign out</Button></form> : <Badge>Local preview</Badge>}
+      <Link href="/" aria-label="AdmitFlow home"><Brand /></Link><ThemeSelect />
+      {configured ? !needsSignIn && <form action={signOutAction}><Button type="submit" variant="ghost"><LogOut size={15} />Sign out</Button></form> : <Badge>Local preview</Badge>}
     </header>
     <main id="onboarding-content" style={{ width: "min(1060px, 100%)", margin: "auto", padding: "clamp(32px, 7vw, 88px) 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))", gap: "clamp(32px, 7vw, 84px)", alignItems: "start" }}>
       <section aria-labelledby="onboarding-title">

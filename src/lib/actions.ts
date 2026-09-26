@@ -157,6 +157,7 @@ function applyHydratedAction(workspace: Workspace, action: Record<string, unknow
       const input = z.object({ id: z.uuid(), status: z.enum(["completed", "cancelled", "no_show"]) }).parse(action);
       const appointment = workspace.appointments.find(a => a.id === input.id);
       if (!appointment) throw new Error("Appointment not found.");
+      if (input.status === "completed" && Date.parse(appointment.startsAt) > Date.now()) throw new Error("A future appointment cannot be completed.");
       appointment.status = input.status;
       if (input.status === "cancelled") {
         appointment.syncStatus = "pending";

@@ -30,15 +30,16 @@ export function Score({ lead }: { lead: Lead }) {
 }
 export function Field({ label, hint, className = "", ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
   const id = useId();
-  return <label className={`field ${className}`} htmlFor={id}><span id={`${id}-label`}>{label}{props.required && <span className="required-mark" aria-hidden="true"> *</span>}</span><input {...props} id={id} aria-labelledby={`${id}-label`} aria-describedby={hint ? `${id}-hint` : undefined} />{hint && <small id={`${id}-hint`}>{hint}</small>}</label>;
+  const describedBy = [props["aria-describedby"], hint ? `${id}-hint` : undefined].filter(Boolean).join(" ") || undefined;
+  return <label className={`field ${className}`} htmlFor={id}><span><span id={`${id}-label`}>{label}</span>{props.required && <span className="required-mark" aria-hidden="true"> *</span>}</span><input {...props} id={id} aria-labelledby={`${id}-label`} aria-describedby={describedBy} />{hint && <small id={`${id}-hint`}>{hint}</small>}</label>;
 }
 export function SelectField({ label, children, className = "", ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
   const id = useId();
-  return <label className={`field ${className}`} htmlFor={id}><span id={`${id}-label`}>{label}</span><select {...props} id={id} aria-labelledby={`${id}-label`}>{children}</select></label>;
+  return <label className={`field ${className}`} htmlFor={id}><span><span id={`${id}-label`}>{label}</span>{props.required && <span className="required-mark" aria-hidden="true"> *</span>}</span><select {...props} id={id} aria-labelledby={`${id}-label`}>{children}</select></label>;
 }
-export function TextareaField({ label, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
+export function TextareaField({ label, className = "", ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
   const id = useId();
-  return <label className="field" htmlFor={id}><span id={`${id}-label`}>{label}</span><textarea {...props} id={id} aria-labelledby={`${id}-label`} /></label>;
+  return <label className={`field ${className}`} htmlFor={id}><span><span id={`${id}-label`}>{label}</span>{props.required && <span className="required-mark" aria-hidden="true"> *</span>}</span><textarea {...props} id={id} aria-labelledby={`${id}-label`} /></label>;
 }
 function containDialogFocus(event: KeyboardEvent<HTMLDialogElement>) {
   if (event.key !== "Tab") return;
@@ -58,7 +59,8 @@ export function Dialog({ title, children, onClose, wide, drawer }: { title: stri
     const previous = document.activeElement as HTMLElement | null;
     const dialog = ref.current;
     dialog?.showModal();
-    const focusable = dialog?.querySelector<HTMLElement>("[autofocus], input, textarea, select");
+    const focusable = dialog?.querySelector<HTMLElement>('[autofocus], input:not([type="hidden"]):not(:disabled), textarea:not(:disabled), select:not(:disabled)')
+      ?? dialog?.querySelector<HTMLElement>('button:not(:disabled), a[href]');
     focusable?.focus();
     return () => { dialog?.close(); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, []);
@@ -73,7 +75,7 @@ export function PanelHeader({ title, description, action }: { title: string; des
 export function PageHeading({ title, description, children }: { title: string; description: string; children?: ReactNode }) {
   return <header className="page-heading"><div><h1>{title}</h1><p>{description}</p></div><div className="heading-actions">{children}</div></header>;
 }
-export function TextLink({ children, onClick }: { children: ReactNode; onClick: () => void }) { return <button className="text-link" onClick={onClick}>{children}<ArrowUpRight size={15} /></button>; }
+export function TextLink({ children, onClick }: { children: ReactNode; onClick: () => void }) { return <button type="button" className="text-link" onClick={onClick}>{children}<ArrowUpRight size={15} /></button>; }
 export function CheckLine({ children }: { children: ReactNode }) { return <span className="check-line"><Check size={14} />{children}</span>; }
 export function Toggle({ label, checked, onChange, disabled }: { label: string; checked: boolean; onChange: (value: boolean) => void; disabled?: boolean }) { return <Switch.Root className="switch" aria-label={label} checked={checked} onCheckedChange={onChange} disabled={disabled}><Switch.Thumb className="switch-thumb" /></Switch.Root>; }
 export function download(content: string, name: string, type = "text/csv;charset=utf-8") {

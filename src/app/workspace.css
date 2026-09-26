@@ -228,6 +228,7 @@ body:has(.dialog[open]) { overflow: hidden; }
 .quick-guide strong { font-size: 13px; }
 .quick-guide > div p { margin-top: 5px; font-size: 12px; line-height: 1.75; }
 .quick-guide > .field-note { padding: 12px 14px; border-radius: 7px; background: var(--color-paper); font-size: 12px; }
+.quick-guide > .quick-guide-actions { align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
 .loading-workspace { min-height: 100dvh; padding: 32px; }
 .loading-brand { margin-bottom: 58px; }
 .loading-content { max-width: 1080px; margin-inline: auto; }

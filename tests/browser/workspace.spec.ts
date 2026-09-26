@@ -45,7 +45,7 @@ async function simulateIncoming(page: Page, body: string, echo = false): Promise
 test("CSV → recovery → inbox → counselling → admission is persistent", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
-  await page.goto("/");
+  await page.goto("/overview");
   await expect(page.getByRole("heading", { name: /Your next chapter,/ })).toBeVisible();
   await page.screenshot({ path: "test-results/overview-1440.png", fullPage: true });
   await page.getByRole("button", { name: "Import enquiries", exact: true }).click();
@@ -73,8 +73,8 @@ test("CSV → recovery → inbox → counselling → admission is persistent", a
   await page.getByRole("checkbox", { name: /I reviewed this simulated campaign/ }).check();
   await page.getByRole("button", { name: "Schedule demo campaign" }).click();
   await expect(page.getByRole("heading", { name: "Pilot recovery", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Run due follow-ups" }).click();
-  await expect(page.getByRole("status")).toContainText("1 due follow-ups processed in demo mode");
+  await page.getByRole("button", { name: "Run due jobs" }).click();
+  await expect(page.getByRole("status")).toContainText("1 due jobs processed in demo mode");
   await page.locator('nav a[href="/inbox"]').click();
   await page.getByLabel("Search conversations").fill("Pilot Student");
   await page.locator(".conversation-row").filter({ hasText: "Pilot Student" }).click();
@@ -116,7 +116,7 @@ test("recovery chart data switches between exact collections and distinct paid s
     refunds: [{ id: "refund-1", revenueId: "receipt-1", amount: 50.05, recordedAt: "2026-09-15T11:00:00+05:30", reference: "REFUND-1" }],
   };
   await page.route("**/api/workspace", route => route.fulfill({ json: projected }));
-  await openPage(page, "/");
+  await openPage(page, "/overview");
   await page.getByLabel("Report period").selectOption("7");
   await page.getByText("View chart data", { exact: true }).click();
   const revenue = page.getByRole("table", { name: "Recovery revenue by day" });
@@ -134,7 +134,7 @@ test("recovery chart data switches between exact collections and distinct paid s
 });
 
 test("keyboard command search, empty states, and workspace configuration", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/overview");
   await expect(page.getByRole("heading", { name: /Your next chapter,/ })).toBeVisible();
   const trigger = page.getByRole("button", { name: "Search workspace", exact: true });
   await trigger.focus();
@@ -207,13 +207,13 @@ for (const width of [320, 375, 414, 768]) {
   test(`responsive workspace at ${width}px with reduced motion`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
-    for (const route of ["/", "/leads", "/recovery", "/pipeline", "/inbox", "/appointments", "/analytics", "/knowledge", "/automations", "/team", "/integrations", "/settings"]) {
+    for (const route of ["/overview", "/leads", "/recovery", "/pipeline", "/inbox", "/appointments", "/analytics", "/knowledge", "/automations", "/team", "/integrations", "/settings"]) {
       await openPage(page, route);
       await expectNoPageOverflow(page);
       const location = await page.locator(".topbar-location").boundingBox();
       const tools = await page.locator(".topbar-tools").boundingBox();
       expect(location && tools && (location.x + location.width <= tools.x || location.y + location.height <= tools.y)).toBe(true);
-      if (width === 375 && route === "/") await page.screenshot({ path: "test-results/overview-375.png", fullPage: true });
+      if (width === 375 && route === "/overview") await page.screenshot({ path: "test-results/overview-375.png", fullPage: true });
       if (route === "/leads") {
         await page.locator(".data-table-wrap").evaluate(element => { element.scrollLeft = element.scrollWidth; });
         await expect(page.locator(".enquiries-table .row-open").first()).toBeInViewport();
@@ -249,7 +249,7 @@ for (const width of [320, 375, 414, 768]) {
 }
 
 test("overview, enquiry form and inbox pass automated accessibility checks", async ({ page }) => {
-  await openPage(page, "/");
+  await openPage(page, "/overview");
   await expect(page.getByRole("heading", { name: /Your next chapter,/ })).toBeVisible();
   const overview = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
   expect(overview.violations).toEqual([]);
@@ -397,7 +397,7 @@ test("enquiry pagination, stable bulk owners and saved views use the server cont
   await page.getByLabel("Search enquiries", { exact: true }).fill("Nobody in this view");
   await expect(page.getByRole("heading", { name: "This view couldn’t load" })).toBeVisible();
   await expect(page.locator(".enquiries-table tbody tr")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Export enquiries" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Export current enquiry page" })).toBeDisabled();
   await page.unroute("**/api/leads?**");
   await page.getByRole("button", { name: "Retry enquiry search" }).click();
   await expect(page.getByRole("heading", { name: "No enquiries in this view" })).toBeVisible();
@@ -467,7 +467,7 @@ test("team entry reconciles members and demo invitations never become active ass
   await page.getByRole("dialog").getByLabel("Email address").fill(email);
   await page.getByLabel("Workspace role").selectOption("counsellor");
   const invitation = page.waitForResponse(response => response.url().endsWith("/api/team") && response.request().method() === "POST" && response.request().postDataJSON().type === "invite");
-  await page.getByRole("button", { name: "Send invitation" }).click();
+  await page.getByRole("button", { name: "Save demo invitation" }).click();
   const response = await invitation;
   expect(response.ok()).toBe(true);
   const invited = await response.json();
@@ -510,7 +510,7 @@ for (const role of ["analyst", "counsellor"] as const) {
     // Exercise UI visibility against the same public projection shape used by authenticated roles.
     await page.route("**/api/workspace", route => route.fulfill({ json: projected }));
     await page.route("**/api/leads?**", route => route.fulfill({ json: { leads: leads.slice(0, 25), total: leads.length, page: 1, pageSize: 25, hasMore: leads.length > 25 } }));
-    await openPage(page, "/");
+    await openPage(page, "/overview");
     await expect(page.getByRole("button", { name: "Import enquiries", exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Meet your assistant" })).toHaveCount(0);
     await expect(page.locator('nav a[href="/team"]')).toHaveCount(0);

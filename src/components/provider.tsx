@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider, useQuery, useQueryClient, useMutation
 import * as Tooltip from "@radix-ui/react-tooltip";
 import type { Workspace, Member, Role } from "@/lib/domain";
 import { actionCapability } from "@/lib/subscription-policy";
+import { readJsonBody } from "@/lib/client-response";
 
 type Notice = { message: string; tone: "error" | "info" } | null;
 interface Context {
@@ -15,7 +16,7 @@ interface Context {
 const WorkspaceContext = createContext<Context | null>(null);
 async function load() {
   const response = await fetch("/api/workspace", { cache: "no-store" });
-  const result = await response.json();
+  const result = await readJsonBody<Workspace & { error?: string; code?: string }>(response, "Your workspace could not load. Please retry.");
   if (!response.ok) {
     if (response.status === 401 && !location.pathname.startsWith("/onboarding")) location.assign("/login");
     if (response.status === 409 && result.code === "ORGANIZATION_REQUIRED" && !location.pathname.startsWith("/onboarding")) location.assign("/onboarding");
@@ -52,7 +53,7 @@ function WorkspaceState({ children }: { children: ReactNode }) {
   }, [client]);
   const mutation = useMutation({ mutationFn: async (action: Record<string, unknown>) => {
     const response = await fetch("/api/workspace", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action) });
-    const result = await response.json();
+    const result = await readJsonBody<{ error?: string; code?: string; workspace?: Workspace; result?: Record<string, unknown> }>(response, "That change could not be saved. Please refresh and check before trying again.");
     if (!response.ok) {
       if (result.code === "SUBSCRIPTION_RESTRICTED") void refresh();
       throw new Error(result.error || "That change could not be saved.");

@@ -4,7 +4,7 @@ An implemented admissions-recovery application for coaching institutes: enquirie
 
 The selected stack is **Next.js 16.3.5 / React 19.3 / TypeScript / Node 24**, **Neon + Drizzle**, **WorkOS AuthKit**, **Cloudflare R2**, and **AWS ECS/Fargate**. Messaging uses **Meta WhatsApp Cloud API**, **OpenAI autonomous replies with human override**, and **ElevenLabs speech**. Existing WhatsApp Business app numbers use Meta's coexistence onboarding path.
 
-**Current handoff — 22 September 2026: not deployed.** Hosted sign-out now uses a guarded POST server action; callbacks use the runtime public origin. Full isolated verification passed **311 application tests**, infrastructure/IAM validation, typechecks, Next/service builds and the **14-migration dry run**; **45 browser tests** passed. Neon recovery rehearsal, R2 provider probes and ACM issuance are complete within the limits recorded in [remaining release gates](docs/release-gates.md). Scoped AWS provider naming/tagging/lifecycle evidence remains blocking; new-head CI/review, images, production migration, live authentication/service acceptance and application DNS remain pending. Historical verification and audit results remain in [verification](docs/verification.md). The approved raw-intake policy remains 30 elapsed days from receipt, shortened to seven days after import when earlier.
+**Production readback — 26 September 2026:** `https://admitflow.incfrog.ai/` is live, but its current `main` image opens the workspace shell at `/`; the public landing page is at `/welcome`. The landing entry fix is in [PR #10](https://github.com/Deepak8858/admitflow/pull/10) and has not been released. Read-only checks found the `AdmitFlow-prod` stack at `UPDATE_COMPLETE`, web and worker services running 1/1, a healthy web target, a public Route53 A alias to the ALB, and HTTPS `/api/health` and hosted `/api/ready` returning 200. The deployed image pair is tagged for `main` commit [`a8f7e5b`](https://github.com/Deepak8858/admitflow/commit/a8f7e5b7129e57a04bca4742323d44746c3c9d8a); its [main-push CI](https://github.com/Deepak8858/admitflow/actions/runs/36228138074) and [manual image publish](https://github.com/Deepak8858/admitflow/actions/runs/36228570291) completed successfully. The GitHub `BUILDS_APPROVED` variable was `false` at this readback, so another paid image publish requires renewed approval. These checks do not establish authenticated user journeys or provider acceptance. See [release gates](docs/release-gates.md) for release controls and [verification](docs/verification.md) for historical local results. The approved raw-intake policy remains 30 elapsed days from receipt, shortened to seven days after import when earlier.
 
 ## Local preview
 
@@ -31,7 +31,7 @@ Settings also offers local evaluation registration/sign-in. Local team invitatio
 
 ## Workspace screens
 
-`/` Overview · `/leads` Enquiries · `/pipeline` Admissions pipeline · `/inbox` Shared inbox · `/appointments` Counselling · `/recovery` Recovery campaigns · `/automations` AI & automations · `/knowledge` Knowledge base · `/analytics` Revenue analytics · `/team` Team & access · `/integrations` Integrations · `/settings` Settings, including billing.
+`/overview` Overview · `/leads` Enquiries · `/pipeline` Admissions pipeline · `/inbox` Shared inbox · `/appointments` Counselling · `/recovery` Recovery campaigns · `/automations` AI & automations · `/knowledge` Knowledge base · `/analytics` Revenue analytics · `/team` Team & access · `/integrations` Integrations · `/settings` Settings, including billing.
 
 Navigation/actions follow owner, admin, counsellor and analyst permissions. **Ctrl/Cmd K** opens search; `?lead=<id>` opens the enquiry drawer. Hosted onboarding/institute switching is at `/onboarding`.
 
@@ -64,7 +64,7 @@ npm run db:import-sqlite -- --source .data/admitflow.sqlite
 npm run build:services
 ```
 
-SQLite import defaults to **backup + dry run**; applying requires explicit, verified WorkOS mappings. See the runbook before cutover. Docker packages Next standalone (`node server.js`) and the bundled worker (`node dist/worker.mjs`); [AWS deployment](docs/deployment.md) covers images, TLS, secrets, migrations and rollback. Actual credentials, DNS, provider onboarding and cloud resources are separate setup work.
+SQLite import defaults to **backup + dry run**; applying requires explicit, verified WorkOS mappings. See the runbook before cutover. Docker packages Next standalone (`node server.js`) and the bundled worker (`node dist/worker.mjs`); [AWS deployment](docs/deployment.md) covers images, TLS, secrets, migrations and rollback. Release operators must verify current credentials, DNS, provider setup and cloud resources before changes.
 
 ## Checks and current limits
 
@@ -77,7 +77,7 @@ npm run verify:browser  # browser fixtures using disposable SQLite; check port 3
 
 The verifier removes inherited provider settings, blanks variables named in `.env.example`, uses in-memory application fixtures and a temporary browser database, and does not modify `.env.local` or preview SQLite. It is not a network sandbox. `node scripts/verify.mjs --build` resumes infra typechecking/build/bundle/migration stages without repeating tests. No lint script is configured.
 
-The latest **45 browser tests passed locally on 22 September**, including the two authentication release regressions as well as existing workspace coverage. See [release evidence and limits](docs/release-gates.md#completed-evidence--do-not-repeat-provisioning). Earlier runs and corrected test-harness failures remain historical evidence, not current live-provider acceptance.
+On 22 September, **45 browser tests passed locally**, including the two authentication release regressions and existing workspace coverage. See [historical release evidence and limits](docs/release-gates.md#completed-evidence--do-not-repeat-provisioning). That run and earlier corrected test-harness failures are historical evidence. Current landing-entry and UI validation is recorded in [the 26 September audit](docs/ui-audit-2026-09-26.md).
 
 - `/api/leads` is paginated, but the shell and many mutations still load the full authorized workspace. Large-institute throughput needs targeted projections and load testing.
 - Google synchronization is **AdmitFlow → Google only**, using one institute calendar. Availability checks are snapshots, not cross-system reservations.

@@ -75,6 +75,20 @@ test("appointments reject overlaps for the same counsellor but allow adjacent or
   assert.match(calendar, /BEGIN:VEVENT/); assert.match(calendar, /Student\\, Name/); assert.match(calendar, /DTSTART:\d{8}T\d{6}Z/);
 });
 
+test("appointments cannot be completed before their start time", () => {
+  const workspace = createWorkspace(false);
+  applyAction(workspace, { type: "lead.create", lead: { name: "Student", phone: "9876543210" } });
+  const result = applyAction(workspace, { type: "appointment.create", leadId: workspace.leads[0].id, startsAt: new Date(Date.now() + DAY).toISOString(), duration: 30, kind: "Counselling" }) as { appointmentId: string };
+  const appointment = workspace.appointments.find(item => item.id === result.appointmentId)!;
+  const activityCount = workspace.activities.length;
+  assert.throws(() => applyAction(workspace, { type: "appointment.status", id: appointment.id, status: "completed" }), /future appointment cannot be completed/);
+  assert.equal(appointment.status, "scheduled");
+  assert.equal(workspace.activities.length, activityCount);
+  appointment.startsAt = new Date(Date.now() - DAY).toISOString();
+  applyAction(workspace, { type: "appointment.status", id: appointment.id, status: "completed" });
+  assert.equal(appointment.status, "completed");
+});
+
 test("cross-workspace IDs are never resolved by domain mutations", () => {
   const first = createWorkspace(), second = createWorkspace();
   assert.throws(() => applyAction(first, { type: "lead.update", id: second.leads[0].id, changes: { stage: "Lost" } }), /not found in your workspace/);
