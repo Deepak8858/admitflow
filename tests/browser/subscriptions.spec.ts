@@ -21,22 +21,21 @@ async function routes(page: Page, data: Workspace) {
 test("trial expires in an open tab, fails closed on refresh outage and recovers explicitly", async ({ page }) => {
   const data = fixture();
   const now = new Date();
-  data.capabilities = { allowed: true, reason: "trial", checkedAt: now.toISOString(), validUntil: new Date(+now + 2000).toISOString(), message: "Your institute's seven-day trial is active." };
+  // Allow navigation to settle before advancing beyond the observation window.
+  data.capabilities = { allowed: true, reason: "trial", checkedAt: now.toISOString(), validUntil: new Date(+now + 300000).toISOString(), message: "Your institute's seven-day trial is active." };
   await routes(page, data);
   await page.clock.install({ time: now });
-  // Hold time while navigation and assertions run, then expire the trial explicitly.
-  await page.clock.pauseAt(now);
   await page.goto("/leads");
   await expect(page.getByRole("button", { name: "Add enquiry", exact: true }).first()).toBeEnabled();
   await expect(page.getByLabel("Subscription access")).toContainText("Trial ends");
   let refreshes = 0;
   await page.route("**/api/workspace", route => { refreshes++; return route.fulfill({ status: 503, json: { error: "Offline verification" } }); });
-  await page.clock.fastForward(3000);
+  await page.clock.fastForward(301000);
   await expect(page.getByLabel("Subscription access")).toContainText("Restricted mode");
   await expect(page.getByRole("button", { name: "Add enquiry", exact: true }).first()).toBeDisabled();
   await expect.poll(() => refreshes).toBe(1);
   await expect(page.getByRole("link", { name: "Manage billing" })).toHaveAttribute("href", "/settings#billing");
-  data.capabilities = { allowed: true, reason: "active", checkedAt: new Date(+now + 3000).toISOString(), validUntil: new Date(+now + 303000).toISOString(), message: "Verified active subscription." };
+  data.capabilities = { allowed: true, reason: "active", checkedAt: new Date(+now + 301000).toISOString(), validUntil: new Date(+now + 601000).toISOString(), message: "Verified active subscription." };
   await page.route("**/api/workspace", route => route.fulfill({ json: data }));
   await page.getByRole("button", { name: "Refresh access", exact: true }).click();
   await expect(page.getByLabel("Subscription access")).toHaveCount(0);

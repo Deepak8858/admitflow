@@ -74,7 +74,7 @@ test("CSV → recovery → inbox → counselling → admission is persistent", a
   await page.getByRole("button", { name: "Schedule demo campaign" }).click();
   await expect(page.getByRole("heading", { name: "Pilot recovery", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Run due jobs" }).click();
-  await expect(page.getByRole("status")).toContainText("1 due follow-ups processed in demo mode");
+  await expect(page.getByRole("status")).toContainText("1 due jobs processed in demo mode");
   await page.locator('nav a[href="/inbox"]').click();
   await page.getByLabel("Search conversations").fill("Pilot Student");
   await page.locator(".conversation-row").filter({ hasText: "Pilot Student" }).click();
