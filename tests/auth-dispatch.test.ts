@@ -106,7 +106,7 @@ test("public entry pages bypass AuthKit while workspace routes retain session ha
   });
   try {
     Object.assign(process.env, { WORKOS_API_KEY: "fixture", WORKOS_CLIENT_ID: "fixture", DATABASE_URL: "fixture" });
-    for (const pathname of ["/", "/welcome", "/product", "/pricing", "/help", "/auth/error"]) {
+    for (const pathname of ["/", "/welcome", "/product", "/pricing", "/help", "/signup", "/login", "/auth/error"]) {
       await route.default(new NextRequest(`https://admitflow.example${pathname}`, { headers: { cookie: "wos-session=expired-fixture" } }), {} as Parameters<typeof route.default>[1]);
     }
     assert.equal(handled, 0, "a broken/expired session must not block public pages");

@@ -4,7 +4,7 @@ import { authkitMiddleware } from "@workos-inc/authkit-nextjs";
 
 export default function proxy(request: NextRequest, event: NextFetchEvent) {
   // Marketing and recovery pages are available even when an old session cannot refresh.
-  if (["/", "/welcome", "/product", "/pricing", "/help", "/auth/error"].includes(request.nextUrl.pathname)) return NextResponse.next();
+  if (["/", "/welcome", "/product", "/pricing", "/help", "/signup", "/login", "/auth/error"].includes(request.nextUrl.pathname)) return NextResponse.next();
   if (!process.env.WORKOS_API_KEY || !process.env.WORKOS_CLIENT_ID || !process.env.DATABASE_URL) return NextResponse.next();
   return authkitMiddleware()(request, event);
 }
