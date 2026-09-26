@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, Download, Plus, X, GraduationCap, RefreshCw, CalendarClock, UserRoundX, ArrowUpRight } from "lucide-react";
 import { useData, assignableMembers, workspaceAccess, recordOwnerId, ownerLabel, memberLabel, canWorkRecord } from "./provider";
@@ -25,14 +25,30 @@ export function AppointmentsPage({ onBook, onOpen }: { onBook: (id?: string) => 
   const { data, act, busy, refresh, notify } = useData();
   const access = workspaceAccess(data);
   const [offset, setOffset] = useState(0), [selectedDay, setSelectedDay] = useState(""), [view, setView] = useState("Upcoming"), [rescheduling, setRescheduling] = useState<string | null>(null);
-  const today = indiaDay();
-  const week = Array.from({ length: 7 }, (_, index) => indiaDay(Date.now() + (offset * 7 + index) * DAY));
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    function updateTime() {
+      const current = Date.now();
+      setNow(current);
+      const nextStart = data.appointments.reduce((next, appointment) => {
+        const start = Date.parse(appointment.startsAt);
+        return appointment.status === "scheduled" && start > current ? Math.min(next, start) : next;
+      }, Infinity);
+      // Cap long waits to avoid overflowing the browser's signed 32-bit timeout.
+      if (Number.isFinite(nextStart)) timer = setTimeout(updateTime, Math.min(nextStart - current, 2_147_483_647));
+    }
+    updateTime();
+    return () => clearTimeout(timer);
+  }, [data.appointments]);
+  const today = indiaDay(now);
+  const week = Array.from({ length: 7 }, (_, index) => indiaDay(now + (offset * 7 + index) * DAY));
   const appointments = data.appointments.filter(appointment => (!selectedDay || indiaDay(Date.parse(appointment.startsAt)) === selectedDay)
-    && (view === "All sessions" || view === "Needs outcome" && appointment.status === "scheduled" && Date.parse(appointment.startsAt) < Date.now()
-      || view === "Upcoming" && appointment.status === "scheduled" && Date.parse(appointment.startsAt) >= Date.now()))
+    && (view === "All sessions" || view === "Needs outcome" && appointment.status === "scheduled" && Date.parse(appointment.startsAt) <= now
+      || view === "Upcoming" && appointment.status === "scheduled" && Date.parse(appointment.startsAt) > now))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const calendarConnected = !data.demo && Boolean(data.integrations?.calendar);
-  const needsOutcome = data.appointments.filter(appointment => appointment.status === "scheduled" && Date.parse(appointment.startsAt) < Date.now()).length;
+  const needsOutcome = data.appointments.filter(appointment => appointment.status === "scheduled" && Date.parse(appointment.startsAt) <= now).length;
   async function updateStatus(appointment: Appointment, status: "completed" | "cancelled" | "no_show") {
     if (await act({ type: "appointment.status", id: appointment.id, status })) notify(status === "no_show" ? "Session marked as a no-show. You can reschedule it when the student is ready." : status === "cancelled" ? "Session cancelled. Any connected calendar update is queued." : "Session marked complete.");
   }
@@ -60,8 +76,8 @@ export function AppointmentsPage({ onBook, onOpen }: { onBook: (id?: string) => 
           {appointment.meetingUrl?.startsWith("https://") && appointment.status === "scheduled" && <a className="button secondary" href={appointment.meetingUrl} target="_blank" rel="noreferrer">Join session<ArrowUpRight size={14} /></a>}
           {writable && ["scheduled", "no_show"].includes(appointment.status) && <Button disabled={busy} onClick={() => setRescheduling(appointment.id)}><CalendarClock size={14} />Reschedule</Button>}
           {writable && appointment.status === "scheduled" && <>
-            <Button disabled={busy || Date.parse(appointment.startsAt) > Date.now()} onClick={() => void updateStatus(appointment, "completed")}><Check size={14} />Complete</Button>
-            <IconButton label={`Mark no-show for ${lead?.name || "student"}`} disabled={busy || Date.parse(appointment.startsAt) > Date.now()} onClick={() => void updateStatus(appointment, "no_show")}><UserRoundX size={16} /></IconButton>
+            <Button disabled={busy || Date.parse(appointment.startsAt) > now} onClick={() => void updateStatus(appointment, "completed")}><Check size={14} />Complete</Button>
+            <IconButton label={`Mark no-show for ${lead?.name || "student"}`} disabled={busy || Date.parse(appointment.startsAt) > now} onClick={() => void updateStatus(appointment, "no_show")}><UserRoundX size={16} /></IconButton>
             <IconButton label={`Cancel appointment for ${lead?.name || "student"}`} disabled={busy} onClick={() => void updateStatus(appointment, "cancelled")}><X size={16} /></IconButton>
           </>}
         </div>
