@@ -48,7 +48,7 @@ jobs:
           [[ "$AWS_PUBLISH_ROLE_ARN" == "arn:aws:iam::${AWS_ACCOUNT_ID}:role/"* ]]
           [[ "$ECR_REPOSITORY" =~ ^[a-z0-9][a-z0-9._/-]*$ ]]
           [[ "$DEPOT_PROJECT_ID" =~ ^[a-z0-9]+$ ]]
-          [[ "$NODE_IMAGE" =~ ^node:24-bookworm-slim@sha256:[a-f0-9]{64}$ ]]
+          [[ "$NODE_IMAGE" =~ ^node:24-trixie-slim@sha256:[a-f0-9]{64}$ ]]
           [[ "$NEXT_PUBLIC_META_APP_ID" =~ ^[0-9]*$ ]]
           [[ "$NEXT_PUBLIC_META_CONFIG_ID" =~ ^[0-9]*$ ]]
       - name: Require successful CI for this exact main commit
