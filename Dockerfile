@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # Pin this argument to a reviewed Node 24 image digest in the release pipeline.
-ARG NODE_IMAGE=node:24-bookworm-slim
+ARG NODE_IMAGE=node:24-trixie-slim
 FROM ${NODE_IMAGE} AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1

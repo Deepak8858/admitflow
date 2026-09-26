@@ -214,7 +214,7 @@ Rechecked 17 September with `npm audit --omit=dev --package-lock-only --ignore-s
 
 ### Build
 
-`Dockerfile` uses Node 24 Debian slim, `npm ci` from the existing lockfile, a non-root runtime user, Next standalone for web, and a separately bundled worker with production npm dependencies. External packages remain external to retain BullMQ scripts, PDF assets and native modules. `.dockerignore` excludes environments, SQLite files/backups, caches and build outputs. Supply a reviewed Node 24 base-image digest through `NODE_IMAGE` in the actual release pipeline.
+`Dockerfile` uses Node 24 Debian Trixie slim, `npm ci` from the existing lockfile, a non-root runtime user, Next standalone for web, and a separately bundled worker with production npm dependencies. External packages remain external to retain BullMQ scripts, PDF assets and native modules. `.dockerignore` excludes environments, SQLite files/backups, caches and build outputs. Supply a reviewed Node 24 base-image digest through `NODE_IMAGE` in the actual release pipeline.
 
 Example build commands for a Docker-enabled release host (PowerShell; public values only):
 
