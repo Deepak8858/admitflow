@@ -24,6 +24,8 @@ test("trial expires in an open tab, fails closed on refresh outage and recovers 
   data.capabilities = { allowed: true, reason: "trial", checkedAt: now.toISOString(), validUntil: new Date(+now + 2000).toISOString(), message: "Your institute's seven-day trial is active." };
   await routes(page, data);
   await page.clock.install({ time: now });
+  // Hold time while navigation and assertions run, then expire the trial explicitly.
+  await page.clock.pauseAt(now);
   await page.goto("/leads");
   await expect(page.getByRole("button", { name: "Add enquiry", exact: true }).first()).toBeEnabled();
   await expect(page.getByLabel("Subscription access")).toContainText("Trial ends");

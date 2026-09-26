@@ -4,6 +4,8 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ArrowUpRight, CreditCard, RefreshCw } from "lucide-react";
 import type { Workspace } from "@/lib/domain";
 import type { BillingEntitlementSnapshot, BillingInvoicePage, BillingOverview, BillingPlanOption } from "@/lib/providers/billing";
+import { readJsonResponse } from "@/lib/client-response";
+import { workspaceAccess } from "./provider";
 import { Badge, Button, PanelHeader } from "./ui";
 
 export interface BillingPanelProps { workspace: Workspace; onUpdated?: () => void | Promise<void> }
@@ -20,7 +22,7 @@ function planPrice(plan: BillingPlanOption) {
 const statusLabel: Record<string, string> = { trial: "Trial", active: "Active", past_due: "Payment needs attention", cancelled: "Ended", created: "Checkout incomplete", authenticated: "Awaiting activation", pending: "Payment pending", halted: "Payments halted", paused: "Paused", completed: "Completed", expired: "Checkout expired" };
 
 export function BillingPanel({ workspace, onUpdated }: BillingPanelProps) {
-  const canManage = ["owner", "admin"].includes(workspace.actor?.role || "owner");
+  const canManage = workspaceAccess(workspace).admin;
   const [billing, setBilling] = useState<BillingOverview | null>(null), [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"subscribe" | "cancel" | null>(null), [selected, setSelected] = useState("");
   const [error, setError] = useState(""), [notice, setNotice] = useState("");
@@ -31,13 +33,12 @@ export function BillingPanel({ workspace, onUpdated }: BillingPanelProps) {
     setLoading(true); setError("");
     try {
       const response = await fetch("/api/billing", { cache: "no-store", signal });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Subscription details could not be loaded.");
+      const result = await readJsonResponse<BillingOverview>(response, "Subscription details could not be loaded.");
       if (signal?.aborted) return;
       setBilling(result as BillingOverview);
       setEntitlements(result.entitlements || null);
       setSelected(value => (result.plans as BillingPlanOption[]).some(plan => plan.id === value) ? value : result.plans[0]?.id || "");
-    } catch (cause) { if (!signal?.aborted) setError(cause instanceof Error ? cause.message : "Subscription details could not be loaded."); }
+    } catch (cause) { if (!signal?.aborted) { setBilling(null); setEntitlements(null); setError(cause instanceof Error ? cause.message : "Subscription details could not be loaded."); } }
     finally { if (!signal?.aborted) setLoading(false); }
   }, [workspace.id, canManage]);
   useEffect(() => { requestIds.current = {}; setBilling(null); setEntitlements(null); setNotice(""); }, [workspace.id]);
@@ -60,8 +61,7 @@ export function BillingPanel({ workspace, onUpdated }: BillingPanelProps) {
     try {
       const requestId = type === "subscribe" ? (requestIds.current[selected] ||= crypto.randomUUID()) : undefined;
       const response = await fetch("/api/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(type === "subscribe" ? { type, planId: selected, requestId } : { type }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Billing could not be updated. Refresh the subscription before retrying.");
+      const result = await readJsonResponse<{ checkoutUrl?: string; message?: string }>(response, "Billing could not be updated. Refresh the subscription before retrying.");
       if (type === "subscribe" && result.checkoutUrl) { window.location.assign(result.checkoutUrl); return; }
       setNotice(result.message || "Subscription updated. Provider confirmation is reflected below.");
       setInvoiceRefresh(value => value + 1);
@@ -92,7 +92,8 @@ export function BillingPanel({ workspace, onUpdated }: BillingPanelProps) {
           {current?.renewsAt && <p className="field-note">Next billing date: {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: workspace.timezone || "Asia/Kolkata" }).format(new Date(current.renewsAt))}</p>}
           {billing.mode === "setup" && <p className="field-note">Subscription plans and checkout appear after the platform administrator completes billing setup. No paid price is assumed.</p>}
           {billing.checkoutUrl && <div style={{ marginTop: 18 }}><a className="button primary" href={billing.checkoutUrl}>Continue secure checkout<ArrowUpRight size={15} /></a><p className="field-note">After checkout, return here and refresh. Your plan becomes active only after server verification.</p></div>}
-          {canStart && <form onSubmit={event => { event.preventDefault(); void act("subscribe"); }} style={{ padding: 0, marginTop: 22 }}>
+          {canStart && !billing.plans.length && <p className="field-note" role="status">No verified subscription plans are available yet. Refresh billing or ask your platform administrator to check the plan catalog.</p>}
+          {canStart && billing.plans.length > 0 && <form onSubmit={event => { event.preventDefault(); void act("subscribe"); }} style={{ padding: 0, marginTop: 22 }}>
             <fieldset disabled={Boolean(busy) || loading} style={{ border: 0, padding: 0, margin: "0 0 16px", display: "grid", gap: 10 }}>
               <legend style={{ padding: "0 0 10px", fontWeight: 600, fontSize: 12 }}>Choose a subscription</legend>
               {billing.plans.map(plan => <label key={plan.id} style={{ display: "flex", alignItems: "start", gap: 11, padding: 14, border: `1px solid ${selected === plan.id ? "var(--color-accent)" : "var(--color-rule)"}`, borderRadius: "var(--radius-sm)", background: selected === plan.id ? "var(--color-accent-soft)" : "var(--color-surface)", cursor: "pointer" }}>
@@ -106,7 +107,7 @@ export function BillingPanel({ workspace, onUpdated }: BillingPanelProps) {
           {billing.canCancel && <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--color-rule)" }}><strong style={{ fontSize: 12 }}>End recurring billing</strong><p className="field-note">Cancellation takes effect immediately. Payments already collected are not refunded.</p><Button variant="danger" loading={busy === "cancel"} disabled={Boolean(busy) || loading} onClick={() => void act("cancel")}>Cancel subscription now</Button></div>}
         </>}
         {entitlements && <CapacitySummary value={entitlements} />}
-        <Button variant="ghost" style={{ marginTop: 16 }} loading={loading && Boolean(billing)} disabled={Boolean(busy) || loading} onClick={async () => { setInvoiceRefresh(value => value + 1); await load(); await onUpdated?.(); }}><RefreshCw size={14} />Refresh billing</Button>
+        <Button variant="ghost" style={{ marginTop: 16 }} loading={loading} disabled={Boolean(busy) || loading} onClick={async () => { setInvoiceRefresh(value => value + 1); await load(); try { await onUpdated?.(); } catch (cause) { setError(cause instanceof Error ? cause.message : "Workspace access could not be refreshed."); } }}><RefreshCw size={14} />Refresh billing</Button>
         <InvoiceHistory key={`${workspace.id}:${current?.providerId || "none"}`} refreshKey={`${invoiceRefresh}:${current?.status || "trial"}`} timezone={workspace.timezone || "Asia/Kolkata"} />
       </>}
     </div>
@@ -135,8 +136,7 @@ function InvoiceHistory({ refreshKey, timezone }: { refreshKey: string; timezone
     const controller = new AbortController();
     setLoading(true); setError("");
     void fetch(`/api/billing/invoices?page=${page}`, { cache: "no-store", signal: controller.signal }).then(async response => {
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Your subscription invoices could not be loaded.");
+      const result = await readJsonResponse<BillingInvoicePage>(response, "Your subscription invoices could not be loaded.");
       if (!controller.signal.aborted) setData(result as BillingInvoicePage);
     }).catch(cause => { if (!controller.signal.aborted) { setData(null); setError(cause instanceof Error ? cause.message : "Your subscription invoices could not be loaded."); } }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();

@@ -87,7 +87,37 @@ test("callback passes runtime baseURL and the unchanged request to AuthKit rathe
   assert.deepEqual(calls, [], "callback configuration must not freeze at module initialization");
   const request = new NextRequest("http://container.internal:3000/callback?code=synthetic&state=fixture", { headers: { "x-forwarded-host": "foreign.invalid" } });
   for (base of ["https://runtime.example", "https://second-runtime.example"]) assert.equal(await route.GET(request), response);
-  assert.deepEqual(calls, [{ returnPathname: "/onboarding", baseURL: "https://runtime.example" }, request, { returnPathname: "/onboarding", baseURL: "https://second-runtime.example" }, request]);
+  const first = calls[0] as { returnPathname: string; baseURL: string; onError: () => Promise<Response> };
+  const second = calls[2] as typeof first;
+  assert.deepEqual({ ...first, onError: undefined }, { returnPathname: "/onboarding", baseURL: "https://runtime.example", onError: undefined });
+  assert.deepEqual({ ...second, onError: undefined }, { returnPathname: "/onboarding", baseURL: "https://second-runtime.example", onError: undefined });
+  assert.equal(calls[1], request);
+  assert.equal(calls[3], request);
+  const failure = await second.onError();
+  assert.equal(failure.status, 307);
+  assert.equal(failure.headers.get("location"), "https://second-runtime.example/auth/error");
+});
+
+test("public entry pages bypass AuthKit while workspace routes retain session handling", async () => {
+  const values = { WORKOS_API_KEY: process.env.WORKOS_API_KEY, WORKOS_CLIENT_ID: process.env.WORKOS_CLIENT_ID, DATABASE_URL: process.env.DATABASE_URL };
+  let handled = 0;
+  const route = await isolatedModule<typeof import("../src/proxy")>("src/proxy.ts", {
+    "@workos-inc/authkit-nextjs": { authkitMiddleware: () => () => { handled++; return new Response(null, { status: 200 }); } },
+  });
+  try {
+    Object.assign(process.env, { WORKOS_API_KEY: "fixture", WORKOS_CLIENT_ID: "fixture", DATABASE_URL: "fixture" });
+    for (const pathname of ["/", "/welcome", "/product", "/pricing", "/help", "/auth/error"]) {
+      await route.default(new NextRequest(`https://admitflow.example${pathname}`, { headers: { cookie: "wos-session=expired-fixture" } }), {} as Parameters<typeof route.default>[1]);
+    }
+    assert.equal(handled, 0, "a broken/expired session must not block public pages");
+    await route.default(new NextRequest("https://admitflow.example/overview"), {} as Parameters<typeof route.default>[1]);
+    await route.default(new NextRequest("https://admitflow.example/api/workspace"), {} as Parameters<typeof route.default>[1]);
+    assert.equal(handled, 2);
+  } finally {
+    for (const [key, value] of Object.entries(values)) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  }
 });
 
 test("both hosted logout controls use a POST server action and the GET logout surface is absent", async () => {

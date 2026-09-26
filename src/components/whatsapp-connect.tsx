@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MessageSquare, Smartphone, ArrowUpRight, Link2, RefreshCw, ShieldCheck } from "lucide-react";
 import { useData, workspaceAccess, useWhatsAppTemplates, templateBody, templateIssue } from "./provider";
 import { Badge, Button, Dialog, EmptyState, Field, SelectField } from "./ui";
+import { readJsonResponse } from "@/lib/client-response";
 
 declare global {
   interface Window {
@@ -18,32 +19,33 @@ export function WhatsAppConnect({ onClose }: { onClose: () => void }) {
   const { data, refresh, setData, notify } = useData();
   const options = useWhatsAppTemplates(), connection = options.connection;
   const hosted = data.actor?.backend === "workos" && !data.demo;
+  const metaAppId = data.integrations?.metaAppId, metaConfigId = data.integrations?.metaConfigId;
+  const metaConfigured = Boolean(metaAppId && metaConfigId);
   const operation = useQuery({
     queryKey: ["whatsapp-operation", data.id, connection?.updatedAt], enabled: hosted && workspaceAccess(data).admin && Boolean(connection), retry: false,
     queryFn: async ({ signal }) => {
       const response = await fetch("/api/connections?type=whatsapp.status", { cache: "no-store", signal });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Subscription history could not be loaded.");
+      const result = await readJsonResponse<{ operation: null | { reconciliation: string; dispatchedAt: string | null; confirmedAt: string | null; observedAt: string | null; appId: string } }>(response, "Subscription history could not be loaded.");
       return result.operation as null | { reconciliation: string; dispatchedAt: string | null; confirmedAt: string | null; observedAt: string | null; appId: string };
     },
   });
   const [coexistence, setCoexistence] = useState(!connection || ["requested", "verified"].includes(connection.metadata.coexistence)), [busy, setBusy] = useState(false), [selectedTemplate, setSelectedTemplate] = useState("");
   const code = useRef(""), account = useRef<{ wabaId: string; phoneNumberId: string } | null>(null), submitted = useRef(false), signupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const signupAttempt = useRef(0), mounted = useRef(true);
   const clearTimer = useCallback(() => { if (signupTimer.current) clearTimeout(signupTimer.current); signupTimer.current = null; }, []);
   const complete = useCallback(async () => {
     if (!code.current || !account.current || submitted.current) return;
     submitted.current = true; setBusy(true); clearTimer();
     try {
       const response = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "whatsapp.exchange", code: code.current, ...account.current, coexistence }) });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "WhatsApp setup could not be completed. Restart Meta signup.");
+      const result = await readJsonResponse<{ workspace?: typeof data; whatsapp?: { connected: boolean; message: string } }>(response, "WhatsApp setup could not be completed. Restart Meta signup.");
       if (result.workspace) setData(result.workspace); else await refresh();
       notify(result.whatsapp?.message || "WhatsApp setup status updated.");
-      if (result.whatsapp?.connected) onClose();
+      if (result.whatsapp?.connected && mounted.current) onClose();
     } catch (error) {
       code.current = ""; account.current = null; submitted.current = false;
       notify(error instanceof Error ? error.message : "WhatsApp setup could not be completed. Restart Meta signup.", "error");
-      await refresh();
+      try { await refresh(); } catch { /* The exchange error above is the actionable result. */ }
     } finally { setBusy(false); }
   }, [coexistence, clearTimer, notify, onClose, refresh, setData]);
   useEffect(() => {
@@ -57,23 +59,23 @@ export function WhatsAppConnect({ onClose }: { onClose: () => void }) {
         && typeof message.data?.phone_number_id === "string" && /^\d{1,80}$/.test(message.data.phone_number_id)) {
         account.current = { wabaId: message.data.waba_id, phoneNumberId: message.data.phone_number_id };
         void complete();
-      } else if (message.event === "CANCEL" || message.event === "ERROR") {
-        clearTimer(); code.current = ""; account.current = null; setBusy(false);
+      } else if ((message.event === "CANCEL" || message.event === "ERROR") && !submitted.current) {
+        signupAttempt.current++; clearTimer(); code.current = ""; account.current = null; setBusy(false);
         notify(message.event === "CANCEL" ? "Meta signup cancelled. Restart when you’re ready." : "Meta signup could not be completed. Please restart setup.", message.event === "ERROR" ? "error" : "info");
       }
     }
     window.addEventListener("message", receive);
     return () => window.removeEventListener("message", receive);
   }, [complete, clearTimer, notify]);
-  useEffect(() => () => clearTimer(), [clearTimer]);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; signupAttempt.current++; clearTimer(); }; }, [clearTimer]);
   useEffect(() => {
     const preferred = options.templates.find(template => template.name === connection?.metadata.templateName && template.language === connection?.metadata.templateLanguage);
     if (preferred) setSelectedTemplate(`${preferred.name}:${preferred.language}`);
   }, [connection?.metadata.templateName, connection?.metadata.templateLanguage, options.templates]);
 
   async function connect() {
-    if (busy || !hosted || !workspaceAccess(data).admin) return;
-    if (!data.integrations?.metaAppId || !data.integrations.metaConfigId) { notify("Configure the Meta app ID and Embedded Signup configuration ID on your server first.", "error"); return; }
+    if (busy || !hosted || !workspaceAccess(data).admin || !metaAppId || !metaConfigId) return;
+    const attempt = ++signupAttempt.current;
     setBusy(true); submitted.current = false; code.current = ""; account.current = null; clearTimer();
     try {
       if (!window.FB) await new Promise<void>((resolve, reject) => {
@@ -84,14 +86,16 @@ export function WhatsAppConnect({ onClose }: { onClose: () => void }) {
         script.onerror = () => { clearTimeout(timeout); script.remove(); reject(new Error("Meta sign-in could not load.")); };
         document.head.append(script);
       });
+      if (attempt !== signupAttempt.current || !mounted.current) return;
       if (!window.FB) throw new Error("Meta sign-in is unavailable. Please reload and retry.");
-      window.FB.init({ appId: data.integrations.metaAppId, version: data.integrations.metaVersion || "v23.0", cookie: true, xfbml: false });
-      signupTimer.current = setTimeout(() => { code.current = ""; account.current = null; setBusy(false); notify("Meta did not return the complete signup result. Restart setup to continue.", "error"); }, 120000);
+      window.FB.init({ appId: metaAppId, version: data.integrations?.metaVersion || "v23.0", cookie: true, xfbml: false });
+      signupTimer.current = setTimeout(() => { if (attempt !== signupAttempt.current || submitted.current) return; signupAttempt.current++; code.current = ""; account.current = null; setBusy(false); notify("Meta did not return the complete signup result. Restart setup to continue.", "error"); }, 120000);
       window.FB.login(response => {
+        if (attempt !== signupAttempt.current || !mounted.current || submitted.current) return;
         if (response.authResponse?.code) { code.current = response.authResponse.code; void complete(); }
-        else { clearTimer(); setBusy(false); notify("Meta signup cancelled. You can restart setup."); }
-      }, { config_id: data.integrations.metaConfigId, response_type: "code", override_default_response_type: true, extras: { setup: {}, sessionInfoVersion: "3", ...(coexistence ? { featureType: "whatsapp_business_app_onboarding" } : {}) } });
-    } catch (error) { clearTimer(); notify(error instanceof Error ? error.message : "Meta sign-in could not start.", "error"); setBusy(false); }
+        else { signupAttempt.current++; clearTimer(); setBusy(false); notify("Meta signup cancelled. You can restart setup."); }
+      }, { config_id: metaConfigId, response_type: "code", override_default_response_type: true, extras: { setup: {}, sessionInfoVersion: "3", ...(coexistence ? { featureType: "whatsapp_business_app_onboarding" } : {}) } });
+    } catch (error) { if (attempt === signupAttempt.current && mounted.current) { clearTimer(); notify(error instanceof Error ? error.message : "Meta sign-in could not start.", "error"); setBusy(false); } }
   }
   const template = options.templates.find(item => `${item.name}:${item.language}` === selectedTemplate);
   if (!workspaceAccess(data).admin) return <Dialog title="WhatsApp Business" onClose={onClose}><EmptyState title="Administrator access needed" body="An institute owner or administrator can manage this connection." /></Dialog>;
@@ -100,7 +104,7 @@ export function WhatsAppConnect({ onClose }: { onClose: () => void }) {
     {connection && <div className="setup-callout"><ShieldCheck size={18} /><div><strong>{connection.label}</strong><p>{connection.status === "connected" ? "Account configured. Message acceptance and delivery are tracked separately." : connection.status === "disconnected" ? "Disconnected. Reconnect this same phone-number ID and Business Account ID to recover retained enquiries." : connection.status === "unverified" ? "Account verification is incomplete. Reconnect to verify access." : "This connection needs attention. Reconnect to verify access."}</p><Badge tone={connection.metadata.coexistence === "verified" ? "green" : "amber"}>{connection.metadata.coexistence === "verified" ? "Business app coexistence verified" : connection.metadata.coexistence === "requested" ? "Coexistence requested · not yet verified" : "Standard Cloud API setup"}</Badge></div></div>}
     <label className={`coexistence-option ${coexistence ? "selected" : ""}`}><input type="checkbox" checked={coexistence} disabled={busy} onChange={event => setCoexistence(event.target.checked)} /><span><strong>I already use the WhatsApp Business app</strong><small>Request coexistence for your existing number using Meta’s Business-app onboarding flow.</small></span></label>
     <div className="connection-steps">{["Authorize your institute’s Meta Business account", "Choose your number and complete Meta verification", "Bring new messages into your shared inbox"].map((text, index) => <div key={text}><b>{index + 1}</b><span>{text}</span></div>)}</div><p className="field-note">Meta checks coexistence eligibility during signup. AdmitFlow marks coexistence verified only after receiving a signed Business-app message echo. Business-app replies then pause AI for that conversation.</p>
-    <Button variant="primary" className="full-width" loading={busy} disabled={!hosted} onClick={() => void connect()}>Continue with Meta<ArrowUpRight size={15} /></Button>{!hosted && <p className="field-note">Live WhatsApp setup requires a hosted institute with PostgreSQL and WorkOS.</p>}
+    <Button variant="primary" className="full-width" loading={busy} disabled={!hosted || !metaConfigured} onClick={() => void connect()}>Continue with Meta<ArrowUpRight size={15} /></Button>{!hosted ? <p className="field-note">Live WhatsApp setup requires a hosted institute with PostgreSQL and WorkOS.</p> : !metaConfigured && <p className="field-note">Meta Embedded Signup requires the app ID and configuration ID to be set on the server. Existing Cloud API credentials can be checked below.</p>}
     {hosted && connection && <section className="advanced-connection" aria-busy={operation.isFetching}><h3>Subscription evidence</h3>
       {operation.isError && <p className="inline-error" role="alert">{operation.error.message}</p>}
       {operation.data ? <><Badge tone={connection.status === "connected" ? "green" : "amber"}>{connection.status === "connected" ? "Operational" : ["reserved", "uncertain", "absent", "disconnected_pending"].includes(connection.metadata.subscriptionStatus) ? "Pending reconciliation · messaging disabled" : "Disconnected"}</Badge>
@@ -114,12 +118,12 @@ export function WhatsAppConnect({ onClose }: { onClose: () => void }) {
       setBusy(true);
       try {
         const response = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "template.default", name: template.name, language: template.language }) });
-        const result = await response.json(); if (!response.ok) throw new Error(result.error || "The default template could not be saved.");
+        const result = await readJsonResponse<{ workspace?: typeof data }>(response, "The default template could not be saved.");
         if (result.workspace) setData(result.workspace); else await refresh();
         notify("Default Meta template saved.");
       } catch (error) { notify(error instanceof Error ? error.message : "The default template could not be saved.", "error"); }
       finally { setBusy(false); }
-    }}><SelectField label="Default approved template" value={selectedTemplate} disabled={options.isFetching || busy} onChange={event => setSelectedTemplate(event.target.value)}><option value="">{options.isFetching ? "Loading approved templates…" : "Choose a template"}</option>{options.templates.map(item => <option key={item.id} value={`${item.name}:${item.language}`} disabled={Boolean(templateIssue(item))}>{item.name} · {item.language}{templateIssue(item) ? " · unsupported variables" : ""}</option>)}</SelectField>{template && <p className="preview-message">{templateBody(template)}</p>}{options.isError && <p className="inline-error" role="alert">{options.error.message}</p>}{!options.isPending && !options.isError && !options.templates.length && <p className="field-note">No approved templates were returned. Approve a template in WhatsApp Manager and refresh.</p>}<div className="dialog-actions"><Button onClick={() => void options.refetch()} loading={options.isFetching} disabled={busy}><RefreshCw size={14} />Refresh templates</Button><Button type="submit" variant="primary" loading={busy} disabled={Boolean(templateIssue(template)) || options.isFetching || options.isError}>Save default template</Button></div></form></section>}
+    }}><SelectField label="Default approved template" value={selectedTemplate} disabled={options.isFetching || busy} onChange={event => setSelectedTemplate(event.target.value)}><option value="">{options.isFetching ? "Loading approved templates…" : "Choose a template"}</option>{options.templates.map(item => <option key={item.id} value={`${item.name}:${item.language}`} disabled={Boolean(templateIssue(item))}>{item.name} · {item.language}{templateIssue(item) ? " · unavailable for this workflow" : ""}</option>)}</SelectField>{template && <p className="preview-message">{templateBody(template)}</p>}{template && templateIssue(template) && <p className="inline-error" role="alert">{templateIssue(template)}</p>}{options.isError && <p className="inline-error" role="alert">{options.error.message}</p>}{!options.isPending && !options.isError && !options.templates.length && <p className="field-note">No approved templates were returned. Approve a template in WhatsApp Manager and refresh.</p>}<div className="dialog-actions"><Button onClick={() => void options.refetch()} loading={options.isFetching} disabled={busy}><RefreshCw size={14} />Refresh templates</Button><Button type="submit" variant="primary" loading={busy} disabled={Boolean(templateIssue(template)) || options.isFetching || options.isError}>Save default template</Button></div></form></section>}
     <details className="advanced-connection"><summary>Already have Cloud API credentials?</summary><form onSubmit={async event => {
       event.preventDefault(); if (!hosted || busy) return;
       const element = event.currentTarget, form = new FormData(element); setBusy(true);
@@ -128,12 +132,12 @@ export function WhatsAppConnect({ onClose }: { onClose: () => void }) {
         const action = reconcile ? { type: "whatsapp.reconcile", phoneNumberId: form.get("phoneId"), wabaId: form.get("wabaId"), accessToken: form.get("token") }
           : { service: "whatsapp", secret: { accessToken: form.get("token") }, externalId: form.get("phoneId"), label: "WhatsApp Business", metadata: { wabaId: form.get("wabaId"), coexistence: coexistence ? "requested" : "standard" } };
         const response = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(action) });
-        const result = await response.json(); if (!response.ok) throw new Error(result.error || "This WhatsApp account could not be verified.");
+        const result = await readJsonResponse<{ workspace?: typeof data; whatsapp?: { connected: boolean; message: string } }>(response, "This WhatsApp account could not be verified.");
         if (result.workspace) setData(result.workspace); else await refresh();
         notify(result.whatsapp?.message || "WhatsApp setup status updated.");
         await operation.refetch();
         if (!reconcile && result.whatsapp?.connected) onClose();
-      } catch (error) { notify(error instanceof Error ? error.message : "This WhatsApp account could not be verified.", "error"); await refresh(); }
+      } catch (error) { notify(error instanceof Error ? error.message : "This WhatsApp account could not be verified.", "error"); try { await refresh(); } catch { /* Keep the verification error visible. */ } }
       finally { const token = element.elements.namedItem("token"); if (token instanceof HTMLInputElement) token.value = ""; setBusy(false); }
     }}><Field label="WhatsApp Business Account ID" name="wabaId" required inputMode="numeric" pattern="[0-9]+" maxLength={80} defaultValue={connection?.metadata.wabaId || ""} /><Field label="Phone-number ID" name="phoneId" required inputMode="numeric" pattern="[0-9]+" maxLength={80} defaultValue={connection?.externalId || ""} /><Field label="Fresh access token" name="token" type="password" required autoComplete="new-password" /><div className="dialog-actions">{connection && <Button type="submit" value="reconcile" loading={busy} disabled={!hosted}>Check subscription only</Button>}<Button type="submit" value="connect" variant="primary" loading={busy} disabled={!hosted}>{connection ? "Verify and reconnect" : "Verify and connect"}</Button></div></form></details>
   </Dialog>;

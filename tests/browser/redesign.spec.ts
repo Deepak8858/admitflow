@@ -1,8 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-const routes = ["/", "/leads", "/pipeline", "/inbox", "/appointments", "/recovery", "/automations", "/knowledge", "/analytics", "/team", "/integrations", "/settings"];
-const publicRoutes = ["/welcome", "/product", "/pricing"];
+const routes = ["/overview", "/leads", "/pipeline", "/inbox", "/appointments", "/recovery", "/automations", "/knowledge", "/analytics", "/team", "/integrations", "/settings"];
+const publicRoutes = ["/", "/welcome", "/product", "/pricing", "/help"];
 const runtimeErrors = new WeakMap<Page, string[]>();
 test.beforeEach(({ page }) => {
   const errors: string[] = [];
@@ -45,7 +45,7 @@ for (const width of [320, 375, 768, 1440]) {
       await selectTheme(page, "light");
       await noOverflow(page);
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
-      if (path === "/welcome") {
+      if (path === "/") {
         const background = page.locator(".hero-background img");
         await expect(background).toHaveAttribute("alt", "");
         await expect(background).toHaveAttribute("sizes", "100vw");
@@ -105,9 +105,11 @@ test("fictional preview requires review and pricing publishes no invented rate",
   await expect(page.locator(".preview-statuses")).toContainText("No live request has been made.");
   expect(writes).toEqual([]);
   await page.goto("/pricing");
-  await expect(page.getByRole("status")).toContainText("Monthly rates have not been published yet.");
-  await page.getByRole("button", { name: "Annual", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("Annual rates and terms have not been published yet.");
+  await expect(page.locator(".pricing-card")).toContainText("Rates, billing periods and plan entitlements are not available for publication yet.");
+  await expect(page.locator(".pricing-card")).not.toContainText("₹");
+  await page.getByRole("link", { name: "Read the getting-started guide" }).click();
+  await expect(page).toHaveURL(/\/help$/);
+  await expect(page.locator(".help-guide li")).toHaveCount(5);
 });
 
 test("audio plays only on request, pauses other samples and includes transcripts", async ({ page }) => {
@@ -161,7 +163,7 @@ test("theme selection is disabled until appearance hydration is ready", async ({
 
 test("sidebar, profile, theme persistence and keyboard search remain usable", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
-  await page.goto("/");
+  await page.goto("/overview");
   await expect(page.locator("#main-content h1")).toBeVisible();
   await page.getByRole("button", { name: "Collapse sidebar", exact: true }).click();
   await expect(page.locator(".sidebar")).toHaveCSS("width", "80px");
@@ -191,7 +193,7 @@ test("sidebar, profile, theme persistence and keyboard search remain usable", as
 test("all workspace screens are accessible in dark theme", async ({ page }) => {
   test.setTimeout(240_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/overview");
   await selectTheme(page, "dark");
   for (const route of routes) {
     await page.goto(route);
@@ -226,7 +228,7 @@ test("charts stay contained while zoom resize measurements are pending", async (
       disconnect() { pending.delete(this); super.disconnect(); }
     };
   });
-  for (const route of ["/analytics", "/"]) {
+  for (const route of ["/analytics", "/overview"]) {
     await test.step(route, async () => {
       await page.goto(route);
       await page.evaluate(() => document.fonts.ready);
