@@ -14,6 +14,8 @@ export const PRODUCTION = {
   workloadRolePath: "/admitflow/workload/prod/",
   boundaryPolicyPath: "/admitflow/boundaries/prod/",
   cacheParameterGroupName: "admitflow-prod-queue-valkey7-v1",
+  // Verified retained resource; CloudFormation must not own or update its password.
+  queueSecretArn: "arn:aws:secretsmanager:ap-southeast-1:543777713748:secret:admitflow/prod/queue-auth-egLcIU",
 } as const;
 
 export const PRODUCTION_CACHE_PARAMETER_GROUP_ARN = `arn:aws:elasticache:${PRODUCTION.region}:${PRODUCTION.account}:parametergroup:${PRODUCTION.cacheParameterGroupName}`;

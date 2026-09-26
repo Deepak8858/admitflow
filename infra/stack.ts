@@ -150,12 +150,17 @@ export class AdmitFlowStack extends Stack {
     const appSecret = secretsmanager.Secret.fromSecretAttributes(this, "ApplicationSecret", {
       secretCompleteArn: appSecretArn.valueAsString, encryptionKey: existingSecretKey,
     });
-    const queueSecret = new secretsmanager.Secret(this, "QueueAuth", {
-      secretName: `admitflow/${props.stage}/queue-auth`,
-      description: `${prefix} Valkey AUTH token`,
-      generateSecretString: { secretStringTemplate: "{}", generateStringKey: "password", passwordLength: 48, excludePunctuation: true },
-      removalPolicy: RemovalPolicy.RETAIN,
-    });
+    // CloudFormation's secret import handler calls UpdateSecret even with no value fields.
+    // Production therefore references the verified retained secret without managing it.
+    // Its identity and current version are checked around every deployment operation.
+    const queueSecret = production
+      ? secretsmanager.Secret.fromSecretCompleteArn(this, "QueueAuth", PRODUCTION.queueSecretArn)
+      : new secretsmanager.Secret(this, "QueueAuth", {
+        secretName: `admitflow/${props.stage}/queue-auth`,
+        description: `${prefix} Valkey AUTH token`,
+        generateSecretString: { secretStringTemplate: "{}", generateStringKey: "password", passwordLength: 48, excludePunctuation: true },
+        removalPolicy: RemovalPolicy.RETAIN,
+      });
     const cacheSubnetGroup = new elasticache.CfnSubnetGroup(this, "CacheSubnetGroup", {
       cacheSubnetGroupName: `${prefix}-queue-subnets`,
       description: "Isolated AdmitFlow queue subnets", subnetIds: vpc.isolatedSubnets.map(subnet => subnet.subnetId),

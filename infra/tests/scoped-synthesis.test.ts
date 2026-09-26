@@ -180,20 +180,22 @@ test("production queue keeps the stack and logical ID used by snapshot IAM scope
   assert.equal(queues.Queue.UpdateReplacePolicy, "Snapshot");
 });
 
-test("production recovery preserves all five logical IDs with both Retain policies", t => {
+test("production recovery manages four retained logical IDs and references the external queue secret", t => {
   const { template } = production(t);
   for (const [type, logicalId] of [
     ["AWS::EC2::VPC", "Vpc8378EB38"],
     ["AWS::EC2::InternetGateway", "VpcIGWD7BA715C"],
     ["AWS::ECS::Cluster", "ClusterEB0386A7"],
     ["AWS::ECR::Repository", "Images2D38C313"],
-    ["AWS::SecretsManager::Secret", "QueueAuth5BFC0E63"],
   ] as const) {
     const resources = template.findResources(type);
     assert.deepEqual(Object.keys(resources), [logicalId]);
     assert.equal(resources[logicalId].DeletionPolicy, "Retain", logicalId);
     assert.equal(resources[logicalId].UpdateReplacePolicy, "Retain", logicalId);
   }
+  template.resourceCountIs("AWS::SecretsManager::Secret", 0);
+  assert.equal(template.findResources("AWS::ElastiCache::ReplicationGroup").Queue.Properties.AuthToken,
+    `{{resolve:secretsmanager:${PRODUCTION.queueSecretArn}:SecretString:password::}}`);
   for (const type of ["AWS::EC2::Subnet", "AWS::EC2::RouteTable", "AWS::EC2::Route", "AWS::EC2::VPCGatewayAttachment"]) {
     const resources = Object.values(template.findResources(type));
     assert.ok(resources.length > 0, type);
@@ -206,6 +208,7 @@ test("production recovery preserves all five logical IDs with both Retain polici
 
 test("recovery retention does not change nonproduction VPC, gateway or cluster lifecycle", t => {
   const template = Template.fromStack(configureApplication(application(t, {})));
+  template.hasResourceProperties("AWS::SecretsManager::Secret", { Name: "admitflow/staging/queue-auth", GenerateSecretString: { PasswordLength: 48 } });
   for (const type of ["AWS::EC2::VPC", "AWS::EC2::InternetGateway", "AWS::ECS::Cluster"]) {
     const resources = Object.values(template.findResources(type));
     assert.equal(resources.length, 1);
@@ -226,7 +229,7 @@ test("production resources keep approved fixed names, recovery settings and cost
   template.hasOutput("CacheParameterGroupName", { Value: PRODUCTION.cacheParameterGroupName });
   template.hasResourceProperties("AWS::ElasticLoadBalancingV2::LoadBalancer", { Name: "admitflow-prod-alb", IpAddressType: "ipv4", Scheme: "internet-facing" });
   template.hasResourceProperties("AWS::ElasticLoadBalancingV2::TargetGroup", { Name: "admitflow-prod-web" });
-  template.hasResourceProperties("AWS::SecretsManager::Secret", { Name: "admitflow/prod/queue-auth", GenerateSecretString: { PasswordLength: 48 } });
+  template.resourceCountIs("AWS::SecretsManager::Secret", 0);
   for (const name of ["web", "worker"]) template.hasResourceProperties("AWS::ECS::Service", { ServiceName: `admitflow-prod-${name}`, EnableExecuteCommand: false });
   template.hasResourceProperties("AWS::ElastiCache::ReplicationGroup", { ReplicationGroupId: "admitflow-prod-queue", NumCacheClusters: 1, AutomaticFailoverEnabled: false, MultiAZEnabled: false, SnapshotRetentionLimit: 3, SnapshotWindow: "18:00-19:00" });
   template.hasParameter("CacheNodeType", { Default: "cache.t4g.small" });
@@ -267,7 +270,10 @@ test("production preserves secret selectors and requires exact application-secre
     const container = task.Properties.ContainerDefinitions[0];
     const expected = container.Name === "migration" ? ["DATABASE_URL_UNPOOLED"] : [...SHARED_SECRET_KEYS, ...(container.Name === "web" ? WEB_SECRET_KEYS : []), "REDIS_PASSWORD"];
     assert.deepEqual(container.Secrets.map((secret: { Name: string }) => secret.Name).sort(), expected.sort());
-    for (const secret of container.Secrets) assert.ok(JSON.stringify(secret.ValueFrom).includes(secret.Name === "REDIS_PASSWORD" ? ":password::" : `:${secret.Name}::`));
+    for (const secret of container.Secrets) {
+      if (secret.Name === "REDIS_PASSWORD") assert.equal(secret.ValueFrom, `${PRODUCTION.queueSecretArn}:password::`);
+      else assert.ok(JSON.stringify(secret.ValueFrom).includes(`:${secret.Name}::`));
+    }
   }
 });
 
