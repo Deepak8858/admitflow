@@ -105,7 +105,7 @@ const taskTrust = () => document([{
 }]);
 const publisherTrust = () => document([{
   Effect: "Allow", Principal: { Federated: iam("oidc-provider/token.actions.githubusercontent.com") }, Action: "sts:AssumeRoleWithWebIdentity",
-  Condition: { StringEquals: { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com", "token.actions.githubusercontent.com:sub": `repo:${CONTRACT.githubRepository}:ref:refs/heads/main` } },
+  Condition: { StringEquals: { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com", "token.actions.githubusercontent.com:sub": "repo:Deepak8858@88921480/admitflow@1376846550:ref:refs/heads/main" } },
 }]);
 
 /** Split at statement boundaries; each output is one customer-managed policy, NOT an inline policy. */
