@@ -257,12 +257,12 @@ test("CloudFormation change sets use stack resources and no incompatible Resourc
   assert.ok(!JSON.stringify(policies).includes("cloudformation:ResourceTypes"));
   for (const statement of policies.flatMap(policy => policy.Statement)) if (statement.Action.some(action => action.startsWith("cloudformation:"))) assert.deepEqual(statement.Resource, ["arn:aws:cloudformation:ap-southeast-1:543777713748:stack/AdmitFlow-prod/*"]);
 });
-test("exact GitHub main-ref trust excludes PR, environment, branch and repository variants", () => {
+test("exact immutable GitHub main-ref trust excludes PR, environment, branch and repository variants", () => {
   const trust = bundles.deployment.trust.publisher.Statement[0];
   assert.equal(trust.Principal.Federated, "arn:aws:iam::543777713748:oidc-provider/token.actions.githubusercontent.com");
-  const context = { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com", "token.actions.githubusercontent.com:sub": "repo:Deepak8858/admitflow:ref:refs/heads/main" };
+  const context = { "token.actions.githubusercontent.com:aud": "sts.amazonaws.com", "token.actions.githubusercontent.com:sub": "repo:Deepak8858@88921480/admitflow@1376846550:ref:refs/heads/main" };
   assert.equal(matchesConditions(trust.Condition, context), true);
-  for (const sub of ["repo:Deepak8858/admitflow:pull_request", "repo:Deepak8858/admitflow:environment:production", "repo:Deepak8858/admitflow:ref:refs/heads/dev", "repo:another/admitflow:ref:refs/heads/main"]) assert.equal(matchesConditions(trust.Condition, { ...context, "token.actions.githubusercontent.com:sub": sub }), false);
+  for (const sub of ["repo:Deepak8858/admitflow:ref:refs/heads/main", "repo:Deepak8858@88921480/admitflow@1376846550:pull_request", "repo:Deepak8858@88921480/admitflow@1376846550:environment:production", "repo:Deepak8858@88921480/admitflow@1376846550:ref:refs/heads/dev", "repo:another@88921480/admitflow@1376846550:ref:refs/heads/main"]) assert.equal(matchesConditions(trust.Condition, { ...context, "token.actions.githubusercontent.com:sub": sub }), false);
   assert.equal(matchesConditions(trust.Condition, { ...context, "token.actions.githubusercontent.com:aud": "other" }), false);
 });
 test("operator trusts require exact user and explicit MFA; no browser-login assumption", () => {
