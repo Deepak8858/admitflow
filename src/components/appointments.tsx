@@ -7,6 +7,7 @@ import { Avatar, Badge, Button, Dialog, EmptyState, Field, IconButton, PageHeadi
 import { type Appointment, dateLabel, calendarFile, DAY, HOUR } from "@/lib/domain";
 
 const indiaDay = (time = Date.now()) => new Date(time + 5.5 * HOUR).toISOString().slice(0, 10);
+const nextIndiaMidnight = (time: number) => Date.parse(`${indiaDay(time)}T00:00:00+05:30`) + DAY;
 const indiaTime = (value: string) => new Date(Date.parse(value) + 5.5 * HOUR).toISOString().slice(11, 16);
 type Availability = { connected: boolean; busy: { start: string; end: string }[]; checkedAt: string };
 
@@ -34,7 +35,7 @@ export function AppointmentsPage({ onBook, onOpen }: { onBook: (id?: string) => 
       const current = Date.now();
       setNow(current);
       // Midnight refreshes the rolling week and caps the delay at one day, even for distant sessions.
-      let next = Date.parse(`${indiaDay(current)}T00:00:00+05:30`) + DAY;
+      let next = nextIndiaMidnight(current);
       for (const appointment of data.appointments) {
         const start = Date.parse(appointment.startsAt);
         if (appointment.status === "scheduled" && start > current) next = Math.min(next, start);
@@ -114,11 +115,30 @@ export function BookingDialog({ leadId, appointmentId, onClose }: { leadId?: str
   const [duration, setDuration] = useState(appointment?.duration || 30), [kind, setKind] = useState<Appointment["kind"]>(appointment?.kind || "Counselling");
   const [saving, setSaving] = useState(false), submitting = useRef(false);
   const startTime = Date.parse(`${day}T${time}:00+05:30`), startsAt = Number.isFinite(startTime) ? new Date(startTime).toISOString() : "";
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    function updateTime() {
+      clearTimeout(timer);
+      const current = Date.now();
+      setNow(current);
+      const nextStart = startTime > current ? startTime : Infinity;
+      timer = setTimeout(updateTime, Math.min(nextStart, nextIndiaMidnight(current)) - current);
+    }
+    updateTime();
+    window.addEventListener("focus", updateTime);
+    document.addEventListener("visibilitychange", updateTime);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("focus", updateTime);
+      document.removeEventListener("visibilitychange", updateTime);
+    };
+  }, [startTime]);
   const connection = data.connections?.find(item => item.service === "google");
   const connected = !data.demo && Boolean(data.integrations?.calendar) && (!connection || connection.status === "connected");
   const availability = useQuery({
     queryKey: ["calendar-busy", data.id, connection?.updatedAt, startsAt, duration],
-    enabled: connected && access.canWork && bookableLeads.some(lead => lead.id === selectedLead) && Boolean(startsAt) && startTime > Date.now(), staleTime: 0,
+    enabled: connected && access.canWork && bookableLeads.some(lead => lead.id === selectedLead) && Boolean(startsAt) && startTime > now, staleTime: 0,
     queryFn: async ({ signal }) => {
       const params = new URLSearchParams({ from: startsAt, to: new Date(startTime + duration * 60_000).toISOString() });
       const response = await fetch(`/api/integrations/google/busy?${params}`, { cache: "no-store", signal });
@@ -148,14 +168,14 @@ export function BookingDialog({ leadId, appointmentId, onClose }: { leadId?: str
       } finally { submitting.current = false; setSaving(false); }
     }}>
       <SelectField label="Student" value={selectedLead} disabled={Boolean(appointment) || saving} onChange={event => { setSelectedLead(event.target.value); const lead = bookableLeads.find(item => item.id === event.target.value); const assigned = lead && recordOwnerId(data, lead); setOwnerId(members.find(member => member.id === assigned)?.id || members[0]?.id || ""); }} required>{!bookableLeads.length && <option value="">No assigned enquiries</option>}{bookableLeads.map(lead => <option value={lead.id} key={lead.id}>{lead.name} · {lead.course}</option>)}</SelectField>
-      <div className="form-grid"><SelectField label="Session type" value={kind} disabled={Boolean(appointment) || saving} onChange={event => setKind(event.target.value as Appointment["kind"])}><option>Counselling</option><option>Demo class</option><option>Campus visit</option></SelectField><SelectField label="Counsellor" name="ownerId" value={ownerId} disabled={!access.admin || saving} required onChange={event => setOwnerId(event.target.value)}>{!members.length && <option value="">No active counsellor</option>}{members.map(member => <option key={member.id} value={member.id}>{memberLabel(member, members)}</option>)}</SelectField><Field label="Session date" type="date" name="date" required min={indiaDay()} value={day} disabled={saving} onChange={event => setDay(event.target.value)} /><Field label="Start time (IST)" type="time" name="time" required value={time} disabled={saving} onChange={event => setTime(event.target.value)} /><SelectField label="Duration" value={duration} disabled={Boolean(appointment) || saving} onChange={event => setDuration(Number(event.target.value))}>{[...new Set([30, 45, 60, ...(appointment ? [appointment.duration] : [])])].sort((a, b) => a - b).map(minutes => <option value={minutes} key={minutes}>{minutes} minutes</option>)}</SelectField></div>
+      <div className="form-grid"><SelectField label="Session type" value={kind} disabled={Boolean(appointment) || saving} onChange={event => setKind(event.target.value as Appointment["kind"])}><option>Counselling</option><option>Demo class</option><option>Campus visit</option></SelectField><SelectField label="Counsellor" name="ownerId" value={ownerId} disabled={!access.admin || saving} required onChange={event => setOwnerId(event.target.value)}>{!members.length && <option value="">No active counsellor</option>}{members.map(member => <option key={member.id} value={member.id}>{memberLabel(member, members)}</option>)}</SelectField><Field label="Session date" type="date" name="date" required min={indiaDay(now)} value={day} disabled={saving} onChange={event => setDay(event.target.value)} /><Field label="Start time (IST)" type="time" name="time" required value={time} disabled={saving} onChange={event => setTime(event.target.value)} /><SelectField label="Duration" value={duration} disabled={Boolean(appointment) || saving} onChange={event => setDuration(Number(event.target.value))}>{[...new Set([30, 45, 60, ...(appointment ? [appointment.duration] : [])])].sort((a, b) => a - b).map(minutes => <option value={minutes} key={minutes}>{minutes} minutes</option>)}</SelectField></div>
       {localConflict && <p className="inline-error" role="alert">This counsellor already has an AdmitFlow session at that time. Choose another slot.</p>}
-      {Boolean(startsAt) && startTime <= Date.now() && <p className="inline-error" role="alert">Choose a future start time in India time.</p>}
+      {Boolean(startsAt) && startTime <= now && <p className="inline-error" role="alert">Choose a future start time in India time.</p>}
       {connected && <div className="calendar-availability" aria-live="polite">
         {availability.isFetching ? <p className="field-note"><RefreshCw size={14} className="spin" />Checking the connected Google calendar…</p> : availability.isError ? <div className="inline-error"><p>{availability.error.message}</p><Button variant="ghost" onClick={() => void availability.refetch()}><RefreshCw size={14} />Retry availability</Button></div> : availability.data && <p className={assessment.conflict ? "inline-error" : "field-note"}><CalendarDays size={15} /><span>{!availability.data.connected ? "Google did not provide availability. Only AdmitFlow appointment conflicts can be checked." : assessment.conflict ? "Google reports busy time in this slot. Choose another time." : assessment.existingEvent ? "Google reports busy time that may include this session’s existing event. Check the shared calendar before rescheduling; availability is not confirmed." : "No busy time was reported by Google at this check. This is advisory, not a reserved slot."}{availability.data.connected && ` Checked ${dateLabel(availability.data.checkedAt, { hour: "numeric", minute: "2-digit" })} IST.`}</span></p>}
       </div>}
       <div className="booking-note"><CalendarDays size={18} /><p>{appointment ? "Rescheduling updates this AdmitFlow session and queues any connected Google update." : "Booking checks the counsellor’s AdmitFlow sessions and stops this student’s automated recovery follow-ups."}{connected ? " Calendar updates flow from AdmitFlow to Google only." : " External calendar availability is not confirmed."}</p></div>
-      <div className="dialog-actions"><Button type="button" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary" loading={saving || busy} disabled={!selectedLead || !validOwner || !startsAt || startTime <= Date.now() || localConflict || connected && (availability.isFetching || assessment.conflict || availability.isError)}><CalendarDays size={16} />{appointment ? "Reschedule session" : "Book session"}</Button></div>
+      <div className="dialog-actions"><Button type="button" onClick={onClose}>Cancel</Button><Button type="submit" variant="primary" loading={saving || busy} disabled={!selectedLead || !validOwner || !startsAt || startTime <= now || localConflict || connected && (availability.isFetching || assessment.conflict || availability.isError)}><CalendarDays size={16} />{appointment ? "Reschedule session" : "Book session"}</Button></div>
     </form>
   </Dialog>;
 }
