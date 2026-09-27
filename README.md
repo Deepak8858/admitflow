@@ -43,7 +43,7 @@ Setting `DATABASE_URL` selects PostgreSQL behavior; running a build alone does n
 | --- | --- |
 | Origin/database | `APP_BASE_URL`, pooled `DATABASE_URL`, direct `DATABASE_URL_UNPOOLED` for migrations |
 | WorkOS | `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI` (`<origin>/callback`) |
-| Worker | `REDIS_URL`; ECS constructs it from separately injected private Valkey credentials |
+| Worker and production mutation protection | Authenticated TLS `REDIS_URL`; ECS constructs it from separately injected private Valkey credentials for both web and worker |
 | Files/encryption | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, AWS `KMS_KEY_ID` |
 | Messaging | Public `NEXT_PUBLIC_META_APP_ID` / `NEXT_PUBLIC_META_CONFIG_ID`, server `META_APP_SECRET` / `META_WEBHOOK_VERIFY_TOKEN`; optional platform `OPENAI_API_KEY`, `ELEVENLABS_API_KEY` / `ELEVENLABS_VOICE_ID` |
 

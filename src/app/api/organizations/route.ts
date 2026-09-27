@@ -5,6 +5,7 @@ import { apiError, readAction } from "@/lib/api";
 import { assert } from "@/lib/errors";
 import { refreshSession } from "@workos-inc/authkit-nextjs";
 import { acknowledgeProvisioning, continueProvisioning, pendingProvisioningStatus, provisioningStatus, readyProvisioning, startProvisioning } from "@/lib/provisioning";
+import { enforceMutationRateLimit } from "@/lib/mutation-rate-limit";
 
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "private, no-store" } });
 const actorFor = (userId: string) => ({ actorId: userId, clientId: z.string().min(1).parse(process.env.WORKOS_CLIENT_ID) });
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     const action = await readAction(request, 5000);
     const session = await hostedSession(), provider = workos(), actor = actorFor(session.user!.id);
+    await enforceMutationRateLimit(request, { kind: "organizations", actorId: actor.actorId, create: action.type === "create" });
     if (action.type === "create") {
       const status = await startProvisioning(actor, z.uuid().parse(action.requestId), z.string().parse(action.name), provider);
       return json({ provisioning: status }, status.state === "ready" ? 200 : 202);

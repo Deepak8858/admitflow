@@ -351,7 +351,7 @@ function applyReplyPlan(workspace: Workspace, job: Job) {
   if (plan.handoff) { lead.humanOwned = true; lead.nextAction = "Counsellor review requested by assistant"; stopJobs(workspace, lead.id); }
 }
 
-export async function processJob(workspaceId: string, jobId: string) {
+export async function processJob(workspaceId: string, jobId: string, expectedAttempt?: Pick<Job, "attempts" | "retryGeneration">) {
   const snapshot = await loadWorkspace(workspaceId), candidate = snapshot.jobs.find(item => item.id === jobId);
   let subscriptionError: unknown;
   if (candidate?.status === "pending" && jobCapability(candidate)) {
@@ -359,6 +359,10 @@ export async function processJob(workspaceId: string, jobId: string) {
   }
   const claim = await mutateWorkspace(workspaceId, workspace => {
     const job = workspace.jobs.find(item => item.id === jobId);
+    // Recheck the queue's validated identity under the organization lock. A
+    // concurrent retry between routing and this claim must keep its own attempt.
+    if (expectedAttempt) assert(job && (job.attempts || 0) === (expectedAttempt.attempts || 0)
+      && (job.retryGeneration || 0) === (expectedAttempt.retryGeneration || 0), "The queued job generation changed before claim.", 409);
     if (!job || job.status !== "pending" || Date.parse(job.dueAt) > Date.now()) return null;
     const existing = workspace.messages.find(message => message.id === job.messageId);
     if (existing?.providerId || messageUncertain(existing)) { job.status = existing?.providerId ? "accepted" : "reconcile"; return null; }

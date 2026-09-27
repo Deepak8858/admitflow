@@ -46,6 +46,7 @@ docker run --rm -e ADMITFLOW_PROCESS_ROLE=migration \
 
 docker run --detach --name "$container" --publish 127.0.0.1:3300:3000 \
   -e DATABASE_URL=postgres://fixture:fixture@127.0.0.1/fixture \
+  -e REDIS_URL=rediss://fixture:fixture@127.0.0.1:6379 \
   -e WORKOS_API_KEY=sk_test_container_fixture \
   -e WORKOS_CLIENT_ID=client_container_fixture \
   -e WORKOS_COOKIE_PASSWORD=container-smoke-fixture-cookie-key-32-characters \

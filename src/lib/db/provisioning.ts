@@ -2,6 +2,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import { database } from "./client";
+import { assertTenantRls } from "./repository";
 import { organizationProvisioning as operations } from "./schema";
 import { AppError, assert } from "../errors";
 
@@ -15,6 +16,9 @@ const actorWhere = (actor: ProvisioningActor) => and(eq(operations.actorId, acto
 export async function provisioningTransaction<T>(actor: ProvisioningActor, action: (tx: Transaction) => Promise<T>) {
   z.string().min(1).max(200).parse(actor.actorId); z.string().min(1).max(200).parse(actor.clientId);
   return database().transaction(async tx => {
+    await assertTenantRls(tx);
+    const rls = await tx.execute<{ enforced: boolean }>(sql`select row_security_active('public.organization_provisioning'::regclass) as enforced`);
+    assert(rls.rows[0]?.enforced === true, "The database runtime role must enforce provisioning row-level security.", 503);
     await tx.execute(sql`select set_config('app.provisioning_actor', ${actor.actorId}, true), set_config('app.provisioning_client', ${actor.clientId}, true)`);
     return action(tx);
   });

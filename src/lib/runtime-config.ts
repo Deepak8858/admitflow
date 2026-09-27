@@ -1,3 +1,5 @@
+import { rateLimitRedisConfiguration } from "./rate-limit-config";
+
 export type RuntimeRole = "web" | "worker" | "migration";
 export interface ConfigurationIssue { variable: string; reason: "missing" | "invalid" }
 export function runtimeConfiguration(env: Record<string, string | undefined>, role: RuntimeRole): ConfigurationIssue[] {
@@ -29,13 +31,6 @@ export function runtimeConfiguration(env: Record<string, string | undefined>, ro
     if (!env.KMS_KEY_ID && env.INTEGRATION_ENCRYPTION_KEY && !/^[A-Za-z0-9+/]{43}=$/.test(env.INTEGRATION_ENCRYPTION_KEY)) invalid("INTEGRATION_ENCRYPTION_KEY");
     if (env.DATABASE_POOL_SIZE && (!/^\d+$/.test(env.DATABASE_POOL_SIZE) || Number(env.DATABASE_POOL_SIZE) < 1 || Number(env.DATABASE_POOL_SIZE) > 100)) invalid("DATABASE_POOL_SIZE");
   }
-  if (role === "worker") {
-    if (env.REDIS_URL) {
-      try { const url = new URL(env.REDIS_URL); if (url.protocol !== "rediss:" || !url.hostname || !url.password) invalid("REDIS_URL"); } catch { invalid("REDIS_URL"); }
-    } else {
-      require("REDIS_HOST"); require("REDIS_PASSWORD");
-      if (env.REDIS_TLS !== "true") invalid("REDIS_TLS");
-    }
-  }
+  if (role !== "migration") issues.push(...rateLimitRedisConfiguration(env).issues);
   return issues;
 }

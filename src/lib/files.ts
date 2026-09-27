@@ -19,7 +19,7 @@ function storage() {
 }
 export const MAX_FILE_SIZE = 10_000_000;
 export const FILE_TYPES = ["application/pdf", "text/plain", "text/csv", "image/jpeg", "image/png", "image/webp", "audio/mpeg", "audio/ogg", "audio/mp4", "audio/webm", "audio/wav", "audio/aac", "audio/amr"];
-const filename = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120) || "file";
+const filename = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120).replace(/^\.+/, "") || "file";
 function validateInput(input: Pick<WorkspaceFile, "name" | "size" | "mime" | "purpose" | "leadId">) {
   assert(Number.isSafeInteger(input.size) && input.size > 0 && input.size <= MAX_FILE_SIZE && FILE_TYPES.includes(input.mime), "Choose a supported file smaller than 10 MB.");
   assert(input.name.trim().length > 0 && input.name.length <= 160, "Choose a valid filename.");
@@ -29,7 +29,12 @@ function validateInput(input: Pick<WorkspaceFile, "name" | "size" | "mime" | "pu
 }
 function checkFile(workspace: Workspace, file: WorkspaceFile | undefined, actor?: Actor, upload = false): asserts file is WorkspaceFile & { objectKey: string } {
   assert(!workspace.demo, "Demo workspaces do not access live storage.", 409);
-  assert(file?.objectKey && file.objectKey.startsWith(`${workspace.id}/`), "File not found.", 404);
+  const parts = file?.objectKey?.split("/");
+  assert(file && parts && parts[0] === workspace.id && parts[2] === file.id
+    && ((file.status === "pending" && parts[1] === "pending" && parts.length === 4)
+      || (file.status === "ready" && parts[1] === "files" && [4, 5].includes(parts.length)))
+    && parts.slice(3).every(part => part !== "." && part !== ".." && /^[A-Za-z0-9._-]+$/.test(part)),
+  "File not found.", 404);
   if (file.leadId) assert(workspace.leads.some(lead => lead.id === file.leadId), "Enquiry not found.", 404);
   if (actor) assertFileAccess(workspace, actor, file, upload);
 }

@@ -1,4 +1,4 @@
-import { Queue } from "bullmq";
+import { Queue, type Job as QueueJob } from "bullmq";
 import { asc, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 import { database } from "./client";
@@ -9,6 +9,10 @@ import { assert, safeErrorDiagnostic } from "../errors";
 import type { Workspace } from "../domain";
 
 export const QUEUE_NAME = "admitflow";
+type DurableJob = Workspace["jobs"][number];
+function queueJobId(workspaceId: string, job: DurableJob) {
+  return `${workspaceId}-${job.id}-${job.retryGeneration || 0}-${job.attempts || 0}`;
+}
 export function queueConnection() {
   assert(process.env.DATABASE_URL && process.env.REDIS_URL, "The outbox dispatcher requires DATABASE_URL and REDIS_URL.", 503);
   const url = new URL(process.env.REDIS_URL);
@@ -25,7 +29,7 @@ export async function enqueueWorkspaceJobs(queue: Pick<Queue, "getJob" | "add">,
   if (workspace.demo) return 0;
   let enqueued = 0;
   for (const job of workspace.jobs.filter(item => item.status === "pending" && Date.parse(item.dueAt) <= Date.now()).slice(0, 100)) {
-    const jobId = `${workspace.id}-${job.id}-${job.retryGeneration || 0}-${job.attempts || 0}`;
+    const jobId = queueJobId(workspace.id, job);
     const existing = await queue.getJob(jobId);
     if (existing) {
       const state = await existing.getState();
@@ -69,11 +73,14 @@ export async function dispatchOutbox(queue: Pick<Queue, "getJob" | "add">) {
   } while (after);
   return { organizations, enqueued, failed };
 }
-export async function runQueuedJob(data: unknown) {
-  const input = z.object({ workspaceId: z.uuid(), jobId: z.uuid() }).parse(data);
+export async function runQueuedJob(job: Pick<QueueJob, "id" | "name" | "data">) {
+  assert(job.name === "execute" && typeof job.id === "string", "Unrecognized queue entry.", 403);
+  const input = z.strictObject({ workspaceId: z.uuid(), jobId: z.uuid() }).parse(job.data);
   const [route] = await database().select().from(organizationRoutes).where(eq(organizationRoutes.organizationId, input.workspaceId));
   assert(route?.workosId, "This job has no registered institute route.", 403);
   const workspace = await loadWorkspace(route.organizationId);
   assert(!workspace.demo && workspace.workosOrganizationId === route.workosId, "This institute is not enabled for live worker dispatch.", 403);
-  return processJob(route.organizationId, input.jobId);
+  const durable = workspace.jobs.find(item => item.id === input.jobId);
+  assert(durable?.status === "pending" && queueJobId(workspace.id, durable) === job.id, "Queue entry does not match a pending institute job.", 409);
+  return processJob(route.organizationId, input.jobId, { attempts: durable.attempts, retryGeneration: durable.retryGeneration });
 }

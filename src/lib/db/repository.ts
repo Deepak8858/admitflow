@@ -1,6 +1,6 @@
 import { eq, and, sql, getTableColumns, desc, or, ilike, count, isNull, inArray, notInArray } from "drizzle-orm";
 import type { PgTable, AnyPgColumn, PgTransactionConfig } from "drizzle-orm/pg-core";
-import { database, type Database } from "./client";
+import { database, testDatabaseInjected, type Database } from "./client";
 import * as s from "./schema";
 import { hydrateWorkspace, uid, DAY, LEAD_RULES, LEAD_VIEWS, LEAD_SORTS, type Workspace, type Lead, type Stage, type LeadView, type LeadSort } from "../domain";
 import { AppError, assert } from "../errors";
@@ -13,10 +13,18 @@ import { intakeHeldPhones } from "../intake-retention-policy";
 import { MAX_LEAD_PAGE, MAX_LEAD_PAGE_SIZE, hasMoreLeadPages } from "../lead-pagination";
 
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
-type Db = Database | Transaction;
 
+/** FORCE RLS does not constrain superusers or roles with BYPASSRLS. Check the
+ * effective role on the transaction's connection before handling tenant data. */
+export async function assertTenantRls(tx: Transaction) {
+  const result = await tx.execute<{ enforced: boolean }>(sql`select row_security_active('public.organizations'::regclass) as enforced`);
+  assert(result.rows[0]?.enforced === true, "The database runtime role must enforce tenant row-level security.", 503);
+}
 export async function tenantTransaction<T>(id: string, action: (tx: Transaction) => Promise<T>, config?: PgTransactionConfig) {
   return database().transaction(async tx => {
+    // PGlite fixtures apply migrations as their owner; production always checks
+    // the effective role, including when a pool or proxy reuses a connection.
+    if (!testDatabaseInjected()) await assertTenantRls(tx);
     await tx.execute(sql`select set_config('app.organization_id', ${id}, true)`);
     return action(tx);
   }, config);
@@ -26,7 +34,7 @@ function clean<T>(rows: unknown[]): T[] {
   return rows.map(row => Object.fromEntries(Object.entries(row as Record<string, unknown>).filter(([key, value]) => key !== "organizationId" && value !== null))) as T[];
 }
 
-async function readWorkspaceIdentity(id: string, db: Db): Promise<Pick<Workspace, "id" | "workosOrganizationId" | "members">> {
+async function readWorkspaceIdentity(id: string, db: Transaction): Promise<Pick<Workspace, "id" | "workosOrganizationId" | "members">> {
   const [org] = await db.select({ id: s.organizations.id, workosId: s.organizations.workosId }).from(s.organizations).where(eq(s.organizations.id, id));
   assert(org, "Workspace not found.", 404);
   const members = clean<NonNullable<Workspace["members"]>[number]>(await db.select().from(s.members).where(eq(s.members.organizationId, id)));
@@ -34,7 +42,7 @@ async function readWorkspaceIdentity(id: string, db: Db): Promise<Pick<Workspace
 }
 export function loadWorkspaceIdentity(id: string) { return tenantTransaction(id, tx => readWorkspaceIdentity(id, tx), { isolationLevel: "repeatable read" }); }
 
-export async function readWorkspace(id: string, db: Db): Promise<Workspace> {
+async function readWorkspace(id: string, db: Transaction): Promise<Workspace> {
   const [org] = await db.select().from(s.organizations).where(eq(s.organizations.id, id));
   if (!org) throw new AppError("Workspace not found.", 404);
   const select = (table: PgTable & { organizationId: AnyPgColumn }) => db.select().from(table as unknown as typeof s.leads).where(eq(table.organizationId, id));

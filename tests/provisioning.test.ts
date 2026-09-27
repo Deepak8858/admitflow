@@ -63,6 +63,20 @@ test("durable organization provisioning and route recovery", { timeout: 120_000 
     };
     return { actor, requestId, state, provider, start: () => startProvisioning(actor, requestId, "Test Institute", provider) };
   }
+  await t.test("bootstrap rejects privileged roles and disabled provisioning RLS before dispatch", async () => {
+    const f = fixture();
+    await pg.exec("RESET ROLE");
+    try {
+      await assert.rejects(beginProvisioning(f.actor, f.requestId, "Test Institute"), /must enforce tenant row-level security/);
+      assert.equal((await pg.query<{ count: string }>("select count(*)::text as count from organization_provisioning where actor_id = $1", [f.actor.actorId])).rows[0].count, "0");
+    } finally { await pg.exec("SET ROLE provisioning_runtime"); }
+
+    await pg.exec("RESET ROLE; ALTER TABLE organization_provisioning DISABLE ROW LEVEL SECURITY; SET ROLE provisioning_runtime;");
+    try {
+      await assert.rejects(beginProvisioning(f.actor, f.requestId, "Test Institute"), /must enforce provisioning row-level security/);
+    } finally { await pg.exec("RESET ROLE; ALTER TABLE organization_provisioning ENABLE ROW LEVEL SECURITY; SET ROLE provisioning_runtime;"); }
+    assert.equal((await beginProvisioning(f.actor, f.requestId, "Test Institute")).dispatch, true);
+  });
   await t.test("concurrent requests and immutable same-key payload yield one create", async () => {
     const f = fixture(), entered = barrier(), resume = barrier(); f.state.onOrg = async () => { entered.release(); await resume.promise; };
     const first = f.start();

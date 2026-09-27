@@ -137,7 +137,10 @@ function ConnectionDetails({ connection }: { connection: Connection }) {
       {validDate(meta.lastLeadAt) && <p className="field-note">Last enquiry received {relativeTime(meta.lastLeadAt)}.</p>}
       {validDate(meta.tokenExpiresAt) && <p className="field-note">Page token expires {dateLabel(meta.tokenExpiresAt, { day: "numeric", month: "short", year: "numeric" })}.</p>}
     </>}
-    {connection.service === "google" && <p className="field-note">{meta.calendarId || "Primary calendar"} · one-way updates. Google changes are not imported.</p>}
+    {connection.service === "google" && <>
+      <p className="field-note">{meta.calendarId || "Primary calendar"} · one-way updates. Google changes are not imported.</p>
+      <p className="field-note">Disconnecting revokes AdmitFlow access for this Google account, including its connections in other institutes. Existing Google events remain.</p>
+    </>}
     {connection.service === "razorpay" && meta.mode && <Badge tone={meta.mode === "test" ? "amber" : "neutral"}>{meta.mode === "test" ? "Test credentials" : "Live account credentials"}</Badge>}
     {connection.status === "error" && !meta.lastLeadError && <p className="inline-error">This connection needs attention. Reconnect to verify access.</p>}
   </div>;

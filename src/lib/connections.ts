@@ -63,7 +63,38 @@ function nextConnectionTime(connection?: Connection) {
 }
 /** Retain identity, never usable credentials. Unresolved setup routes only return retryable callbacks. */
 export async function disconnectConnection(workspaceId: string, service: Connection["service"]) {
+  let googleVersion: ConnectionVersion = null;
+  if (service === "google") {
+    const snapshot = await loadWorkspace(workspaceId);
+    const connection = snapshot.connections?.find(item => item.service === "google");
+    googleVersion = connection || null;
+    if (connection?.secret) {
+      assert(!snapshot.demo, "Demo workspaces cannot revoke live services.", 409);
+      // An errored connection may still hold a valid grant that must be revoked.
+      const secret = await openSecret(connection.secret, workspaceId);
+      validateConnectionCredentials("google", secret, connection.externalId, connection.metadata);
+      let revoked = false;
+      try {
+        const response = await fetch("https://oauth2.googleapis.com/revoke", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ token: secret.refreshToken }),
+          redirect: "error",
+          cache: "no-store",
+          signal: AbortSignal.timeout(15_000),
+        });
+        // A generic 400 does not establish revocation. Only an explicit invalid
+        // token response permits deleting a grant Google no longer recognizes.
+        revoked = response.ok || response.status === 400
+          && JSON.parse(await readLimitedText(response, 10_000))?.error === "invalid_token";
+      } catch {
+        // Preserve credentials on network failures or malformed provider replies.
+      }
+      assert(revoked, "Google could not revoke calendar access. Retry disconnecting.", 503);
+    }
+  }
   return mutateWorkspace(workspaceId, workspace => {
+    if (service === "google") assertConnectionVersion(workspace, "google", googleVersion);
     let connection = workspace.connections?.find(item => item.service === service);
     if (!connection && (service === "openai" || service === "elevenlabs")) {
       connection = { id: uid(), service, status: "disconnected", externalId: workspace.id, label: service, metadata: {}, updatedAt: isoNow() };

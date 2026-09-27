@@ -9,7 +9,8 @@ import { createHmac } from "node:crypto";
 import { NextRequest } from "next/server";
 import * as schema from "../src/lib/db/schema";
 import { useTestDatabase, type Database } from "../src/lib/db/client";
-import { createPostgresWorkspace, loadPostgresWorkspace, mutatePostgresWorkspace, tenantTransaction, queryPostgresLeads } from "../src/lib/db/repository";
+import { assertTenantRls, createPostgresWorkspace, loadPostgresWorkspace, mutatePostgresWorkspace, tenantTransaction, queryPostgresLeads } from "../src/lib/db/repository";
+import { runQueuedJob } from "../src/lib/db/outbox";
 import { createWorkspace } from "../src/lib/seed";
 import { applyAction } from "../src/lib/actions";
 import { uid, isoNow, DAY, LEAD_VIEWS, LEAD_SORTS, leadMatchesView, sortLeads, scoreLead, isStale, revenueReport, resolveSavedViewPreferences, type Lead } from "../src/lib/domain";
@@ -18,7 +19,7 @@ import { POST as whatsappPost } from "../src/app/api/webhooks/whatsapp/route";
 
 test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction rollback", async t => {
   const pg = new PGlite();
-  const previousUrl = process.env.DATABASE_URL, previousVector = process.env.KNOWLEDGE_VECTOR_ENABLED, previousMeta = process.env.META_APP_SECRET;
+  const previousUrl = process.env.DATABASE_URL, previousVector = process.env.KNOWLEDGE_VECTOR_ENABLED, previousMeta = process.env.META_APP_SECRET, previousIntakeKeys = process.env.INTAKE_CONTACT_KEYS;
   try {
     const migrations = (await readdir(path.join(process.cwd(), "drizzle"))).filter(name => name.endsWith(".sql")).sort();
     const journal = JSON.parse(await readFile(path.join("drizzle", "meta", "_journal.json"), "utf8")) as { entries: { tag: string }[] };
@@ -245,6 +246,7 @@ test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction 
 
     await t.test("signed WhatsApp routes deduplicate inbound, bind status IDs to the institute, and verify coexistence from echoes", async () => {
       process.env.META_APP_SECRET = "test-meta-app-secret";
+      process.env.INTAKE_CONTACT_KEYS = JSON.stringify([Buffer.alloc(32, 7).toString("base64")]);
       // Converting a demo flag does not grant a hosted trial. This live callback
       // fixture uses explicit verified paid coverage instead.
       await mutatePostgresWorkspace(first.id, workspace => { workspace.subscription = { status: "active", plan: "Test", providerId: "sub_Repository", providerStatus: "active", verifiedAt: isoNow(), currentPeriodEnd: new Date(Date.now() + DAY).toISOString() }; });
@@ -256,7 +258,8 @@ test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction 
         return whatsappPost(new NextRequest("http://127.0.0.1/api/webhooks/whatsapp", { method: "POST", headers: { "x-hub-signature-256": signature }, body: raw }));
       };
       const inbound = { metadata: { phone_number_id: "111111" }, messages: [{ id: "wamid.signed-inbound", from: first.leads[1].phone.slice(1), type: "text", text: { body: "Course fees?" }, timestamp: String(Math.floor(Date.now() / 1000)) }] };
-      assert.equal((await deliver("messages", inbound)).status, 200); assert.equal((await deliver("messages", inbound)).status, 200);
+      assert.equal((await deliver("messages", inbound)).status, 200);
+      assert.equal((await deliver("messages", inbound)).status, 200);
       let current = await loadPostgresWorkspace(first.id);
       const incoming = current.messages.find(message => message.providerId === "wamid.signed-inbound")!;
       assert.equal(current.messages.filter(message => message.providerId === "wamid.signed-inbound").length, 1);
@@ -273,7 +276,53 @@ test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction 
       assert.equal(current.connections![0].metadata.coexistence, "verified");
       assert.equal(current.leads.find(lead => lead.id === incoming.leadId)!.humanOwned, true);
     });
+    await t.test("worker rejects swapped tenant payloads, stale generations and unrecognized queue entries", async () => {
+      const firstJobId = uid(), secondJobId = uid();
+      const dueAt = new Date(Date.now() + DAY).toISOString();
+      for (const [workspaceId, jobId] of [[first.id, firstJobId], [second.id, secondJobId]]) {
+        await mutatePostgresWorkspace(workspaceId, workspace => {
+          workspace.jobs.push({ id: jobId, campaignId: "", leadId: "", kind: "file.ingest", step: 0, dueAt, status: "pending", attempts: 2, retryGeneration: 3 });
+        });
+      }
+      const firstQueueId = `${first.id}-${firstJobId}-3-2`;
+      const input = (id: string, workspaceId: string, jobId: string, name = "execute") => ({ id, name, data: { workspaceId, jobId } });
+      await assert.rejects(() => runQueuedJob(input(firstQueueId, second.id, secondJobId)), /does not match/);
+      await assert.rejects(() => runQueuedJob(input(firstQueueId, first.id, secondJobId)), /does not match/);
+      await assert.rejects(() => runQueuedJob(input(firstQueueId, first.id, firstJobId, "other")), /Unrecognized/);
+      await mutatePostgresWorkspace(first.id, workspace => { workspace.jobs.find(job => job.id === firstJobId)!.retryGeneration = 4; });
+      await assert.rejects(() => runQueuedJob(input(firstQueueId, first.id, firstJobId)), /does not match/);
+      assert.equal(await runQueuedJob(input(`${first.id}-${firstJobId}-4-2`, first.id, firstJobId)), false);
+      assert.equal((await loadPostgresWorkspace(second.id)).jobs.find(job => job.id === secondJobId)?.status, "pending");
+    });
+    await t.test("worker cannot claim a generation or attempt changed after queue validation", async t => {
+      for (const changedField of ["retryGeneration", "attempts"] as const) {
+        const jobId = uid(), dueAt = new Date(Date.now() + DAY).toISOString();
+        await mutatePostgresWorkspace(first.id, workspace => {
+          workspace.jobs.push({ id: jobId, campaignId: "", leadId: "", kind: "file.ingest", step: 0, dueAt, status: "pending", attempts: 2, retryGeneration: 3 });
+        });
+        const transaction = db.transaction.bind(db);
+        let transactions = 0;
+        // The first read validates the queue entry. Before processJob's next
+        // read/claim, interleave a committed retry from a different request.
+        const race = t.mock.method(db, "transaction", async (...args: Parameters<typeof db.transaction>) => {
+          if (++transactions === 2) await mutatePostgresWorkspace(first.id, workspace => {
+            const job = workspace.jobs.find(item => item.id === jobId)!;
+            job[changedField] = (job[changedField] || 0) + 1;
+          });
+          return transaction(...args);
+        });
+        try {
+          await assert.rejects(() => runQueuedJob({ id: `${first.id}-${jobId}-3-2`, name: "execute", data: { workspaceId: first.id, jobId } }), /generation changed/);
+        } finally { race.mock.restore(); }
+        const current = (await loadPostgresWorkspace(first.id)).jobs.find(job => job.id === jobId)!;
+        assert.equal(current.status, "pending");
+        assert.equal(current.attempts, changedField === "attempts" ? 3 : 2);
+        assert.equal(current.retryGeneration, changedField === "retryGeneration" ? 4 : 3);
+      }
+    });
+    await assert.rejects(() => db.transaction(tx => assertTenantRls(tx as unknown as Parameters<typeof assertTenantRls>[0])), /must enforce/);
     await pg.exec("CREATE ROLE app_runtime; GRANT USAGE ON SCHEMA public TO app_runtime; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_runtime; SET ROLE app_runtime;");
+    await db.transaction(tx => assertTenantRls(tx as unknown as Parameters<typeof assertTenantRls>[0]));
     assert.equal((await db.select().from(schema.leads)).length, 0, "queries without tenant context must return no CRM records");
     await db.transaction(async tx => {
       await tx.execute(`select set_config('app.organization_id', '${first.id}', true)`);
@@ -291,6 +340,7 @@ test("PostgreSQL migrations, round-trip persistence, tenant RLS and transaction 
     if (previousUrl === undefined) delete process.env.DATABASE_URL; else process.env.DATABASE_URL = previousUrl;
     if (previousVector === undefined) delete process.env.KNOWLEDGE_VECTOR_ENABLED; else process.env.KNOWLEDGE_VECTOR_ENABLED = previousVector;
     if (previousMeta === undefined) delete process.env.META_APP_SECRET; else process.env.META_APP_SECRET = previousMeta;
+    if (previousIntakeKeys === undefined) delete process.env.INTAKE_CONTACT_KEYS; else process.env.INTAKE_CONTACT_KEYS = previousIntakeKeys;
     await pg.close();
   }
 });

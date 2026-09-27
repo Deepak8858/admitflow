@@ -28,6 +28,10 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: Install disposable Redis test runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends redis-server
       - name: Isolated tests, typechecks, build and migration dry run
         run: npm run verify
 

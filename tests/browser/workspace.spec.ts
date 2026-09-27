@@ -165,13 +165,19 @@ test("keyboard command search, empty states, and workspace configuration", async
 });
 
 test("server scopes IDs to sessions and rejects unauthenticated and cross-origin mutations", async ({ request, playwright }) => {
-  const unauthenticated = await request.post("/api/workspace", { data: { type: "jobs.run" } });
+  const origin = "http://127.0.0.1:3100";
+  const unauthenticated = await request.post("/api/workspace", { headers: { origin }, data: { type: "jobs.run" } });
   expect(unauthenticated.status()).toBe(401);
   const first = await (await request.get("/api/workspace")).json();
-  const other = await playwright.request.newContext({ baseURL: "http://127.0.0.1:3100" });
+  const missingOrigin = await request.post("/api/workspace", { data: { type: "lead.update", id: first.leads[0].id, changes: { stage: "Lost" } } });
+  expect(missingOrigin.status()).toBe(403);
+  expect((await missingOrigin.json()).error).toBe("Origin not allowed.");
+  const unchanged = await (await request.get("/api/workspace")).json();
+  expect(unchanged.leads.find((lead: { id: string }) => lead.id === first.leads[0].id).stage).toBe(first.leads[0].stage);
+  const other = await playwright.request.newContext({ baseURL: origin });
   const second = await (await other.get("/api/workspace")).json();
   expect(first.id).not.toBe(second.id);
-  const foreign = await other.post("/api/workspace", { data: { type: "lead.update", id: first.leads[0].id, changes: { stage: "Lost" } } });
+  const foreign = await other.post("/api/workspace", { headers: { origin }, data: { type: "lead.update", id: first.leads[0].id, changes: { stage: "Lost" } } });
   expect(foreign.status()).toBe(404);
   expect((await foreign.json()).error).toBe("Enquiry not found in your workspace.");
   const crossOrigin = await request.post("/api/workspace", { headers: { origin: "https://unrelated.example" }, data: { type: "jobs.run" } });
