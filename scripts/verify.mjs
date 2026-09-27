@@ -33,7 +33,7 @@ function main() {
     : mode === "--access" ? [["node_modules/tsx/dist/cli.mjs", "--test", "tests/team-access.test.ts", "tests/connected-services.test.ts"], tsc]
     : mode === "--subscriptions" ? [["node_modules/tsx/dist/cli.mjs", "--test", "tests/subscriptions.test.ts", "tests/subscription-intake.test.ts"], tsc]
     : mode === "--typecheck" ? [tsc]
-    : mode === "--browser" ? [["node_modules/@playwright/test/cli.js", "test"]]
+    : mode === "--browser" ? [["node_modules/@playwright/test/cli.js", "test"], ["node_modules/@playwright/test/cli.js", "test", "--config", "playwright.account.config.ts"]]
     : mode === "--build" ? builds
     : [["node_modules/tsx/dist/cli.mjs", "--test", "tests/*.test.ts"], ["node_modules/tsx/dist/cli.mjs", "--test", "infra/tests/*.test.ts"], ["infra/iam/verify.mjs"], tsc, ...builds];
   try {

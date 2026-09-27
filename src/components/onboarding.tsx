@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import Link from "next/link";
 import { Illustration } from "./illustration";
 import { ThemeSelect } from "./appearance";
-import { ArrowRight, Building2, Check, Layers3, LogOut, Plus, RefreshCw, ShieldCheck } from "lucide-react";
-import { Badge, Brand, Button, Field, PanelHeader } from "./ui";
+import { ArrowRight, Building2, Check, LogOut, Plus, RefreshCw } from "lucide-react";
+import { Badge, Brand, Button, Field } from "./ui";
 import type { ProvisioningStatus } from "@/lib/provisioning-types";
 import { readJsonBody } from "@/lib/client-response";
 import { signOutAction } from "@/app/auth/actions";
@@ -20,6 +20,15 @@ function savedIntent(scope: string): CreateIntent | null {
     return value && typeof value.requestId === "string" && /^[0-9a-f-]{36}$/i.test(value.requestId) && typeof value.name === "string" ? value : null;
   } catch { return null; }
 }
+function initials(value: string) {
+  return value.trim().split(/\s+/).slice(0, 2).map(part => part[0]?.toLocaleUpperCase() || "").join("") || "AF";
+}
+function setupCopy(state: ProvisioningStatus["state"]) {
+  if (state === "ready") return { title: "Your institute is ready", body: "Open it to finish signing in and enter your workspace." };
+  if (state === "continue") return { title: "One more setup step", body: "Your institute is confirmed. Continue to finish setting up your access." };
+  if (state === "review_required") return { title: "This setup needs a review", body: "We could not confirm the setup details. Contact support with the reference below and keep this request while it is reviewed." };
+  return { title: "We’re checking your institute", body: "Check again here for progress. Your original institute name is held for this request." };
+}
 
 export function Onboarding({ configured = true }: { configured?: boolean }) {
   const [data, setData] = useState<OrganizationList | null>(null), [loading, setLoading] = useState(configured);
@@ -29,6 +38,7 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
   const submitting = useRef(false);
   const [intent, setIntent] = useState<CreateIntent | null>(null);
   const [provisioning, setProvisioning] = useState<ProvisioningStatus | null>(null);
+
   const load = useCallback(async (signal?: AbortSignal) => {
     if (!configured) return;
     setLoading(true); setError(""); setNeedsSignIn(false);
@@ -42,8 +52,12 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
       const stored = list.provisioning ? { requestId: list.provisioning.requestId, name: list.provisioning.name } : savedIntent(list.scope);
       setIntent(stored); setName(stored?.name || ""); setProvisioning(list.provisioning);
       setData(list); setSelected(list.current || list.organizations[0]?.id || ""); setCreating(!list.organizations.length || Boolean(stored));
-    } catch (cause) { if (!signal?.aborted) setError(cause instanceof Error ? cause.message : "Your institutes could not be loaded."); }
-    finally { if (!signal?.aborted) setLoading(false); }
+    } catch (cause) {
+      if (!signal?.aborted) {
+        setData(null);
+        setError(cause instanceof TypeError ? "We couldn’t reach your institutes. Check your connection and try again." : cause instanceof Error ? cause.message : "Your institutes could not be loaded.");
+      }
+    } finally { if (!signal?.aborted) setLoading(false); }
   }, [configured]);
   useEffect(() => { const controller = new AbortController(); void load(controller.signal); return () => controller.abort(); }, [load]);
 
@@ -76,8 +90,10 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
         throw new Error(result.error || "Your institute could not be opened. Please retry.");
       }
       // Only a successful session switch navigates; 202 or a ready receipt is not session activation.
-      if (result.id) window.location.assign("/overview");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Your institute could not be opened."); }
+      if (response.status === 200 && result.id) window.location.assign("/overview");
+    } catch (cause) {
+      setError(cause instanceof TypeError ? "We couldn’t confirm this request. Check your connection and retry to recover its status." : cause instanceof Error ? cause.message : "Your institute could not be opened.");
+    }
     finally { submitting.current = false; setSaving(false); }
   }
   async function enter(event: FormEvent<HTMLFormElement>) {
@@ -85,56 +101,113 @@ export function Onboarding({ configured = true }: { configured?: boolean }) {
     await submit(creating ? provisioning ? { type: provisioning.state === "ready" ? "open" : "continue", id: provisioning.id } : { type: "create" } : { type: "switch", organizationId: selected });
   }
 
-  return <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
-    <a href="#onboarding-content" className="skip-link">Skip to institute setup</a>
-    <header style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "24px clamp(20px, 5vw, 72px)", borderBottom: "1px solid var(--color-rule)" }}>
-      <Link href="/" aria-label="AdmitFlow home"><Brand /></Link><ThemeSelect />
-      {configured ? !needsSignIn && <form action={signOutAction}><Button type="submit" variant="ghost"><LogOut size={15} />Sign out</Button></form> : <Badge>Local preview</Badge>}
-    </header>
-    <main id="onboarding-content" style={{ width: "min(1060px, 100%)", margin: "auto", padding: "clamp(32px, 7vw, 88px) 24px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))", gap: "clamp(32px, 7vw, 84px)", alignItems: "start" }}>
-      <section aria-labelledby="onboarding-title">
-        <div className="page-eyebrow" style={{ color: "var(--color-accent)", fontSize: 11, letterSpacing: ".09em", marginBottom: 22 }}>A SHARED START. A CLEAR NEXT STEP.</div>
-        <h1 id="onboarding-title" style={{ fontSize: "clamp(30px, 4vw, 46px)", maxWidth: "14ch", lineHeight: 1.12 }}>{data?.name ? `Welcome, ${data.name}.` : "Good to have you here."}<br /><span style={{ color: "var(--color-muted)" }}>Let’s find your institute.</span></h1>
-        <p style={{ marginTop: 22, maxWidth: "43ch", fontSize: 15, lineHeight: 1.8 }}>One place for your admissions team, student conversations and every next step.</p>
-        <Illustration name="next-chapter-campus" className="onboarding-art" eager /><div className="quick-guide" style={{ marginTop: 36 }}>
-          <div><b><Building2 size={15} /></b><span><strong>Your institute, together</strong><p>Open a workspace you belong to, or create one for your own team.</p></span></div>
-          <div><b><Layers3 size={15} /></b><span><strong>Room for every enquiry</strong><p>Connect your tools and bring your admissions workflow into one shared view.</p></span></div>
-          <div><b><ShieldCheck size={15} /></b><span><strong>The right access for each person</strong><p>Membership and roles stay specific to the institute you choose.</p></span></div>
-        </div>
-      </section>
+  const accountComplete = Boolean(configured && data && !needsSignIn);
+  const chosen = data?.organizations.find(organization => organization.id === selected);
+  const instituteComplete = accountComplete && (creating ? provisioning?.state === "ready" : Boolean(chosen));
+  const previewName = creating ? name.trim() : chosen?.name || "";
+  const visibleName = previewName || "Your institute";
+  const statusCopy = provisioning ? setupCopy(provisioning.state) : null;
+  const primaryLabel = !creating || provisioning?.state === "ready" ? "Open institute"
+    : provisioning?.state === "continue" ? "Continue setup"
+    : provisioning?.state === "review_required" ? "Setup needs review"
+    : provisioning || intent ? "Check setup status" : "Create institute";
 
-      <section className="panel settings-form" aria-label="Choose or create an institute" aria-busy={loading || saving}>
-        {!configured ? <>
-          <PanelHeader title="You’re in the local preview" description="Hosted institute setup becomes available when WorkOS and the production database are configured." />
-          <div style={{ padding: "8px 24px 24px" }}><p className="small-copy">Your local workspace is available in Settings. An administrator can configure hosted sign-in when your team is ready.</p><Link href="/settings" className="button primary full-width" style={{ marginTop: 22 }}>Open workspace settings<ArrowRight size={15} /></Link></div>
-        </> : <>
-          <PanelHeader title={loading ? "Finding your institutes…" : creating ? "A workspace of your own" : "Choose your institute"} description={creating ? "Start with the name your team knows." : "Only institutes with an active membership appear here."} />
-          {loading ? <div role="status" style={{ padding: "8px 24px 28px" }}><div className="skeleton" style={{ height: 68, marginBottom: 12 }} /><div className="skeleton" style={{ height: 68 }} /><span className="sr-only">Loading your institutes</span></div> : <>
-            {error && <div className="inline-error" role="alert" style={{ margin: "0 24px 20px" }}>{error}</div>}
-            {data && !needsSignIn && <form onSubmit={enter}>
-              {creating && provisioning && <div role="status" style={{ marginBottom: 20 }}><strong>{provisioning.name}</strong><p className="small-copy">{provisioning.message}</p><p className="field-note">Setup reference: {provisioning.id}</p></div>}
-              {creating ? <Field label="Institute name" name="institute" value={name} onChange={event => setName(event.target.value)} autoComplete="organization" placeholder="e.g. Northstar Academy" minLength={2} maxLength={100} required disabled={saving || Boolean(intent)} hint={intent ? "This request keeps its original name until setup is acknowledged." : "You can update this later in institute settings."} /> : <fieldset style={{ border: 0, padding: 0, margin: "0 0 20px", display: "grid", gap: 10 }} disabled={saving}>
-                <legend className="sr-only">Available institutes</legend>
-                {data.organizations.map(organization => <label key={organization.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, border: `1px solid ${selected === organization.id ? "var(--color-accent)" : "var(--color-rule)"}`, background: selected === organization.id ? "var(--color-accent-soft)" : "var(--color-surface)", borderRadius: "var(--radius-sm)", cursor: saving ? "wait" : "pointer" }}>
-                  <input type="radio" name="organization" value={organization.id} checked={selected === organization.id} onChange={() => setSelected(organization.id)} style={{ accentColor: "var(--color-accent)" }} />
-                  <span style={{ minWidth: 0, flex: 1 }}><strong style={{ display: "block", overflowWrap: "anywhere" }}>{organization.name}</strong><small className="muted" style={{ textTransform: "capitalize" }}>{organization.role || "Member"}{organization.id === data.current ? " · Current institute" : ""}</small></span>
-                  {selected === organization.id && <Check size={16} style={{ color: "var(--color-accent)" }} aria-hidden="true" />}
-                </label>)}
-              </fieldset>}
-              <Button type="submit" variant="primary" className="full-width" loading={saving} disabled={creating ? name.trim().length < 2 || provisioning?.state === "review_required" : !selected}>{!creating || provisioning?.state === "ready" ? "Open institute" : provisioning?.state === "continue" ? "Continue setup" : provisioning || intent ? "Check setup status" : "Create institute"}<ArrowRight size={16} /></Button>
-              {creating && provisioning?.state === "ready" && <Button className="full-width" variant="ghost" style={{ marginTop: 12 }} disabled={saving} onClick={() => void submit({ type: "acknowledge", id: provisioning.id })}>Acknowledge setup — allow another institute</Button>}
-              {!!data.organizations.length && <Button className="full-width" variant="ghost" style={{ marginTop: 12 }} disabled={saving} onClick={() => { setCreating(value => !value); setError(""); }}>{creating ? <Building2 size={15} /> : <Plus size={15} />}{creating ? "Choose an existing institute" : provisioning || intent ? "Resume institute setup" : "Create another institute"}</Button>}
-            </form>}
-            <div style={{ padding: "0 24px 24px" }}>
-              {needsSignIn ? <Link href="/login" className="button primary full-width">Sign in to continue<ArrowRight size={15} /></Link> : <>
-                <p className="field-note" style={{ margin: "0 0 8px" }}>Expecting an invitation? Accept the link in your WorkOS invitation email, then refresh this list.</p>
-                <Button variant="ghost" disabled={saving} onClick={() => void load()}><RefreshCw size={14} />Refresh institutes</Button>
+  return <div className="institute-onboarding">
+    <a href="#onboarding-content" className="skip-link">Skip to institute setup</a>
+    <header className="institute-onboarding-header">
+      <Link href="/" aria-label="AdmitFlow home"><Brand /></Link>
+      <div className="institute-onboarding-header-actions">
+        <ThemeSelect />
+        {configured ? !needsSignIn && <form action={signOutAction}><Button type="submit" variant="ghost"><LogOut size={15} />Sign out</Button></form> : <Badge>Local preview</Badge>}
+      </div>
+    </header>
+
+    <div className="institute-onboarding-shell">
+      <ol className="institute-onboarding-steps" aria-label="Setup progress">
+        <li className={accountComplete ? "complete" : "active"} aria-current={!accountComplete ? "step" : undefined}><span className="step-mark">{accountComplete ? <Check size={13} aria-hidden="true" /> : "01"}</span><span>Account</span></li>
+        <li className={instituteComplete ? "complete" : accountComplete ? "active" : ""} aria-current={accountComplete && !instituteComplete ? "step" : undefined}><span className="step-mark">{instituteComplete ? <Check size={13} aria-hidden="true" /> : "02"}</span><span>Institute</span></li>
+        <li className={instituteComplete ? "active" : ""} aria-current={instituteComplete ? "step" : undefined}><span className="step-mark">03</span><span>Workspace</span></li>
+      </ol>
+
+      <main id="onboarding-content" className="institute-onboarding-main">
+        <section className="institute-onboarding-form-side" aria-labelledby="onboarding-title">
+          <span className="institute-onboarding-eyebrow">YOUR ADMISSIONS WORKSPACE</span>
+          <h1 id="onboarding-title">{!configured ? "Good to have you here." : data ? creating ? "Give your institute a home." : "Pick up where your team works." : "Bring your team together."}</h1>
+          <p className="institute-onboarding-intro">{data?.name ? `Welcome, ${data.name}. ` : ""}Keep student conversations, applications and your team’s next steps in one place.</p>
+
+          <div className="institute-onboarding-card" aria-busy={loading || saving}>
+            {!configured ? <>
+              <div className="institute-onboarding-card-heading">
+                <h2>You’re in the local preview</h2>
+                <p>Institute setup is unavailable here until your administrator connects hosted sign-in and the database.</p>
+              </div>
+              <p className="institute-onboarding-local-copy">Your local workspace is available in Settings.</p>
+              <Link href="/settings" className="button primary institute-onboarding-primary">Open workspace settings <ArrowRight size={16} /></Link>
+            </> : <>
+              <div className="institute-onboarding-card-heading">
+                <h2>{loading ? "Finding your institutes…" : needsSignIn ? "Sign in to continue" : !data ? "We couldn’t load your institutes" : creating ? "Name your institute" : "Choose an institute"}</h2>
+                <p>{needsSignIn ? "Sign in to see your institutes." : !data && !loading ? "Try again to return to setup." : creating ? "Use the name your admissions team knows." : "Choose where you want to work today."}</p>
+              </div>
+
+              {loading ? <div role="status" className="institute-onboarding-loading"><div className="skeleton" /><div className="skeleton" /><span className="sr-only">Loading your institutes</span></div> : <>
+                {error && <div className="inline-error institute-onboarding-error" role="alert">{error}</div>}
+                {needsSignIn ? <Link href="/login" className="button primary institute-onboarding-primary">Sign in to continue <ArrowRight size={16} /></Link> : data ? <>
+                  {!!data.organizations.length && <div className="institute-onboarding-choice" role="group" aria-label="Choose setup path">
+                    <Button className={creating ? "" : "selected"} variant="ghost" aria-pressed={!creating} disabled={saving} onClick={() => { setCreating(false); setError(""); }}><Building2 size={16} />Existing institute</Button>
+                    <Button className={creating ? "selected" : ""} variant="ghost" aria-pressed={creating} disabled={saving} onClick={() => { setCreating(true); setError(""); }}><Plus size={16} />Create new</Button>
+                  </div>}
+
+                  <form onSubmit={enter}>
+                    {creating ? <>
+                      <Field label="Institute name" name="institute" value={name} onChange={event => setName(event.target.value)} autoComplete="organization" placeholder="e.g. Northstar Academy" minLength={2} maxLength={100} required disabled={saving || Boolean(intent)} hint={intent ? "This name belongs to the current setup request and can’t be changed here." : "You can update this later in institute settings."} />
+                      {statusCopy && <div className={`institute-onboarding-status ${provisioning?.state}`} role="status" aria-live="polite">
+                        <div className="institute-onboarding-status-mark">{provisioning?.state === "ready" ? <Check size={16} /> : <RefreshCw size={16} />}</div>
+                        <div><strong>{statusCopy.title}</strong><p>{statusCopy.body}</p><details><summary>Details for support</summary><p>{provisioning?.message}</p><span>Setup reference: <code>{provisioning?.id}</code></span></details></div>
+                      </div>}
+                      {!provisioning && intent && <div className="institute-onboarding-status pending" role="status">
+                        <div className="institute-onboarding-status-mark"><RefreshCw size={16} /></div>
+                        <div><strong>We’re checking this request</strong><p>Check setup status to recover progress. Your original institute name is held for this request.</p></div>
+                      </div>}
+                    </> : <fieldset className="institute-onboarding-list" disabled={saving}>
+                      <legend className="sr-only">Available institutes</legend>
+                      {data.organizations.map(organization => <label key={organization.id} className={`institute-onboarding-option ${selected === organization.id ? "selected" : ""}`}>
+                        <input type="radio" name="organization" value={organization.id} checked={selected === organization.id} onChange={() => setSelected(organization.id)} />
+                        <span className="institute-onboarding-option-avatar" aria-hidden="true">{initials(organization.name)}</span>
+                        <span className="institute-onboarding-option-copy"><strong>{organization.name}</strong>{organization.id === data.current && <small>Current institute</small>}</span>
+                        {selected === organization.id && <Check size={17} className="institute-onboarding-option-check" aria-hidden="true" />}
+                      </label>)}
+                    </fieldset>}
+                    <Button type="submit" variant="primary" className="institute-onboarding-primary" loading={saving} disabled={creating ? name.trim().length < 2 || provisioning?.state === "review_required" : !selected}>{primaryLabel}<ArrowRight size={16} /></Button>
+                    {creating && provisioning?.state === "ready" && <div className="institute-onboarding-acknowledge"><p>Need to set up another institute? Mark this setup complete first.</p><Button variant="ghost" disabled={saving} onClick={() => void submit({ type: "acknowledge", id: provisioning.id })}>Mark setup complete</Button></div>}
+                  </form>
+                </> : <Button variant="secondary" className="institute-onboarding-primary" onClick={() => void load()}><RefreshCw size={16} />Try again</Button>}
               </>}
+            </>}
+          </div>
+
+          {configured && data && !needsSignIn && <div className="institute-onboarding-invites">
+            <p>Expecting an invitation? Open the link in your invitation email, then refresh this list.</p>
+            <Button variant="ghost" disabled={loading || saving} onClick={() => void load()}><RefreshCw size={15} />Refresh institutes</Button>
+          </div>}
+        </section>
+
+        <aside className="institute-onboarding-preview" aria-label="Workspace preview">
+          <div className="institute-onboarding-preview-topline"><span>YOUR SPACE, TAKING SHAPE</span><span>PREVIEW</span></div>
+          <div className="institute-onboarding-art"><Illustration name="next-chapter-campus" decorative eager sizes="(max-width: 760px) 100vw, 48vw" /></div>
+          <div className="institute-onboarding-window">
+            <div className="institute-onboarding-window-header"><span className="institute-onboarding-window-dots" aria-hidden="true"><i /><i /><i /></span><span>AdmitFlow</span></div>
+            <div className="institute-onboarding-window-content">
+              <div className="institute-onboarding-window-rail" aria-hidden="true"><span className="institute-onboarding-window-rail-mark">A</span><i /><i /><i /></div>
+              <div className="institute-onboarding-window-body">
+                <div className="institute-onboarding-window-name"><span className="institute-onboarding-preview-avatar" aria-hidden="true">{initials(previewName)}</span><div><small>INSTITUTE WORKSPACE</small><strong>{visibleName}</strong></div></div>
+                <div className="institute-onboarding-empty"><span aria-hidden="true"><Building2 size={24} /></span><strong>A place for every next step</strong><p>Your team’s work will come together here.</p></div>
+              </div>
             </div>
-          </>}
-        </>}
-      </section>
-    </main>
-    <footer className="small-copy muted" style={{ padding: "20px 24px 28px", textAlign: "center" }}>Every enquiry deserves a thoughtful next step.</footer>
+          </div>
+          <p className="institute-onboarding-preview-caption">{previewName ? `A shared space for ${previewName}.` : "Your institute’s name will appear here as you type."}</p>
+        </aside>
+      </main>
+    </div>
+    <footer className="institute-onboarding-footer">Every enquiry deserves a thoughtful next step.</footer>
   </div>;
 }
