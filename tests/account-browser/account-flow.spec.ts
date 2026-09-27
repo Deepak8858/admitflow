@@ -107,7 +107,13 @@ async function expectNoHorizontalOverflow(page: Page) {
 
 async function expectNoSeriousAxeViolations(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(result.violations.filter(violation => violation.impact === "critical" || violation.impact === "serious").map(violation => violation.id)).toEqual([]);
+  const violations = result.violations
+    .filter(violation => violation.impact === "critical" || violation.impact === "serious")
+    .map(violation => ({
+      id: violation.id,
+      nodes: violation.nodes.map(node => ({ target: node.target, summary: node.failureSummary })),
+    }));
+  expect(violations, `${page.url()} (${await page.locator("html").getAttribute("data-theme")})`).toEqual([]);
 }
 
 for (const entry of [

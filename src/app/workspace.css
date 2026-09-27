@@ -39,7 +39,8 @@ kbd { padding: 1px 5px; border: 1px solid var(--color-rule); border-radius: 4px;
 /* Quiet controls, crisp selection and readable status colours. */
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; max-width: 100%; min-height: 38px; padding: 8px 13px; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; line-height: 1.5; white-space: nowrap; transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, color 150ms ease; }
 .button.secondary { background: var(--color-surface); color: var(--color-body); box-shadow: var(--shadow-control); }
-.button.primary { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); box-shadow: 0 1px 2px #344dca18, inset 0 1px 0 #ffffff12; }
+/* Theme foreground/background pairs must change together to preserve contrast. */
+.button.primary { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-accent-ink); box-shadow: 0 1px 2px #344dca18, inset 0 1px 0 #ffffff12; transition: border-color 150ms ease, box-shadow 150ms ease; }
 .button.ghost { border-color: transparent; background: transparent; color: var(--color-muted); box-shadow: none; }
 .button.danger { border-color: #efcbd0; background: var(--color-error-soft); color: var(--color-error); }
 .icon-button, .quiet-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: var(--radius-sm); color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease; }
