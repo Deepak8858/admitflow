@@ -57,7 +57,7 @@ jobs:
           if-no-files-found: ignore
 
   security:
-    name: Secrets and production dependencies
+    name: Secrets and dependency audit
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -93,5 +93,33 @@ jobs:
           printf '%s  %s\n' '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8' "$destination/actionlint.tar.gz" | sha256sum --check
           tar -xzf "$destination/actionlint.tar.gz" -C "$destination" actionlint
           "$destination/actionlint" -shellcheck= -pyflakes=
-      - name: Production lockfile audit
-        run: npm audit --omit=dev --package-lock-only --ignore-scripts
+      - name: Complete lockfile audit
+        run: npm audit --package-lock-only --ignore-scripts
+
+  containers:
+    name: Container compatibility and vulnerability scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Build service images using the reviewed runtime
+        run: |
+          docker build --target web --build-arg NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://admitflow.example/callback --tag admitflow-web:ci .
+          docker build --target worker --tag admitflow-worker:ci .
+      - name: Verify runtime, native dependencies, startup and authentication boundary
+        run: bash infra/smoke-images.sh admitflow-web:ci admitflow-worker:ci
+      - name: Scan web image
+        run: bash infra/scan-image.sh admitflow-web:ci web-security.json
+      - name: Scan worker image
+        if: success() || failure()
+        run: bash infra/scan-image.sh admitflow-worker:ci worker-security.json
+      - name: Retain complete image findings
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: container-security-${{ github.run_id }}-${{ github.run_attempt }}
+          path: '*-security.json'
+          retention-days: 30
+          if-no-files-found: ignore
