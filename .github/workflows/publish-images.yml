@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
-      actions: read
+      checks: read
       id-token: write
     env:
       AWS_REGION: ap-southeast-1
@@ -55,13 +55,7 @@ jobs:
       - name: Require successful CI for this exact main commit
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          count="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
-            -f head_sha="$GITHUB_SHA" -f branch=main -f event=push -f status=success \
-            --jq '.workflow_runs | length')"
-          [[ "$count" -gt 0 ]] || { printf '%s\n' 'No successful main-push CI run exists for this commit.'; exit 1; }
+        run: node infra/require-depot-ci.mjs
       - uses: depot/setup-action@91bc8495a33ebfc504ffc89e5674379ccf23c29c # v1
         with:
           version: 2.101.78

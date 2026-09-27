@@ -16,5 +16,8 @@ fi
 "$destination/trivy" image --scanners vuln --timeout 15m --format json --output "$report" "$image"
 # An unsupported/undetected OS must never be reported as a clean image.
 jq --exit-status '.Metadata.OS.Family == "wolfi" and any(.Results[]; .Class == "os-pkgs")' "$report" > /dev/null
-"$destination/trivy" convert --format table "$report"
-"$destination/trivy" convert --severity HIGH,CRITICAL --exit-code 1 "$report"
+"$destination/trivy" convert --scanners vuln --format table "$report"
+# Enforce the retained JSON directly as well as Trivy's exit code. A reporting
+# default must never silently turn a vulnerability scan into an empty summary.
+jq --exit-status '[.Results[] | .Vulnerabilities[]? | select(.Severity == "HIGH" or .Severity == "CRITICAL")] | length == 0' "$report" > /dev/null
+"$destination/trivy" convert --scanners vuln --severity HIGH,CRITICAL --exit-code 1 "$report"

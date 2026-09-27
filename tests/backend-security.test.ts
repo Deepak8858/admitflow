@@ -233,7 +233,10 @@ test("failed BullMQ entries are re-enqueued from durable pending jobs rather tha
 
 test("HTTP lead views and sort filters are applied before local pagination and invalid selectors fail closed", async t => {
   environment(t, { DATABASE_URL: undefined, ADMITFLOW_DB: ":memory:" });
-  const workspace = createWorkspace(); saveNewWorkspace(workspace);
+  const workspace = createWorkspace();
+  // The seed puts this reply exactly 14 days ago; a millisecond between expected and HTTP clocks changes its intent score.
+  workspace.leads[6].lastInboundAt = new Date(Date.parse(workspace.leads[6].lastInboundAt!) - DAY).toISOString();
+  saveNewWorkspace(workspace);
   const token = createSession(workspace.id), now = Date.now();
   for (const view of LEAD_VIEWS) for (const sort of LEAD_SORTS) {
     const response = await leadsGet(new NextRequest(`http://127.0.0.1/api/leads?view=${view}&sort=${sort}&page=2&pageSize=3`, { headers: { cookie: `admitflow_session=${token}`, host: "127.0.0.1" } }));
