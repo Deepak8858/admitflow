@@ -22,6 +22,8 @@ async function openPage(page: Page, path: string) {
   await page.goto(path);
   await expect(page.locator("#main-content h1")).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
+  // Visibility can precede the spring fade finishing; measure the settled UI.
+  await expect(page.locator("#main-content")).toHaveCSS("opacity", "1");
   if (path === "/leads") await expect(page.locator(".leads-panel")).toHaveAttribute("aria-busy", "false");
 }
 async function expectNoPageOverflow(page: Page) {
