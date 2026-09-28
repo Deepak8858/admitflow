@@ -8,7 +8,7 @@ import { safeErrorClass, safeJobName } from "./operational-diagnostics";
 import { sweepIntakeRetention } from "../src/lib/db/intake-retention";
 
 const queue = workQueue();
-const worker = new Worker(QUEUE_NAME, job => runQueuedJob(job.data), { connection: queueConnection(), concurrency: 5 });
+const worker = new Worker(QUEUE_NAME, job => runQueuedJob(job), { connection: queueConnection(), concurrency: 5 });
 worker.on("error", error => console.error("Worker connection error", safeErrorClass(error)));
 worker.on("failed", (job, error) => console.error("Worker job failed", job?.id, safeJobName(job?.name), safeErrorClass(error)));
 let running: Promise<void> | undefined, closing = false;

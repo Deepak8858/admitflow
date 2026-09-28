@@ -46,6 +46,7 @@ export function assertFileAccess(workspace: Workspace, actor: Actor, file: Works
   assertActor(workspace, actor);
   if (upload) assertPermission(actor.role, "file.upload");
   if (file.leadId) assertLeadAccess(workspace, actor, file.leadId);
+  if (actor.role === "analyst") assert(file.purpose === "knowledge" && !file.leadId, "Analysts cannot access applicant files.", 403);
   if (actor.role === "counsellor") {
     assert(upload ? file.purpose === "attachment" && Boolean(file.leadId)
       : (file.purpose === "knowledge" && !file.leadId) || (file.purpose === "attachment" && Boolean(file.leadId)),
@@ -62,7 +63,7 @@ export function assertMessageFile(workspace: Workspace, leadId: string, fileId: 
 }
 
 // Positive allowlist: arbitrary provider metadata can contain tokens or object URLs.
-const publicMetadata = new Set(["wabaId", "name", "coexistence", "coexistenceVerifiedAt", "templateName", "templateLanguage", "readiness", "verifiedAt", "voiceId", "calendarId", "pageId", "pageName", "subscribed", "subscribedFields", "accountId", "mode", "subscriptionStatus", "appId", "tokenExpiresAt", "lastLeadAt", "lastLeadError", "lastLeadErrorAt"]);
+const publicMetadata = new Set(["wabaId", "name", "coexistence", "coexistenceVerifiedAt", "templateName", "templateLanguage", "readiness", "verifiedAt", "voiceId", "calendarId", "googleRevocation", "pageId", "pageName", "subscribed", "subscribedFields", "accountId", "mode", "subscriptionStatus", "appId", "tokenExpiresAt", "lastLeadAt", "lastLeadError", "lastLeadErrorAt"]);
 export function publicConnection(connection: Connection): Connection {
   return { id: connection.id, service: connection.service, status: connection.status, externalId: connection.externalId, label: connection.label, updatedAt: connection.updatedAt,
     metadata: Object.fromEntries(Object.entries(connection.metadata).filter(([key]) => publicMetadata.has(key))) };
@@ -73,6 +74,12 @@ export function scopeWorkspace(workspace: Workspace, actor: Actor): Workspace {
   result.actor = { ...actor }; result.userName = actor.name; result.email = actor.email;
   result.connections = result.connections?.map(publicConnection);
   result.files = result.files?.map(file => ({ id: file.id, name: file.name, mime: file.mime, size: file.size, purpose: file.purpose, status: file.status, createdAt: file.createdAt, error: file.error, leadId: file.leadId, finalizedAt: file.finalizedAt }));
+  if (actor.role === "analyst") {
+    result.files = result.files?.filter(file => file.purpose === "knowledge" && !file.leadId);
+    const fileIds = new Set(result.files?.map(file => file.id));
+    result.messages.forEach(message => { if (message.fileId && !fileIds.has(message.fileId)) delete message.fileId; });
+    result.articles = result.articles.filter(article => !article.fileId || fileIds.has(article.fileId));
+  }
   if (actor.role !== "counsellor") return result;
   const memberId = actorOwnerId(workspace, actor);
   result.leads = result.leads.filter(lead => Boolean(memberId) && lead.ownerId === memberId);

@@ -9,6 +9,7 @@ import { database } from "./db/client";
 import { organizationRoutes } from "./db/schema";
 import { createPostgresWorkspace } from "./db/repository";
 import { readAccessFence, projectAccessIdentity } from "./db/team-access";
+import { enforceMutationRateLimit } from "./mutation-rate-limit";
 import type { Workspace, Role } from "./domain";
 
 export type Actor = NonNullable<Workspace["actor"]>;
@@ -50,6 +51,9 @@ export async function resolveWorkspace(request: NextRequest): Promise<SessionCon
   };
   let membership = await activeMembership();
   const actor: Actor = { id: session.user!.id, memberId: membership.id, email: session.user!.email, name: [session.user!.firstName, session.user!.lastName].filter(Boolean).join(" ") || session.user!.email.split("@")[0], role: roleFrom(membership.role?.slug), backend: "workos" };
+  // Charge verified membership before provisioning/projection writes. Repeated
+  // authorization checks still run, but the limiter charges this Request once.
+  await enforceMutationRateLimit(request, { kind: "workspace", tenantId: session.organizationId, actorId: actor.id });
   if (!mapping) {
     const org = await workos().organizations.getOrganization(session.organizationId);
     const fresh = createWorkspace(false);

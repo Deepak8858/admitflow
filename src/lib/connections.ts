@@ -62,7 +62,68 @@ function nextConnectionTime(connection?: Connection) {
   return new Date(Math.max(Date.now(), Number.isFinite(previous) ? previous + 1 : 0)).toISOString();
 }
 /** Retain identity, never usable credentials. Unresolved setup routes only return retryable callbacks. */
+async function disconnectGoogle(workspaceId: string) {
+  const snapshot = await loadWorkspace(workspaceId);
+  const connection = snapshot.connections?.find(item => item.service === "google") || null;
+  if (connection?.secret) {
+    assert(!snapshot.demo, "Demo workspaces cannot revoke live services.", 409);
+    // Decrypt before fencing so a missing local key cannot strand a usable grant.
+    const secret = await openSecret(connection.secret, workspaceId);
+    validateConnectionCredentials("google", secret, connection.externalId, connection.metadata);
+    const fenced = await mutateWorkspace(workspaceId, workspace => {
+      assertConnectionVersion(workspace, "google", connection);
+      const current = workspace.connections!.find(item => item.service === "google")!;
+      // An abandoned fence can be retried only by another explicit disconnect.
+      // The previous request's provider timeout is 15 seconds.
+      assert(current.metadata.googleRevocation !== "pending" || Date.now() - Date.parse(current.updatedAt) > 30_000, "Google disconnect is already in progress. Retry after it finishes.", 409);
+      current.status = "error";
+      current.metadata = { ...current.metadata, googleRevocation: "pending" };
+      current.updatedAt = nextConnectionTime(current);
+      return { ...current };
+    });
+    let revoked = false;
+    try {
+      const response = await fetch("https://oauth2.googleapis.com/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ token: secret.refreshToken }),
+        redirect: "error",
+        cache: "no-store",
+        signal: AbortSignal.timeout(15_000),
+      });
+      // A generic 400 does not establish revocation. Only an explicit invalid
+      // token response permits deleting a grant Google no longer recognizes.
+      revoked = response.ok || response.status === 400
+        && JSON.parse(await readLimitedText(response, 10_000))?.error === "invalid_token";
+    } catch {
+      // A lost response is ambiguous. Keep the token but leave the connection disabled.
+    }
+    await mutateWorkspace(workspaceId, workspace => {
+      assertConnectionVersion(workspace, "google", fenced.result);
+      const current = workspace.connections!.find(item => item.service === "google")!;
+      if (revoked) {
+        current.status = "disconnected";
+        delete current.secret;
+        current.metadata = {};
+      } else {
+        current.metadata = { ...current.metadata, googleRevocation: "uncertain" };
+      }
+      current.updatedAt = nextConnectionTime(current);
+    });
+    assert(revoked, "Google could not confirm calendar revocation. The connection is disabled; retry disconnecting before reconnecting.", 503);
+    return;
+  }
+  return mutateWorkspace(workspaceId, workspace => {
+    assertConnectionVersion(workspace, "google", connection);
+    const current = workspace.connections?.find(item => item.service === "google");
+    if (!current) return;
+    current.status = "disconnected";
+    current.metadata = {};
+    current.updatedAt = nextConnectionTime(current);
+  });
+}
 export async function disconnectConnection(workspaceId: string, service: Connection["service"]) {
+  if (service === "google") return disconnectGoogle(workspaceId);
   return mutateWorkspace(workspaceId, workspace => {
     let connection = workspace.connections?.find(item => item.service === service);
     if (!connection && (service === "openai" || service === "elevenlabs")) {
@@ -99,6 +160,7 @@ export async function saveConnection(workspaceId: string, service: Connection["s
     assertIntakeConnectionIdentity(workspace, service, externalId, metadata);
     assertConnectionVersion(workspace, service, version);
     const current = workspace.connections!.find(item => item.service === service);
+    if (service === "google") assert(!current?.metadata.googleRevocation, "Finish disconnecting Google Calendar before reconnecting.", 409);
     const safeMetadata = { ...metadata };
     if (service === "whatsapp") {
       safeMetadata.coexistence = current?.externalId === externalId && current.metadata.coexistence === "verified" ? "verified" : metadata.coexistence === "requested" ? "requested" : "standard";

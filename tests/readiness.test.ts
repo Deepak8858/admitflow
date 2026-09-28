@@ -9,6 +9,7 @@ import { verificationEnvironment } from "../scripts/verify.mjs";
 const env = {
   DATABASE_URL: "postgresql://fixture:fixture@database.invalid/admitflow", WORKOS_API_KEY: "fixture-only", WORKOS_CLIENT_ID: "client_fixture",
   WORKOS_COOKIE_PASSWORD: "a".repeat(32), APP_BASE_URL: "https://app.example.com", NEXT_PUBLIC_WORKOS_REDIRECT_URI: "https://app.example.com/callback", KMS_KEY_ID: "fixture-key", ADMITFLOW_PROCESS_ROLE: "web",
+  REDIS_URL: "rediss://:fixture@queue.invalid:6379",
 };
 
 test("readiness is bounded and does not disclose errors, credentials or tenant data", async () => {

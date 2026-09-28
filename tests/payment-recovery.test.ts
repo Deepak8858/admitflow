@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 import { useTestDatabase, type Database } from "../src/lib/db/client";
 import { createPostgresWorkspace, loadPostgresWorkspace, tenantTransaction } from "../src/lib/db/repository";
 import { acceptPaymentEvent, recoverPaymentEvents } from "../src/lib/db/payment-inbox";
-import { paymentEventReference } from "../src/lib/providers/payments";
+import { createPaymentLink, paymentEventReference } from "../src/lib/providers/payments";
 import { createWorkspace } from "../src/lib/seed";
 import { isoNow, uid } from "../src/lib/domain";
 import { sealSecret } from "../src/lib/secrets";
@@ -26,8 +26,26 @@ test("restricted runtime recovery pages empty/failing tenants, wraps capped back
   const tenants: ReturnType<typeof createWorkspace>[] = [];
   const authoritative = new Map<string, Record<string, unknown>>();
   const requests: string[] = [];
+  let links = 0;
+  const providerLinks = new Map<string, Record<string, unknown>>(), paymentLinks = new Map<string, string>();
   t.mock.method(globalThis, "fetch", async (url: RequestInfo | URL, init?: RequestInit) => {
+    if (init?.method === "POST") {
+      assert.equal(String(url), "https://api.razorpay.com/v1/payment_links");
+      const body = JSON.parse(String(init.body));
+      assert.equal(body.accept_partial, false);
+      return Response.json({ id: `plink_Recovery${++links}`, short_url: `https://rzp.io/i/recovery${links}`, amount: body.amount, currency: body.currency, accept_partial: false });
+    }
     assert.equal(init?.method, "GET");
+    const parsed = new URL(String(url));
+    if (parsed.pathname === "/v1/payment_links") {
+      assert.ok(paymentLinks.has(parsed.searchParams.get("payment_id")!));
+      return Response.json({ payment_links: [{ id: paymentLinks.get(parsed.searchParams.get("payment_id")!) }] });
+    }
+    if (parsed.pathname.startsWith("/v1/payment_links/")) {
+      const id = parsed.pathname.split("/").at(-1)!;
+      assert.ok(providerLinks.has(id));
+      return Response.json(providerLinks.get(id));
+    }
     const paymentId = String(url).split("/").at(-1)!;
     assert.ok(authoritative.has(paymentId), "Only fixture provider reads are allowed"); requests.push(paymentId);
     return Response.json(authoritative.get(paymentId));
@@ -40,7 +58,12 @@ test("restricted runtime recovery pages empty/failing tenants, wraps capped back
   }
   async function receipt(tenant: number, suffix: string, lease?: "expired" | "active") {
     const workspace = tenants[tenant], paymentId = `pay_${suffix}`;
-    const entity = { id: paymentId, amount: 100, currency: "INR", status: "captured", captured: true, notes: { admitflow_workspace_id: workspace.id, admitflow_lead_id: workspace.leads[0].id } };
+    const entity = { id: paymentId, amount: 100, currency: "INR", status: "captured", captured: true, notes: null };
+    const link = await createPaymentLink(workspace, workspace.leads[0].id, 1);
+    paymentLinks.set(paymentId, link.id);
+    providerLinks.set(link.id, { id: link.id, amount: 100, amount_paid: 100, currency: "INR", accept_partial: false, status: "paid",
+      payments: [{ payment_id: paymentId, plink_id: link.id, amount: 100, status: "captured" }],
+    });
     const event = { event: "payment.captured", payload: { payment: { entity } } }, body = JSON.stringify(event);
     authoritative.set(paymentId, entity);
     await acceptPaymentEvent(workspace.id, paymentEventReference(event)!, body, workspace.connections![0], keyId);

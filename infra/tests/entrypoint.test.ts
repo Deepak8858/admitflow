@@ -11,6 +11,7 @@ const web = {
   WORKOS_API_KEY: "fixture-only", WORKOS_CLIENT_ID: "client_fixture", WORKOS_COOKIE_PASSWORD: "x".repeat(32),
   NEXT_PUBLIC_WORKOS_REDIRECT_URI: "https://admitflow.incfrog.ai/callback",
   INTAKE_CONTACT_KEYS: JSON.stringify([Buffer.alloc(32, 17).toString("base64")]),
+  REDIS_URL: "rediss://:fixture@queue.invalid:6379",
 };
 const invalidOrigins = [
   undefined, "", " ", "not-a-url", "http://127.0.0.1:3000", "http://admitflow.incfrog.ai",

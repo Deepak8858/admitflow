@@ -6,7 +6,6 @@ export function prepareEnvironment(environment) {
   const env = { ...environment };
   const required = env.ADMITFLOW_PROCESS_ROLE === "migration" ? ["DATABASE_URL_UNPOOLED"] : ["DATABASE_URL"];
   if (env.ADMITFLOW_PROCESS_ROLE === "web") required.push("WORKOS_API_KEY", "WORKOS_CLIENT_ID", "WORKOS_COOKIE_PASSWORD", "APP_BASE_URL", "NEXT_PUBLIC_WORKOS_REDIRECT_URI");
-  if (env.ADMITFLOW_PROCESS_ROLE === "worker") required.push("REDIS_HOST", "REDIS_PASSWORD");
   if (["web", "worker"].includes(env.ADMITFLOW_PROCESS_ROLE)) required.push("INTAKE_CONTACT_KEYS");
   for (const name of required) if (!env[name]) throw new Error(`Missing required runtime variable: ${name}`);
   if (env.ADMITFLOW_PROCESS_ROLE === "web") {
@@ -21,12 +20,30 @@ export function prepareEnvironment(environment) {
     try { keys = JSON.parse(env.INTAKE_CONTACT_KEYS); } catch { keys = null; }
     if (!Array.isArray(keys) || keys.length < 1 || keys.length > 4 || keys.some(key => typeof key !== "string" || !/^[A-Za-z0-9+/]{43}=$/.test(key) || Buffer.from(key, "base64").toString("base64") !== key) || new Set(keys).size !== keys.length) throw new Error("INTAKE_CONTACT_KEYS requires one to four distinct base64 32-byte keys.");
   }
-  if (env.REDIS_HOST) {
-    if (!env.REDIS_PASSWORD || env.REDIS_TLS !== "true") throw new Error("The managed queue requires REDIS_PASSWORD and REDIS_TLS=true.");
-    const url = new URL(`rediss://${env.REDIS_HOST}:${env.REDIS_PORT || "6379"}`);
-    url.password = env.REDIS_PASSWORD;
-    env.REDIS_URL = url.toString();
-    delete env.REDIS_PASSWORD;
+  if (["web", "worker"].includes(env.ADMITFLOW_PROCESS_ROLE)) {
+    // Keep this standalone: the runtime image copies the entrypoint without src/.
+    // Focused tests enforce parity with rateLimitRedisConfiguration.
+    if (env.REDIS_HOST && !env.REDIS_URL) {
+      if (!env.REDIS_PASSWORD?.trim()) throw new Error("Missing required runtime variable: REDIS_PASSWORD");
+      if (env.REDIS_TLS !== "true") throw new Error("REDIS_TLS must be true.");
+      const port = env.REDIS_PORT || "6379";
+      if (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) throw new Error("REDIS_PORT is invalid.");
+      const url = new URL("rediss://redis.invalid");
+      url.hostname = env.REDIS_HOST;
+      if (url.hostname !== env.REDIS_HOST.toLowerCase() || !env.REDIS_HOST.trim()) throw new Error("REDIS_HOST is invalid.");
+      url.port = port; url.password = env.REDIS_PASSWORD;
+      env.REDIS_URL = url.toString();
+      delete env.REDIS_PASSWORD;
+    } else {
+      if (!env.REDIS_URL?.trim()) throw new Error("Missing required runtime variable: REDIS_URL");
+      try {
+        const url = new URL(env.REDIS_URL);
+        if (!url.password) throw new Error();
+        if (env.REDIS_URL.trim() !== env.REDIS_URL || url.protocol !== "rediss:" || !url.hostname || url.port === "0" || url.search || url.hash
+          || (url.pathname && url.pathname !== "/" && (!/^\/\d+$/.test(url.pathname) || !Number.isSafeInteger(Number(url.pathname.slice(1)))))) throw new Error();
+        decodeURIComponent(url.username); decodeURIComponent(url.password);
+      } catch { throw new Error("REDIS_URL must be a valid authenticated TLS Redis URL."); }
+    }
   }
   return env;
 }

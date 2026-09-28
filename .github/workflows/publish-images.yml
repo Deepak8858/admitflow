@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
-      actions: read
+      checks: read
       id-token: write
     env:
       AWS_REGION: ap-southeast-1
@@ -31,6 +31,7 @@ jobs:
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
       DEPOT_PROJECT_ID: ${{ vars.DEPOT_PROJECT_ID }}
       NODE_IMAGE: ${{ vars.NODE_IMAGE }}
+      RUNTIME_IMAGE: cgr.dev/chainguard/wolfi-base@sha256:08df5982c3d27e70a4ce1607e3bb9af09d746f8722cf135a7694afef879fc5a2
       BUILDS_APPROVED: ${{ vars.BUILDS_APPROVED }}
       NEXT_PUBLIC_META_APP_ID: ${{ vars.NEXT_PUBLIC_META_APP_ID }}
       NEXT_PUBLIC_META_CONFIG_ID: ${{ vars.NEXT_PUBLIC_META_CONFIG_ID }}
@@ -54,13 +55,7 @@ jobs:
       - name: Require successful CI for this exact main commit
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          count="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
-            -f head_sha="$GITHUB_SHA" -f branch=main -f event=push -f status=success \
-            --jq '.workflow_runs | length')"
-          [[ "$count" -gt 0 ]] || { printf '%s\n' 'No successful main-push CI run exists for this commit.'; exit 1; }
+        run: node infra/require-depot-ci.mjs
       - uses: depot/setup-action@91bc8495a33ebfc504ffc89e5674379ccf23c29c # v1
         with:
           version: 2.101.78
@@ -90,6 +85,7 @@ jobs:
           tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:web-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           build-args: |
             NODE_IMAGE=${{ env.NODE_IMAGE }}
+            RUNTIME_IMAGE=${{ env.RUNTIME_IMAGE }}
             NEXT_PUBLIC_META_APP_ID=${{ env.NEXT_PUBLIC_META_APP_ID }}
             NEXT_PUBLIC_META_CONFIG_ID=${{ env.NEXT_PUBLIC_META_CONFIG_ID }}
             NEXT_PUBLIC_WORKOS_REDIRECT_URI=${{ env.NEXT_PUBLIC_WORKOS_REDIRECT_URI }}
@@ -105,7 +101,31 @@ jobs:
           tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:worker-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           build-args: |
             NODE_IMAGE=${{ env.NODE_IMAGE }}
+            RUNTIME_IMAGE=${{ env.RUNTIME_IMAGE }}
+      - name: Scan the exact published web image
+        id: scan_web
+        if: ${{ !cancelled() && steps.web.outcome == 'success' }}
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          WEB_DIGEST: ${{ steps.web.outputs.digest }}
+        run: bash infra/scan-image.sh "$REGISTRY/$ECR_REPOSITORY@$WEB_DIGEST" web-security.json
+      - name: Scan the exact published worker image
+        id: scan_worker
+        if: ${{ !cancelled() && steps.worker.outcome == 'success' }}
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          WORKER_DIGEST: ${{ steps.worker.outputs.digest }}
+        run: bash infra/scan-image.sh "$REGISTRY/$ECR_REPOSITORY@$WORKER_DIGEST" worker-security.json
+      - name: Retain published image findings, including a blocked release
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: published-security-${{ github.run_id }}-${{ github.run_attempt }}
+          path: '*-security.json'
+          retention-days: 90
+          if-no-files-found: ignore
       - name: Record immutable image pair and public build configuration
+        if: ${{ success() && steps.scan_web.outcome == 'success' && steps.scan_worker.outcome == 'success' }}
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
           WEB_DIGEST: ${{ steps.web.outputs.digest }}
@@ -119,14 +139,16 @@ jobs:
           aws ecr describe-images --repository-name "$ECR_REPOSITORY" --image-ids "imageDigest=$WORKER_DIGEST" --query 'imageDetails[0].imageDigest' --output text > /dev/null
           jq -n \
             --arg commit "$GITHUB_SHA" --arg region "$AWS_REGION" \
-            --arg repository "$REGISTRY/$ECR_REPOSITORY" --arg nodeImage "$NODE_IMAGE" \
+            --arg repository "$REGISTRY/$ECR_REPOSITORY" --arg nodeImage "$NODE_IMAGE" --arg runtimeImage "$RUNTIME_IMAGE" \
             --arg webDigest "$WEB_DIGEST" --arg workerDigest "$WORKER_DIGEST" \
             --arg callback "$NEXT_PUBLIC_WORKOS_REDIRECT_URI" \
             --arg metaAppId "$NEXT_PUBLIC_META_APP_ID" --arg metaConfigId "$NEXT_PUBLIC_META_CONFIG_ID" \
-            '{commit:$commit,region:$region,repository:$repository,nodeImage:$nodeImage,webDigest:$webDigest,workerDigest:$workerDigest,publicConfig:{callback:$callback,metaAppId:$metaAppId,metaConfigId:$metaConfigId}}' > release-manifest.json
+            '{commit:$commit,region:$region,repository:$repository,nodeImage:$nodeImage,runtimeImage:$runtimeImage,webDigest:$webDigest,workerDigest:$workerDigest,publicConfig:{callback:$callback,metaAppId:$metaAppId,metaConfigId:$metaConfigId}}' > release-manifest.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6, Node 24 runtime
         with:
           name: release-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: release-manifest.json
+          path: |
+            release-manifest.json
+            *-security.json
           retention-days: 90
           if-no-files-found: error

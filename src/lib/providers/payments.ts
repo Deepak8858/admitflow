@@ -1,18 +1,39 @@
+import { createHash } from "node:crypto";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { connectionFor, credentials } from "../connections";
-import { loadWorkspace, mutateWorkspace } from "../store";
+import { loadWorkspace } from "../store";
 import { assert } from "../errors";
 import { readLimitedText } from "../http";
 import { uid, isoNow, stopJobs, addActivity, type Workspace } from "../domain";
+import { productionDatabase } from "../config";
+import { mutatePostgresWorkspace, tenantTransaction } from "../db/repository";
+import { connections, eventReceipts, leads, organizations } from "../db/schema";
 
 const paymentId = z.string().regex(/^pay_[A-Za-z0-9]{1,100}$/);
 const refundId = z.string().regex(/^rfnd_[A-Za-z0-9]{1,100}$/);
+const providerLinkId = z.string().regex(/^plink_[A-Za-z0-9]{1,100}$/);
 const paise = z.number().int().positive().max(1_000_000_000);
 const paymentSchema = z.object({
-  id: paymentId, status: z.enum(["captured", "refunded"]), captured: z.boolean().optional(), amount: paise, currency: z.literal("INR"),
+  id: paymentId, status: z.enum(["captured", "refunded"]), captured: z.literal(true), amount: paise, currency: z.literal("INR"),
+});
+const attributedPaymentSchema = paymentSchema.extend({
+  // Preserve the internal ledger helper's captured-status contract. External
+  // events and provider GETs still use paymentSchema and require captured: true.
+  captured: z.literal(true).optional(),
   notes: z.preprocess(value => value == null || Array.isArray(value) && value.length === 0 ? {} : value, z.record(z.string(), z.unknown())),
-}).refine(value => value.captured !== false && (value.status !== "refunded" || value.captured === true), "The payment has not been captured.");
+}).refine(value => value.status !== "refunded" || value.captured === true, "The payment has not been captured.");
 const refundSchema = z.object({ id: refundId, payment_id: paymentId, amount: paise, currency: z.literal("INR"), status: z.literal("processed") });
+const issuedLinkSchema = z.object({
+  version: z.literal(2), providerLinkId, leadId: z.uuid(), amountPaise: paise, currency: z.literal("INR"),
+  connectionId: z.uuid(), keyFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  creditedPaymentId: paymentId.optional(),
+});
+const linkReceiptId = (workspaceId: string, linkId: string) => `razorpay_link:${workspaceId}:${linkId}`;
+const linkReceiptScope = (workspaceId: string, linkId: string) => and(
+  eq(eventReceipts.id, linkReceiptId(workspaceId, linkId)), eq(eventReceipts.organizationId, workspaceId), eq(eventReceipts.provider, "razorpay_link"),
+);
+const keyFingerprint = (keyId: string) => createHash("sha256").update(keyId).digest("hex");
 export const paymentEventReferenceSchema = z.discriminatedUnion("event", [
   z.object({ event: z.literal("payment.captured"), paymentId, amount: paise }),
   z.object({ event: z.literal("refund.processed"), paymentId, refundId, amount: paise }),
@@ -43,12 +64,47 @@ export async function createPaymentLink(workspace: Workspace, leadId: string, am
   const lead = workspace.leads.find(item => item.id === leadId);
   const amountPaise = Math.round(amount * 100);
   assert(lead && Number.isFinite(amount) && amount > 0 && amount <= 10000000 && amountPaise > 0 && amount === amountPaise / 100, "Choose a student and valid payment amount.");
+  assert(productionDatabase() && !workspace.demo, "Hosted payment links require a connected institute workspace.", 503);
+  const connection = connectionFor(workspace, "razorpay");
+  assert(connection?.status === "connected" && connection.secret, "Connect Razorpay before issuing a payment link.", 409);
   const keys = await credentials(workspace, "razorpay") as { keyId: string; keySecret: string };
-  return razorpay<{ short_url: string; id: string }>(keys, "payment_links", { amount: amountPaise, currency: "INR", description: `${workspace.name} · ${lead.course}`, customer: { name: lead.name, ...(lead.email ? { email: lead.email } : {}), contact: lead.phone }, notify: { sms: false, email: false }, notes: { admitflow_lead_id: lead.id, admitflow_workspace_id: workspace.id } });
+  const response = z.object({
+    id: providerLinkId, short_url: z.url(), amount: z.literal(amountPaise), currency: z.literal("INR"), accept_partial: z.literal(false),
+  }).parse(await razorpay(keys, "payment_links", { amount: amountPaise, currency: "INR", accept_partial: false, description: `${workspace.name} · ${lead.course}`, customer: { name: lead.name, ...(lead.email ? { email: lead.email } : {}), contact: lead.phone }, notify: { sms: false, email: false }, notes: { admitflow_lead_id: lead.id, admitflow_workspace_id: workspace.id } }));
+  const url = new URL(response.short_url);
+  assert(url.protocol === "https:" && !url.username && !url.password && !url.port && ["rzp.io", "razorpay.com", "checkout.razorpay.com"].includes(url.hostname), "Razorpay returned an invalid payment link.", 502);
+  await tenantTransaction(workspace.id, async tx => {
+    const [organization] = await tx.select().from(organizations).where(eq(organizations.id, workspace.id)).for("update");
+    const [active] = await tx.select().from(connections).where(and(eq(connections.organizationId, workspace.id), eq(connections.id, connection.id), eq(connections.service, "razorpay")));
+    const [currentLead] = await tx.select({ id: leads.id }).from(leads).where(and(eq(leads.organizationId, workspace.id), eq(leads.id, lead.id)));
+    assert(organization && !organization.demo && currentLead && active?.status === "connected" && active.secret === connection.secret, "The payment account or enquiry changed while issuing the link.", 409);
+    await tx.insert(eventReceipts).values({ id: linkReceiptId(workspace.id, response.id), organizationId: workspace.id, provider: "razorpay_link", receivedAt: isoNow(), processedAt: isoNow(), payload: {
+      version: 2, providerLinkId: response.id, leadId: lead.id, amountPaise, currency: "INR", connectionId: connection.id, keyFingerprint: keyFingerprint(keys.keyId),
+    } });
+  });
+  return { id: response.id, short_url: url.toString() };
 }
+async function canonicalPaymentLink(keys: { keyId: string; keySecret: string }, payment: z.infer<typeof paymentSchema>) {
+  // Razorpay documents this filter and the canonical link's captured payments array.
+  // Link notes are not documented to propagate to Payments and are never authority.
+  const matches = z.object({ payment_links: z.array(z.object({ id: providerLinkId })).length(1) })
+    .parse(await razorpay(keys, `payment_links?payment_id=${payment.id}`));
+  const id = matches.payment_links[0].id;
+  const link = z.object({
+    id: z.literal(id), amount: z.literal(payment.amount), amount_paid: z.literal(payment.amount), currency: z.literal("INR"),
+    accept_partial: z.literal(false), status: z.literal("paid"),
+    payments: z.array(z.object({
+      payment_id: z.literal(payment.id), amount: z.literal(payment.amount), status: z.literal("captured"),
+      // The documented fetch example omits plink_id; enforce it whenever returned.
+      plink_id: z.literal(id).optional(),
+    })).length(1),
+  }).parse(await razorpay(keys, `payment_links/${id}`));
+  return link.id;
+}
+/** Internal ledger operation: callers must supply attribution from trusted local records. */
 export function applyPaymentEvent(workspace: Workspace, event: { event: string; payload: Record<string, { entity: unknown }> }): "applied" | "duplicate" | "ignored" {
   if (event.event === "payment.captured") {
-    const payment = paymentSchema.parse(event.payload.payment?.entity);
+    const payment = attributedPaymentSchema.parse(event.payload.payment?.entity);
     if (payment.notes.admitflow_workspace_id !== workspace.id) return "ignored";
     const lead = workspace.leads.find(item => item.id === payment.notes.admitflow_lead_id);
     assert(lead, "The payment's enquiry is not available. Reconcile its attribution before replay.", 409);
@@ -84,20 +140,46 @@ export function applyPaymentEvent(workspace: Workspace, event: { event: string; 
 
 /** Provider GETs precede the tenant transaction; the credential version is checked again at commit. */
 export async function reconcilePayment(workspaceId: string, reference: PaymentEventReference, expected: { connectionId: string; keyFingerprint: string }) {
-  const { createHash } = await import("node:crypto");
+  assert(productionDatabase(), "Payment reconciliation requires hosted storage.", 503);
+  reference = paymentEventReferenceSchema.parse(reference);
   const workspace = await loadWorkspace(workspaceId), connection = connectionFor(workspace, "razorpay");
   const keys = await credentials(workspace, "razorpay") as { keyId: string; keySecret: string };
-  assert(connection?.id === expected.connectionId && createHash("sha256").update(keys.keyId).digest("hex") === expected.keyFingerprint, "The payment account changed. Operator reconciliation is required.", 409);
+  assert(connection?.id === expected.connectionId && keyFingerprint(keys.keyId) === expected.keyFingerprint, "The payment account changed. Operator reconciliation is required.", 409);
   const payment = paymentSchema.parse(await razorpay(keys, `payments/${reference.paymentId}`));
   assert(payment.id === reference.paymentId, "Razorpay returned a different payment.", 502);
+  const existing = workspace.revenue.find(item => item.providerId === payment.id);
+  if (existing) assert(existing.origin === "razorpay" && Math.round(existing.amount * 100) === payment.amount, "The payment conflicts with its existing receipt.", 409);
+  // Existing receipts retain their attribution, including legacy receipts with no link
+  // provenance. They may receive refunds, but this path may never recreate a receipt.
+  const linkId = existing ? undefined : await canonicalPaymentLink(keys, payment);
   const refund = reference.event === "refund.processed" ? refundSchema.parse(await razorpay(keys, `refunds/${reference.refundId}`)) : undefined;
   if (refund && reference.event === "refund.processed") assert(refund.id === reference.refundId && refund.payment_id === payment.id && refund.amount === reference.amount, "Razorpay returned a different refund.", 502);
   else assert(payment.amount === reference.amount, "Razorpay returned a different payment amount.", 502);
-  return mutateWorkspace(workspaceId, current => {
+  let issued: z.infer<typeof issuedLinkSchema> | undefined;
+  return mutatePostgresWorkspace(workspaceId, current => {
     const active = connectionFor(current, "razorpay");
-    assert(!current.demo && active?.id === connection.id && active.secret === connection.secret, "The payment connection changed. Retry reconciliation.", 409);
-    const result = applyPaymentEvent(current, { event: "payment.captured", payload: { payment: { entity: payment } } });
-    if (result === "ignored") return result;
+    assert(!current.demo && active?.status === "connected" && active.id === connection.id && active.secret === connection.secret, "The payment connection changed. Retry reconciliation.", 409);
+    if (existing) assert(current.revenue.some(item => item.id === existing.id && item.providerId === payment.id && item.origin === "razorpay" && item.leadId === existing.leadId && Math.round(item.amount * 100) === payment.amount), "The existing payment receipt changed. Operator reconciliation is required.", 409);
+    if (issued?.creditedPaymentId) assert(current.revenue.some(item => item.providerId === issued!.creditedPaymentId), "The issued link's credited receipt is missing. Operator reconciliation is required.", 409);
+    const leadId = existing ? existing.leadId : issued!.leadId;
+    const result = applyPaymentEvent(current, { event: "payment.captured", payload: { payment: { entity: {
+      ...payment, notes: { admitflow_workspace_id: workspaceId, admitflow_lead_id: leadId },
+    } } } });
     return refund ? applyPaymentEvent(current, { event: "refund.processed", payload: { refund: { entity: refund } } }) : result;
+  }, async tx => {
+    if (!linkId) return;
+    const [receipt] = await tx.select().from(eventReceipts).where(linkReceiptScope(workspaceId, linkId)).for("update");
+    const parsed = issuedLinkSchema.safeParse(receipt?.payload);
+    assert(receipt?.processedAt && parsed.success && parsed.data.providerLinkId === linkId
+      && parsed.data.amountPaise === payment.amount && parsed.data.currency === payment.currency
+      && parsed.data.connectionId === expected.connectionId && parsed.data.keyFingerprint === expected.keyFingerprint,
+    "The payment does not match a recorded provider link. Operator reconciliation is required.", 409);
+    issued = parsed.data;
+    assert(!issued.creditedPaymentId || issued.creditedPaymentId === payment.id, "This issued link already credited another payment. Operator reconciliation is required.", 409);
+  }, async tx => {
+    if (!linkId || !issued) return;
+    // Commit the permanent one-payment claim with the ledger; rollback restores both.
+    // Refunds never release the claim.
+    await tx.update(eventReceipts).set({ payload: { ...issued, creditedPaymentId: payment.id } }).where(linkReceiptScope(workspaceId, linkId));
   });
 }
