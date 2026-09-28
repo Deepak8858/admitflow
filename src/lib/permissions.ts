@@ -63,7 +63,7 @@ export function assertMessageFile(workspace: Workspace, leadId: string, fileId: 
 }
 
 // Positive allowlist: arbitrary provider metadata can contain tokens or object URLs.
-const publicMetadata = new Set(["wabaId", "name", "coexistence", "coexistenceVerifiedAt", "templateName", "templateLanguage", "readiness", "verifiedAt", "voiceId", "calendarId", "pageId", "pageName", "subscribed", "subscribedFields", "accountId", "mode", "subscriptionStatus", "appId", "tokenExpiresAt", "lastLeadAt", "lastLeadError", "lastLeadErrorAt"]);
+const publicMetadata = new Set(["wabaId", "name", "coexistence", "coexistenceVerifiedAt", "templateName", "templateLanguage", "readiness", "verifiedAt", "voiceId", "calendarId", "googleRevocation", "pageId", "pageName", "subscribed", "subscribedFields", "accountId", "mode", "subscriptionStatus", "appId", "tokenExpiresAt", "lastLeadAt", "lastLeadError", "lastLeadErrorAt"]);
 export function publicConnection(connection: Connection): Connection {
   return { id: connection.id, service: connection.service, status: connection.status, externalId: connection.externalId, label: connection.label, updatedAt: connection.updatedAt,
     metadata: Object.fromEntries(Object.entries(connection.metadata).filter(([key]) => publicMetadata.has(key))) };

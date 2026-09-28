@@ -19,7 +19,8 @@ export function rateLimitRedisConfiguration(env: Environment): { url?: string; i
   if (!env.REDIS_URL?.trim()) return { issues: [{ variable: "REDIS_URL", reason: "missing" }] };
   try {
     const url = new URL(env.REDIS_URL);
-    if (env.REDIS_URL.trim() !== env.REDIS_URL || url.protocol !== "rediss:" || !url.hostname || !url.password || url.port === "0" || url.search || url.hash
+    if (!url.password) throw new Error();
+    if (env.REDIS_URL.trim() !== env.REDIS_URL || url.protocol !== "rediss:" || !url.hostname || url.port === "0" || url.search || url.hash
       || (url.pathname && url.pathname !== "/" && (!/^\/\d+$/.test(url.pathname) || !Number.isSafeInteger(Number(url.pathname.slice(1)))))) throw new Error();
     decodeURIComponent(url.username); decodeURIComponent(url.password);
     return { url: url.toString(), issues };

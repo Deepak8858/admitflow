@@ -102,14 +102,20 @@ jobs:
           build-args: |
             NODE_IMAGE=${{ env.NODE_IMAGE }}
             RUNTIME_IMAGE=${{ env.RUNTIME_IMAGE }}
-      - name: Scan the exact published images before recording a release
+      - name: Scan the exact published web image
+        id: scan_web
+        if: ${{ !cancelled() && steps.web.outcome == 'success' }}
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
           WEB_DIGEST: ${{ steps.web.outputs.digest }}
+        run: bash infra/scan-image.sh "$REGISTRY/$ECR_REPOSITORY@$WEB_DIGEST" web-security.json
+      - name: Scan the exact published worker image
+        id: scan_worker
+        if: ${{ !cancelled() && steps.worker.outcome == 'success' }}
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
           WORKER_DIGEST: ${{ steps.worker.outputs.digest }}
-        run: |
-          bash infra/scan-image.sh "$REGISTRY/$ECR_REPOSITORY@$WEB_DIGEST" web-security.json
-          bash infra/scan-image.sh "$REGISTRY/$ECR_REPOSITORY@$WORKER_DIGEST" worker-security.json
+        run: bash infra/scan-image.sh "$REGISTRY/$ECR_REPOSITORY@$WORKER_DIGEST" worker-security.json
       - name: Retain published image findings, including a blocked release
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
@@ -119,6 +125,7 @@ jobs:
           retention-days: 90
           if-no-files-found: ignore
       - name: Record immutable image pair and public build configuration
+        if: ${{ success() && steps.scan_web.outcome == 'success' && steps.scan_worker.outcome == 'success' }}
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
           WEB_DIGEST: ${{ steps.web.outputs.digest }}

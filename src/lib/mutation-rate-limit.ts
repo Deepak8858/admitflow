@@ -40,7 +40,8 @@ function unavailable() { return new AppError("Changes are temporarily unavailabl
 type Connection = { client: Redis; ready?: Promise<void> };
 let connection: Connection | undefined;
 async function evaluate(script: string, keys: string[], args: number[]) {
-  if (!connection) {
+  let state = connection;
+  if (!state || state.client.status === "end") {
     const config = rateLimitRedisConfiguration(process.env);
     if (!config.url) throw unavailable();
     const client = new Redis(config.url, {
@@ -50,13 +51,19 @@ async function evaluate(script: string, keys: string[], args: number[]) {
       reconnectOnError: error => error.message.startsWith("READONLY") ? 1 : false,
     });
     client.on("error", () => { /* The caller receives a redacted 503. */ });
-    const state: Connection = { client };
-    connection = state;
-    state.ready = client.connect().finally(() => { state.ready = undefined; });
+    const fresh: Connection = { client };
+    state = fresh;
+    connection = fresh;
+    client.on("end", () => { if (connection === fresh) connection = undefined; });
+    fresh.ready = Promise.resolve().then(() => client.connect()).catch(() => {
+      if (connection === fresh) connection = undefined;
+      client.disconnect();
+      throw unavailable();
+    }).finally(() => { fresh.ready = undefined; });
   }
-  if (connection.ready) await connection.ready;
-  if (connection.client.status !== "ready") throw unavailable();
-  return connection.client.eval(script, keys.length, ...keys, ...args);
+  if (state.ready) await state.ready;
+  if (connection !== state || state.client.status !== "ready") throw unavailable();
+  return state.client.eval(script, keys.length, ...keys, ...args);
 }
 
 /** Dependency injection keeps synthetic tests off production Redis; callers supply only verified identity. */

@@ -139,10 +139,10 @@ function ConnectionDetails({ connection }: { connection: Connection }) {
     </>}
     {connection.service === "google" && <>
       <p className="field-note">{meta.calendarId || "Primary calendar"} · one-way updates. Google changes are not imported.</p>
-      <p className="field-note">Disconnecting revokes AdmitFlow access for this Google account, including its connections in other institutes. Existing Google events remain.</p>
+      <p className="field-note">Disconnecting revokes this Google account’s access grant to AdmitFlow. Existing Google events remain.</p>
     </>}
     {connection.service === "razorpay" && meta.mode && <Badge tone={meta.mode === "test" ? "amber" : "neutral"}>{meta.mode === "test" ? "Test credentials" : "Live account credentials"}</Badge>}
-    {connection.status === "error" && !meta.lastLeadError && <p className="inline-error">This connection needs attention. Reconnect to verify access.</p>}
+    {connection.status === "error" && !meta.lastLeadError && <p className="inline-error">{connection.service === "google" && meta.googleRevocation ? "Calendar updates are disabled. Finish disconnecting before reconnecting Google." : "This connection needs attention. Reconnect to verify access."}</p>}
   </div>;
 }
 
@@ -151,6 +151,7 @@ export function IntegrationsPage() {
   const [editing, setEditing] = useState<string | null>(null), [saving, setSaving] = useState(false), [origin, setOrigin] = useState("");
   const params = useSearchParams(), pathname = usePathname(), router = useRouter(), handledGoogle = useRef<string | null>(null);
   const google = params.get("google"), { admin } = workspaceAccess(data), integration = services.find(service => service.id === editing);
+  const googleRevocation = data.connections?.find(item => item.service === "google")?.metadata.googleRevocation;
   const configuredCount = services.filter(service => {
     const connection = data.connections?.find(item => item.service === service.id);
     return connection ? connection.status === "connected" : service.id === "openai" ? Boolean(data.integrations?.ai) : service.id === "elevenlabs" ? Boolean(data.integrations?.speech) : false;
@@ -172,7 +173,11 @@ export function IntegrationsPage() {
       const result = await readJsonResponse<{ workspace?: Workspace }>(response, "The connection could not be removed.");
       if (result.workspace) setData(result.workspace); else await refresh();
       notify(service === "google" ? "Google disconnected. Previously created calendar events remain in Google." : "Disconnected. Credentials removed; account identity retained for recovery.");
-    } catch (error) { notify(error instanceof Error ? error.message : "The connection could not be removed.", "error"); }
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "The connection could not be removed.", "error");
+      // Revocation can persist a disabled connection even when the provider response is uncertain.
+      await refresh();
+    }
     finally { setSaving(false); }
   }
   if (!admin) return <AdminPage title="Integrations" />;
@@ -188,7 +193,7 @@ export function IntegrationsPage() {
     <section className="platform-strip"><span>YOUR PLATFORM FOUNDATION</span><div><Database size={18} /><strong>Neon + Drizzle</strong><Badge>{data.actor?.backend === "workos" ? "Configured" : "Local preview"}</Badge></div><div><ShieldCheck size={18} /><strong>WorkOS AuthKit</strong><Badge>{data.integrations?.auth ? "Configured" : "Setup required"}</Badge></div><div><Cloud size={18} /><strong>Cloudflare R2</strong><Badge>{data.integrations?.storage ? "Configured" : "Setup required"}</Badge></div></section>
     {editing === "whatsapp" && <WhatsAppConnect onClose={() => setEditing(null)} />}
     {editing && editing !== "whatsapp" && integration && <Dialog title={`Connect ${integration.name}`} onClose={() => setEditing(null)}><p className="dialog-intro">{integration.description}</p>{data.demo && <div className="setup-callout"><Sparkles size={18} /><div><strong>You’re exploring a demo workspace</strong><p>Create an institute workspace to add live credentials. Your sample data stays separate.</p><Link href="/settings" className="table-text-action" onClick={() => setEditing(null)}>Set up your workspace<ArrowRight size={13} /></Link></div></div>}
-      {editing === "google" ? <div className="google-connect"><span className="service-icon google"><CalendarDays size={30} /></span><p>Connect your institute’s shared Google calendar. New, changed and cancelled sessions sync from AdmitFlow. Changes made in Google are not imported.</p>{data.demo ? <Link className="button secondary" href="/settings">Set up your workspace<ArrowUpRight size={15} /></Link> : <a className="button primary" href="/api/integrations/google/start">Continue with Google<ArrowUpRight size={15} /></a>}</div> : <form onSubmit={async event => {
+      {editing === "google" ? <div className="google-connect"><span className="service-icon google"><CalendarDays size={30} /></span>{googleRevocation ? <><p>Calendar updates are disabled until Google confirms the disconnect. {googleRevocation === "pending" ? "A disconnect is in progress. If it does not finish, wait 30 seconds before retrying." : "Retry disconnecting before you connect this calendar again."}</p><Button variant="primary" loading={saving} disabled={data.demo} onClick={() => void disconnect("google")}>Retry disconnect</Button></> : <><p>Connect your institute’s shared Google calendar. New, changed and cancelled sessions sync from AdmitFlow. Changes made in Google are not imported.</p>{data.demo ? <Link className="button secondary" href="/settings">Set up your workspace<ArrowUpRight size={15} /></Link> : <a className="button primary" href="/api/integrations/google/start">Continue with Google<ArrowUpRight size={15} /></a>}</>}</div> : <form onSubmit={async event => {
         event.preventDefault(); if (data.demo || saving) return;
         setSaving(true); const form = new FormData(event.currentTarget);
         const secret = editing === "razorpay" ? { keyId: String(form.get("keyId")), keySecret: String(form.get("keySecret")), webhookSecret: String(form.get("webhookSecret")) } : editing === "meta_leads" ? { accessToken: String(form.get("apiKey")) } : { apiKey: String(form.get("apiKey")), ...(editing === "elevenlabs" ? { voiceId: String(form.get("voiceId")) } : {}) };

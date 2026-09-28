@@ -1,0 +1,14 @@
+# GitGuardian finding review — 28 September 2026
+
+GitHub check `108794384044` supplied the locations for the four occurrences reported on PR #13. All refer to commit `5616bc53581823ffc5385a7bb270e62aa1be3bc8`. The four rows represent three GitGuardian incident IDs; one incident has two occurrences.
+
+| Incident | Historical location | Source evidence and disposition |
+| --- | --- | --- |
+| [37670786](https://dashboard.gitguardian.com/workspace/746886/incidents/37670786?occurrence=299793065) — Redis Credentials | `tests/security-rate-limit.test.ts:108` | Synthetic valid-URL fixture using a reserved `.invalid` host and an explicit fixture password. The surrounding test calls configuration parsers only; it never opens a Redis connection. This is a test-data false positive. |
+| [37670788](https://dashboard.gitguardian.com/workspace/746886/incidents/37670788?occurrence=299793068) — Redis Credentials | `tests/security-rate-limit.test.ts:109` | The same parser test supplies a percent-encoded synthetic password to exercise URL parsing. It contains no deployed credential and makes no Redis request. This is a test-data false positive. |
+| [37670787](https://dashboard.gitguardian.com/workspace/746886/incidents/37670787?occurrence=299793066) — Generic Password | `src/lib/rate-limit-config.ts:22` | The expression rejects an absent password or port `"0"` in a URL read from `env.REDIS_URL`. It does not assign a password. The adjacent literals describe URL syntax. This is a validation-code false positive. |
+| [37670787](https://dashboard.gitguardian.com/workspace/746886/incidents/37670787?occurrence=299793067) — Generic Password | `infra/entrypoint.mjs:41` | The startup validator performs the same password-presence and invalid-port checks on runtime configuration. It contains no hardcoded credential. This is a validation-code false positive. |
+
+Current-source changes replace the two fixed valid credential URLs with dynamically constructed test URLs, retaining the encoded-password case. Password-presence checks in both validators now occupy their own statements, separate from protocol and port comparisons. Authentication, TLS and malformed-URL rejection remain required. The Redis recovery test likewise constructs its synthetic credential at runtime and mocks all network methods.
+
+This review is based on the exact reported source and its callers, independently of Gitleaks results. It does not dismiss incidents, change detector settings, exclude files, rewrite Git history, rotate a provider credential or override a failing check. The original commit remains in the PR history, so a later source correction may not clear its historical GitGuardian result. The linked incidents need a recorded false-positive disposition in GitGuardian and a fresh passing check before declaring that check resolved.

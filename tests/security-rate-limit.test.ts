@@ -103,10 +103,16 @@ test("production entrypoint and runtime require authenticated TLS Redis, while m
     APP_BASE_URL: "https://app.example.com", NEXT_PUBLIC_WORKOS_REDIRECT_URI: "https://app.example.com/callback",
     KMS_KEY_ID: "fixture", INTAKE_CONTACT_KEYS: JSON.stringify([Buffer.alloc(32, 17).toString("base64")]),
   };
+  const fixturePassword = `fixture-${process.pid}-${Date.now()}`;
+  const basicRedisUrl = new URL("rediss://cache.invalid:6380");
+  basicRedisUrl.password = fixturePassword;
+  const encodedRedisUrl = new URL("rediss://cache.invalid:6380/0");
+  encodedRedisUrl.username = "fixture";
+  encodedRedisUrl.password = `${fixturePassword}:@/`;
   const valid = [
-    { REDIS_URL: "rediss://:fixture@queue.invalid:6379" },
-    { REDIS_URL: "rediss://default:fixture%3A%2F%40@queue.invalid:6380/0" },
-    { REDIS_HOST: "queue.invalid", REDIS_PASSWORD: "fixture:/@", REDIS_TLS: "true", REDIS_PORT: "6379" },
+    { REDIS_URL: basicRedisUrl.toString() },
+    { REDIS_URL: encodedRedisUrl.toString() },
+    { REDIS_HOST: "queue.invalid", REDIS_PASSWORD: fixturePassword, REDIS_TLS: "true", REDIS_PORT: "6379" },
   ];
   for (const redis of valid) {
     const input = { ...base, ...redis };
