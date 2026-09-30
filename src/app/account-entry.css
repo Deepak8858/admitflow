@@ -89,10 +89,11 @@
 
 .account-entry h1 {
   max-width: 13ch;
-  font-family: var(--font-display);
-  font-size: clamp(36px, 4.2vw, 52px);
+  font-family: var(--font-hero, var(--font-display));
+  font-size: clamp(44px, calc(36px + 1.2vw), 52px);
   font-weight: var(--font-weight-heading, 500);
-  font-variation-settings: "opsz" var(--font-optical-heading, 32);
+  font-feature-settings: var(--font-hero-features, normal);
+  font-variation-settings: var(--font-hero-variations, normal);
   line-height: 1.02;
   letter-spacing: var(--tracking-heading, -.03em);
   text-wrap: balance;
@@ -259,6 +260,10 @@
 @media (min-width: 1440px) {
   .account-entry { --entry-body-size: 18px; --entry-lead-size: 22px; }
   .account-entry-visual-copy h2 { font-size: 56px; }
+}
+
+@media (max-width: 809.98px) {
+  .account-entry h1 { font-size: clamp(20px, calc((100vw - 40px) / 12.3), 28.4553px); }
 }
 
 @media (max-width: 809px) {

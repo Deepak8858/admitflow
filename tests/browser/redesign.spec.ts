@@ -28,7 +28,7 @@ async function selectTheme(page: Page, theme: "light" | "dark" | "system") {
 }
 async function accessible(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(result.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => ({ target: node.target, failure: node.failureSummary })) }))).toEqual([]);
+  expect(result.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => ({ target: node.target, failure: node.failureSummary })) })), `Accessibility at ${new URL(page.url()).pathname}`).toEqual([]);
 }
 
 test("a fresh visit uses the reference light palette even when the device prefers dark", async ({ page }) => {
@@ -144,12 +144,15 @@ for (const width of [320, 375, 414, 768, 1440]) {
         expect(appearance.bodyBackground).toBe("rgb(250, 250, 247)");
         expect(appearance.headingFont.toLowerCase()).toContain("inter");
         expect(appearance.headingWeight).toBe("500");
-        if (appearance.buyerHeading) {
+        const accountHero = ["/login", "/signup", "/onboarding"].includes(path);
+        if (appearance.buyerHeading || accountHero) {
           expect(appearance.headingFont.toLowerCase()).toContain("inter hero");
           expect(appearance.headingFeatures).toBe("normal");
           expect(appearance.headingVariation).toBe("normal");
           expect(appearance.headingSize).toBeCloseTo(
-            width <= 809 ? Math.min(28.4553, Math.max(20, (width - 40) / 12.3)) : 52,
+            width <= 809.98
+              ? Math.min(28.4553, Math.max(20, (width - 40) / 12.3))
+              : accountHero ? Math.min(52, Math.max(44, 36 + width * 0.012)) : 52,
             1,
           );
         }
@@ -277,18 +280,19 @@ for (const width of [320, 375, 768, 1440]) {
   });
 }
 
-test("resource tables support keyboard scrolling in both themes", async ({ page }) => {
+test("public tables support keyboard scrolling in both themes", async ({ page }) => {
   test.setTimeout(120_000);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   const tables = [
-    ["coaching-admissions-follow-up-checklist", "Manager review before a follow-up"],
-    ["how-to-evaluate-an-admissions-crm", "Admissions CRM requirements matrix"],
-    ["measuring-admissions-recovery-pilot", "Fictional four-week pilot scorecard"],
+    ["/product/admissions-recovery", "What each admissions measure means"],
+    ["/resources/coaching-admissions-follow-up-checklist", "Manager review before a follow-up"],
+    ["/resources/how-to-evaluate-an-admissions-crm", "Admissions CRM requirements matrix"],
+    ["/resources/measuring-admissions-recovery-pilot", "Fictional four-week pilot scorecard"],
   ] as const;
   for (const theme of ["light", "dark"] as const) {
-    for (const [slug, caption] of tables) {
-      await page.goto(`/resources/${slug}`);
+    for (const [path, caption] of tables) {
+      await page.goto(path);
       await selectTheme(page, theme);
       const region = page.getByRole("region", { name: caption, exact: true });
       await region.scrollIntoViewIfNeeded();

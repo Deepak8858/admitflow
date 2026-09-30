@@ -34,8 +34,8 @@ export default function AdmissionsRecoveryPage() {
           </ol>
         </BuyerSection>
         <BuyerSection eyebrow="Measurement" title="Separate activity, outcomes and attribution">
-          <div className="buyer-table-scroll"><table className="buyer-table">
-            <caption>What each admissions measure means</caption>
+          <div className="buyer-table-scroll" tabIndex={0} role="region" aria-labelledby="admissions-measures-caption"><table className="buyer-table">
+            <caption id="admissions-measures-caption">What each admissions measure means</caption>
             <thead><tr><th>Measure</th><th>What AdmitFlow records</th><th>How to read it</th></tr></thead>
             <tbody>
               <tr><td>Follow-up activity</td><td>Outreach, replies, ownership and bookings</td><td>Evidence that steps were taken, not evidence that they caused enrolment.</td></tr>

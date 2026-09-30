@@ -95,7 +95,7 @@
 }
 .institute-onboarding-form-side { min-width: 0; width: min(100%, 520px); }
 .institute-onboarding-eyebrow { display: inline-block; margin-bottom: 18px; color: var(--color-body); font: 400 var(--text-eyebrow, 11px)/1.3 var(--font-mono); font-variation-settings: normal; letter-spacing: .16em; }
-.institute-onboarding h1 { max-width: 13ch; font-family: var(--font-display); font-size: clamp(36px, 4.1vw, 52px); font-weight: var(--font-weight-heading, 500); font-variation-settings: "opsz" var(--font-optical-heading, 32); line-height: 1.02; letter-spacing: var(--tracking-heading, -.03em); text-wrap: balance; }
+.institute-onboarding h1 { max-width: 13ch; font-family: var(--font-hero, var(--font-display)); font-size: clamp(44px, calc(36px + 1.2vw), 52px); font-weight: var(--font-weight-heading, 500); font-feature-settings: var(--font-hero-features, normal); font-variation-settings: var(--font-hero-variations, normal); line-height: 1.02; letter-spacing: var(--tracking-heading, -.03em); text-wrap: balance; }
 .institute-onboarding-intro { max-width: 42ch; margin-top: 16px; color: var(--color-body); font-size: var(--onboarding-lead-size); font-variation-settings: "opsz" 22; line-height: 1.45; letter-spacing: -.012em; text-wrap: pretty; }
 .institute-onboarding-card {
   min-width: 0;
@@ -217,6 +217,9 @@
 @media (max-width: 900px) {
   .institute-onboarding-main { gap: 32px; }
   .institute-onboarding-preview { padding: 20px; }
+}
+@media (max-width: 809.98px) {
+  .institute-onboarding h1 { font-size: clamp(20px, calc((100vw - 40px) / 12.3), 28.4553px); }
 }
 @media (max-width: 809px) {
   .institute-onboarding-main { grid-template-columns: minmax(0, 1fr); min-height: 0; padding-block: 40px 25px; }
