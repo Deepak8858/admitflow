@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { resolve, join, sep } from "node:path";
+import { isAbsolute, resolve, join, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
 /** @param {Record<string, string | undefined>} parent @param {string} template @param {string} directory */
@@ -16,6 +16,23 @@ export function verificationEnvironment(parent, template, directory) {
   env.INTAKE_CONTACT_KEYS = JSON.stringify([Buffer.alloc(32, 17).toString("base64")]);
   env.ADMITFLOW_BROWSER_ISOLATED = "1";
   return env;
+}
+
+/** @param {string} directory @param {typeof rmSync} removeDirectory */
+export function cleanupVerificationDirectory(directory, removeDirectory = rmSync) {
+  const temporaryRoot = resolve(tmpdir());
+  const target = resolve(directory);
+  if (!isAbsolute(directory) || !target.startsWith(temporaryRoot + sep)) {
+    console.error("Verification cleanup skipped: directory is outside the temporary workspace.");
+    process.exitCode ||= 1;
+    return;
+  }
+  try {
+    removeDirectory(target, { recursive: true, force: true });
+  } catch {
+    console.error("Verification cleanup failed; the original verification result is preserved.");
+    process.exitCode ||= 1;
+  }
 }
 
 function main() {
@@ -63,9 +80,7 @@ function main() {
       }
     }
   } finally {
-    const temporaryRoot = resolve(tmpdir());
-    if (!resolve(directory).startsWith(temporaryRoot + sep)) throw new Error("Unsafe verification directory");
-    rmSync(directory, { recursive: true, force: true });
+    cleanupVerificationDirectory(directory);
   }
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {

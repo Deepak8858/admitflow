@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicLayout } from "@/components/marketing/marketing";
 import { BuyerCta, BuyerHeader, BuyerSection } from "@/components/public-content/buyer-content";
-import { buyerResources } from "@/lib/buyer-resources";
+import { buyerResources, formatResourceDate } from "@/lib/buyer-resources";
 import { publicPage } from "@/lib/public-content";
 import { publicPageMetadata } from "@/lib/seo";
 
@@ -26,7 +26,7 @@ export default function ResourcesPage() {
                 <p className="buyer-eyebrow">{resource.audience}</p>
                 <h3><Link href={`/resources/${resource.slug}`}>{resource.title}</Link></h3>
                 <p>{resource.summary}</p>
-                <p className="buyer-resource-meta"><span>{resource.readingMinutes} min read</span><span>29 September 2026</span></p>
+                <p className="buyer-resource-meta"><span>{resource.readingMinutes} min read</span><span>{formatResourceDate(resource.publishedOn)}</span></p>
                 <Link className="buyer-text-link" href={`/resources/${resource.slug}`}>Read resource <span aria-hidden="true">→</span></Link>
               </article>
             ))}

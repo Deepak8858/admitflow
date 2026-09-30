@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { PublicLayout } from "@/components/marketing/marketing";
 import { BuyerCta, BuyerHeader } from "@/components/public-content/buyer-content";
 import { ResourceArticle } from "@/components/public-content/resource-articles";
-import { buyerResources, getBuyerResource } from "@/lib/buyer-resources";
+import { buyerResources, formatResourceDate, getBuyerResource } from "@/lib/buyer-resources";
 import { publicPage } from "@/lib/public-content";
 import { publicPageMetadata } from "@/lib/seo";
 
@@ -38,7 +38,7 @@ export default async function ResourcePage({ params }: ResourcePageProps) {
           crumbs={[{ label: "Resources", href: "/resources" }, { label: resource.title }]}
         />
         <div className="buyer-resource-meta public-container">
-          <span>Published <time dateTime={resource.publishedOn}>29 September 2026</time></span>
+          <span>Published <time dateTime={resource.publishedOn}>{formatResourceDate(resource.publishedOn)}</time></span>
           <span>{resource.readingMinutes} min read</span>
         </div>
         <article className="buyer-measure public-container">

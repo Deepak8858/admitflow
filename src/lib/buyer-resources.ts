@@ -31,6 +31,17 @@ export const buyerResources = [
 export type BuyerResource = (typeof buyerResources)[number];
 export type BuyerResourceSlug = BuyerResource["slug"];
 
+const resourceDateFormatter = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+export function formatResourceDate(publishedOn: string): string {
+  return resourceDateFormatter.format(new Date(`${publishedOn}T00:00:00Z`));
+}
+
 export function getBuyerResource(slug: string): BuyerResource | undefined {
   return buyerResources.find((resource) => resource.slug === slug);
 }

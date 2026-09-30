@@ -6,6 +6,8 @@ Prepared 30 September 2026 on isolated branch `codex/admitflow-seo-production`, 
 
 All **192/192** files in the [original tested-source fingerprint](../artifacts/admitflow-seo-implementation-2026-09-29/final-tested-source-fingerprint.json) match byte-for-byte. Its recorded digest is `f3baa7646125abb2b16e28dfd15e225cc8373e31340b5bd1ad5f2386bd97bd94`. That original fingerprint deliberately covered app source, public binary assets and selected Docker/Next/CI configuration; it did **not** cover dependencies, tests or documentation. The [expanded release fingerprint](../artifacts/admitflow-seo-implementation-2026-09-29/release-source-fingerprint.json) now includes dependency manifests, all tests and verification scripts, infrastructure and CI configuration. This expanded receipt records reconstruction identity; it is not a new test run.
 
+The 192-file tested-source fingerprint and 302-file expanded release fingerprint describe the initial `15e02cd` snapshot. The later CodeRabbit resource-date formatter, documentation-path and harness corrections, and dependency security repair are follow-up changes. Their validation belongs to fresh CI on the PR; the original fingerprints and test counts above do not establish coverage of those changes.
+
 Four shared-checkout files had been overwritten by the later redesign. Recovery was checked against the original SHA-256 values, not merely visually compared:
 
 | File | Recovery | Recovered SHA-256 |

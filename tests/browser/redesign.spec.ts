@@ -319,7 +319,7 @@ test("invalid-input message contrast remains readable", async ({ page }) => {
     return { color: computed.color, background: computed.backgroundColor, fontSize: computed.fontSize };
   });
   expect(style.color).toBe("rgb(185, 54, 40)");
-  await page.screenshot({ path: "artifacts/admitflow-seo-implementation-2026-09-29/signup-invalid-style-probe.png" });
+  await page.screenshot({ path: "test-results/signup-invalid-style-probe.png" });
   const result = await new AxeBuilder({ page }).include(".account-entry-field-error").withRules(["color-contrast"]).analyze();
   expect(result.violations.map(item => ({ id: item.id, targets: item.nodes.map(node => node.target) })), JSON.stringify(style)).toEqual([]);
 });
@@ -335,7 +335,7 @@ test("selected calendar date keeps small text readable", async ({ page }) => {
     return { color: computed.color, background: getComputedStyle(element).backgroundColor, fontSize: computed.fontSize };
   });
   expect(style.background).toBe("rgb(107, 92, 218)");
-  await page.screenshot({ path: "artifacts/admitflow-seo-implementation-2026-09-29/calendar-selected-style-probe.png" });
+  await page.screenshot({ path: "test-results/calendar-selected-style-probe.png" });
   const result = await new AxeBuilder({ page }).include(".week-strip > button.selected").withRules(["color-contrast"]).analyze();
   expect(result.violations.map(item => ({ id: item.id, targets: item.nodes.map(node => node.target) })), JSON.stringify(style)).toEqual([]);
 });
