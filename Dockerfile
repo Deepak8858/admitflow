@@ -8,6 +8,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 FROM base AS dependencies
 COPY package.json package-lock.json ./
+COPY vendor/aws-cdk-lib/aws-cdk-lib-2.269.0-brace-expansion-5.0.12.tgz ./vendor/aws-cdk-lib/
 RUN npm ci --no-audit --no-fund
 
 FROM dependencies AS service-build

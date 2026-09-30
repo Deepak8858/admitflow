@@ -1,0 +1,99 @@
+{
+  "cdkVersion": "2.269.0",
+  "replacementVersion": "5.0.12",
+  "upstreamArchives": {
+    "aws-cdk-lib-2.269.0.tgz": {
+      "url": "https://registry.npmjs.org/aws-cdk-lib/-/aws-cdk-lib-2.269.0.tgz",
+      "sha512": "sha512-Ob2EmB3faXGUMjXYhxsMvktZtaojr/aaeLqFjq9WbO+vOX1mx49OQPVB6NNNLfNKWF993Bb6nr4rsPblpUAJww==",
+      "sha256": "d6e19752dbb7a8637d4da3b48d31c12c3751b312dce8d26bcc779326122cf45f"
+    },
+    "brace-expansion-5.0.12.tgz": {
+      "url": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.12.tgz",
+      "sha512": "sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==",
+      "sha256": "ef8448ec78f20b692f04fa6d01f39b5ab34c66404bea3429f5a39c6c9e0be8b4"
+    }
+  },
+  "outputSha256": "7c415c79dee65524fcbac3338e7740248ca765a632a9aff732e16e6596b6afb7",
+  "outputIntegrity": "sha512-j1mXZxW7vcdDRbhfXY+hmV/4VIXwQVgrKxLdgoqbrW/+mIbD9SIVIaLTr6f6wKjQ50l7g7cQGjFob6EIphJnfg==",
+  "outputBytes": 37587663,
+  "unchangedFiles": 7444,
+  "replacedPrefix": "package/node_modules/brace-expansion/",
+  "removedFiles": [
+    "package/node_modules/brace-expansion/LICENSE",
+    "package/node_modules/brace-expansion/README.md",
+    "package/node_modules/brace-expansion/dist/commonjs/index.d.ts",
+    "package/node_modules/brace-expansion/dist/commonjs/index.d.ts.map",
+    "package/node_modules/brace-expansion/dist/commonjs/index.js",
+    "package/node_modules/brace-expansion/dist/commonjs/index.js.map",
+    "package/node_modules/brace-expansion/dist/commonjs/package.json",
+    "package/node_modules/brace-expansion/dist/esm/index.d.ts",
+    "package/node_modules/brace-expansion/dist/esm/index.d.ts.map",
+    "package/node_modules/brace-expansion/dist/esm/index.js",
+    "package/node_modules/brace-expansion/dist/esm/index.js.map",
+    "package/node_modules/brace-expansion/dist/esm/package.json",
+    "package/node_modules/brace-expansion/package.json"
+  ],
+  "replacementFiles": [
+    "package/node_modules/brace-expansion/LICENSE",
+    "package/node_modules/brace-expansion/README.md",
+    "package/node_modules/brace-expansion/dist/commonjs/index.d.ts",
+    "package/node_modules/brace-expansion/dist/commonjs/index.d.ts.map",
+    "package/node_modules/brace-expansion/dist/commonjs/index.js",
+    "package/node_modules/brace-expansion/dist/commonjs/index.js.map",
+    "package/node_modules/brace-expansion/dist/commonjs/package.json",
+    "package/node_modules/brace-expansion/dist/esm/index.d.ts",
+    "package/node_modules/brace-expansion/dist/esm/index.d.ts.map",
+    "package/node_modules/brace-expansion/dist/esm/index.js",
+    "package/node_modules/brace-expansion/dist/esm/index.js.map",
+    "package/node_modules/brace-expansion/dist/esm/package.json",
+    "package/node_modules/brace-expansion/package.json"
+  ],
+  "contentChanges": [
+    {
+      "path": "package/node_modules/brace-expansion/dist/commonjs/index.d.ts",
+      "beforeSha256": "0b4d0e7e8998ac3219939db9646bbcb4757f134d62a3226e5686b1e19a1fec3e",
+      "afterSha256": "b74929b2e5433150c0c7f6a3e7bcd1aadff6b82305584b25754ab38273ea731d"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/dist/commonjs/index.d.ts.map",
+      "beforeSha256": "b3be0847ad40bba64997b91b4d4542d7a2d8365cfb4e74eaa572b90c1276c342",
+      "afterSha256": "4081276536fa8a61b8ecf72c1b3cb65d354aa9f42b9952aa7c7aa3df69b76224"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/dist/commonjs/index.js",
+      "beforeSha256": "8d1ea713e1dd03f52783bbceea9d85815a3587134d1936ea16257dea83884f15",
+      "afterSha256": "e0ede97c712339a70bae2c96c675b1ffd30052bdf57f37f5a97b5945c40a9ae6"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/dist/commonjs/index.js.map",
+      "beforeSha256": "8c37d1ed63deea88fe6dd44dafd68cf1dc3eb007d60108edc5db68958ca9ecdc",
+      "afterSha256": "030adad11afc034a17f6c008f25a3779e3988f56d067016cee00948725b00d24"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/dist/esm/index.d.ts",
+      "beforeSha256": "0b4d0e7e8998ac3219939db9646bbcb4757f134d62a3226e5686b1e19a1fec3e",
+      "afterSha256": "b74929b2e5433150c0c7f6a3e7bcd1aadff6b82305584b25754ab38273ea731d"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/dist/esm/index.d.ts.map",
+      "beforeSha256": "b3be0847ad40bba64997b91b4d4542d7a2d8365cfb4e74eaa572b90c1276c342",
+      "afterSha256": "4081276536fa8a61b8ecf72c1b3cb65d354aa9f42b9952aa7c7aa3df69b76224"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/dist/esm/index.js",
+      "beforeSha256": "af0e6438163b5ef866c52680ec58756bcf00cff330729c0d6a3a44ee57bde9d1",
+      "afterSha256": "eea9a18920e1cde68f0068c36c040541ad6e93b0bb89eaab38c8ab49925b90a8"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/dist/esm/index.js.map",
+      "beforeSha256": "8acbba04cfba8e5ef1db9bd6fd182d9fccd4f53eb1e9be784f36584251a4701a",
+      "afterSha256": "181bf3ff0deaaedfcf28b02c260ab5316cb2a012d89070ad44d298dcfd7166dc"
+    },
+    {
+      "path": "package/node_modules/brace-expansion/package.json",
+      "beforeSha256": "f8a0e0d0a6cbb58106ce6832205e0939a00b9583637011bf8ef4167f4a52fbda",
+      "afterSha256": "8af7dc0916002266f3b01459ef691d9f834d8ecdb0e021263280a50b913d85fa"
+    }
+  ],
+  "reproductionChecked": true
+}
