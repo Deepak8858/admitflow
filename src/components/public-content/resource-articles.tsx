@@ -29,9 +29,9 @@ function FollowUpChecklist() {
 
       <h2>2. Decide which lead needs a next action</h2>
       <p>Use a dated rule instead of a vague “old leads” list. AdmitFlow marks an open lead stale after at least seven days since its last contact, or since creation when no contact exists. A stale lead is a review candidate, not an automatic send instruction.</p>
-      <div className="buyer-table-scroll">
+      <div className="buyer-table-scroll" tabIndex={0} role="region" aria-labelledby="follow-up-table-caption">
         <table className="buyer-table">
-          <caption>Manager review before a follow-up</caption>
+          <caption id="follow-up-table-caption">Manager review before a follow-up</caption>
           <thead><tr><th>Check</th><th>Decision to record</th></tr></thead>
           <tbody>
             <tr><td>Stage and latest activity</td><td>Is the lead still open? What has the team already promised?</td></tr>
@@ -67,9 +67,9 @@ function CrmEvaluation() {
       <h2>Use one test enquiry across the whole demo</h2>
       <p>Create a sample enquiry with a valid phone number, an owner, a source and unknown WhatsApp permission. Ask the vendor to show what happens when the lead becomes stale, opts out, replies, books a counselling session and reaches an admission outcome. Do not use a real student record for a sales demo.</p>
 
-      <div className="buyer-table-scroll">
+      <div className="buyer-table-scroll" tabIndex={0} role="region" aria-labelledby="crm-table-caption">
         <table className="buyer-table">
-          <caption>Admissions CRM requirements matrix</caption>
+          <caption id="crm-table-caption">Admissions CRM requirements matrix</caption>
           <thead><tr><th>Requirement</th><th>Proof to request</th><th>AdmitFlow scope to compare</th></tr></thead>
           <tbody>
             <tr><td>Intake and deduplication</td><td>Import a small file with a duplicate and one invalid row. Show the preview and error path.</td><td>Manual leads, mapped CSV review up to 1,000 rows, duplicate-phone skips and connected Meta Lead Ads page intake.</td></tr>
@@ -113,9 +113,9 @@ function PilotMeasurement() {
 
       <h2>Fictional worked example</h2>
       <p><strong>Every number in this example is fictional.</strong> Suppose one institute reviews 300 stale, open enquiries over four weeks. Of these, 210 meet its documented follow-up eligibility rules. The institute places 120 eligible leads in a reviewed WhatsApp follow-up group and 90 in a comparison group. The groups were chosen by staff, not randomized, so their outcomes are observational.</p>
-      <div className="buyer-table-scroll">
+      <div className="buyer-table-scroll" tabIndex={0} role="region" aria-labelledby="pilot-table-caption">
         <table className="buyer-table">
-          <caption>Fictional four-week pilot scorecard</caption>
+          <caption id="pilot-table-caption">Fictional four-week pilot scorecard</caption>
           <thead><tr><th>Measure</th><th>Follow-up group</th><th>Comparison group</th><th>Reading</th></tr></thead>
           <tbody>
             <tr><td>Eligible leads</td><td>120</td><td>90</td><td>Different group sizes; use rates for a basic comparison.</td></tr>

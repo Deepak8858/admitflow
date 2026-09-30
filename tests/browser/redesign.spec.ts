@@ -277,6 +277,38 @@ for (const width of [320, 375, 768, 1440]) {
   });
 }
 
+test("resource tables support keyboard scrolling in both themes", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const tables = [
+    ["coaching-admissions-follow-up-checklist", "Manager review before a follow-up"],
+    ["how-to-evaluate-an-admissions-crm", "Admissions CRM requirements matrix"],
+    ["measuring-admissions-recovery-pilot", "Fictional four-week pilot scorecard"],
+  ] as const;
+  for (const theme of ["light", "dark"] as const) {
+    for (const [slug, caption] of tables) {
+      await page.goto(`/resources/${slug}`);
+      await selectTheme(page, theme);
+      const region = page.getByRole("region", { name: caption, exact: true });
+      await region.scrollIntoViewIfNeeded();
+      await region.focus();
+      // Confirm normal keyboard navigation can return to the scroll container.
+      await page.keyboard.press("Shift+Tab");
+      await expect(region).not.toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(region).toBeFocused();
+      await expect(region).toHaveCSS("outline-style", "solid");
+      await expect(region).toHaveCSS("outline-width", "2px");
+      expect(await region.evaluate(node => node.scrollWidth > node.clientWidth)).toBe(true);
+      await page.keyboard.press("ArrowRight");
+      await expect.poll(() => region.evaluate(node => node.scrollLeft)).toBeGreaterThan(0);
+      await noOverflow(page);
+      await accessible(page);
+    }
+  }
+});
+
 for (const theme of ["light", "dark"] as const) {
   test(`public accessibility in ${theme} theme`, async ({ page }) => {
     test.setTimeout(240_000);

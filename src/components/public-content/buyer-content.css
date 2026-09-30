@@ -16,7 +16,7 @@
 }
 
 .buyer-page a { text-underline-offset: 3px; }
-.buyer-page a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+.buyer-page :is(a, .buyer-table-scroll):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
 .buyer-page p, .buyer-page li, .buyer-page dd { line-height: var(--leading-body, 1.55); }
 .buyer-page strong { color: var(--color-ink); font-weight: var(--font-weight-emphasis, 550); }
 .buyer-header { padding-top: clamp(44px, 8vw, 92px); padding-bottom: clamp(42px, 6vw, 72px); border-bottom: 1px solid var(--color-rule); }
