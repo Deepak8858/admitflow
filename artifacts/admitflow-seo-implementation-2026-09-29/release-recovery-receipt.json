@@ -1,0 +1,85 @@
+{
+  "preparedAt": "2026-09-30T05:43:41.870Z",
+  "baseCommit": "02a03632957610765ba8911a1db0ea37d628d45f",
+  "branch": "codex/admitflow-seo-production",
+  "originalFingerprint": {
+    "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-tested-source-fingerprint.json",
+    "capturedAt": "2026-09-29T16:47:39.8004147Z",
+    "fileCount": 192,
+    "matched": 192,
+    "mismatched": 0,
+    "digest": "f3baa7646125abb2b16e28dfd15e225cc8373e31340b5bd1ad5f2386bd97bd94",
+    "scopeLimitation": "Original fingerprint excludes dependency manifests, tests and documentation."
+  },
+  "recoveredFiles": [
+    {
+      "path": "src/app/globals.css",
+      "sha256": "cb1cb5e123cd406e058d616f0d6013e10ea0fcea3a09acfd2d04c04decafc148",
+      "matchesOriginal": true
+    },
+    {
+      "path": "src/components/marketing/marketing.tsx",
+      "sha256": "79dcc48cf934c58e9edf3ba2ad51d976fd40831481e931c7de81c1b733e42d45",
+      "matchesOriginal": true
+    },
+    {
+      "path": "src/components/marketing/public-layout.tsx",
+      "sha256": "deb3d6f1e303ec8537788f5b7684ddf9359f8d267c2f41d80ae66f1a97cfff4a",
+      "matchesOriginal": true
+    },
+    {
+      "path": "src/lib/public-content.ts",
+      "sha256": "c75c8de2980b8e0a1b2eaec170f378f48e6e28f237808cffce2eee8b6c369919",
+      "matchesOriginal": true
+    }
+  ],
+  "dependencyAndCiBaselineComparison": [
+    {
+      "path": "package.json",
+      "baseSha256": "1d0d7cc456d52cc42116ae162ea9cedf8ec589643d6fc482c2f741322dca62b8",
+      "releaseSha256": "1d0d7cc456d52cc42116ae162ea9cedf8ec589643d6fc482c2f741322dca62b8",
+      "matchesBaseline": true
+    },
+    {
+      "path": "package-lock.json",
+      "baseSha256": "50ea5577cb92fac0444e59f9852b4eb70878353aac71e1d40da0d4ad19a4e3fc",
+      "releaseSha256": "50ea5577cb92fac0444e59f9852b4eb70878353aac71e1d40da0d4ad19a4e3fc",
+      "matchesBaseline": true
+    },
+    {
+      "path": ".depot/workflows/ci.yml",
+      "baseSha256": "b32e2794c0303c0cd53a962211e5be9409bd3855f55f5a9ab024b4e5b295432f",
+      "releaseSha256": "b32e2794c0303c0cd53a962211e5be9409bd3855f55f5a9ab024b4e5b295432f",
+      "matchesBaseline": true
+    }
+  ],
+  "expandedFingerprint": {
+    "path": "artifacts/admitflow-seo-implementation-2026-09-29/release-source-fingerprint.json",
+    "fileCount": 302,
+    "digest": "83e374a8db2bf0e22c46cdb3aaf20c086d5dbde9579422a52e4d79e56b81558f"
+  },
+  "exclusions": [
+    "Executive stylesheet/components/verifier/browser config/spec",
+    "Lenis dependency and verify:executive command",
+    "Geist Sans binary/license and its license-document addition",
+    "docs/design",
+    "Unrelated product-enterprise-readiness-handoff.md/status.md/older artifacts",
+    "Screenshots, raw provider logs, fixture cookies, session histories, temporary credential files"
+  ],
+  "sharedCheckoutReadOnly": true,
+  "newBuildExecuted": false,
+  "reasonNoNewBuild": "All original fingerprinted application/build/public bytes match exactly; original verification remains applicable. Harness syntax and scoped diff checks are performed for reconstruction.",
+  "reconstructionChecks": {
+    "sourceBytes": "192/192 exact original SHA-256 matches",
+    "dependencyAndCi": "package.json, package-lock.json and .depot/workflows/ci.yml byte-identical to base",
+    "syntax": "node --check passed for verify.mjs, verify-public-seo.mjs and measure-public-pages.mjs",
+    "diffWhitespace": "git diff --check passed",
+    "secretReview": {
+      "scope": "All reconstructed changed text files and curated evidence, plus staged diff review",
+      "credentialSignatureMatches": 0,
+      "sensitiveFieldReview": "Example secrets are blank; harness keys/cookies/passwords are explicit synthetic loopback fixtures. No real credentials or recorded session cookies included.",
+      "limitation": "Scoped signature/manual review; gitleaks was not available locally. Repository CI security checks remain required."
+    },
+    "applicationBuild": "Not repeated because exact original tested source was recovered"
+  }
+}

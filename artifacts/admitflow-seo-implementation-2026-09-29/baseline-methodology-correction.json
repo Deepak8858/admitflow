@@ -1,0 +1,10 @@
+{
+  "evidenceFile": "baseline-turbopack-measurements.json",
+  "capturedAtUtc": "2026-09-29T13:55:54.842Z",
+  "corrections": {
+    "appBaseUrlBuildAndRuntime": "The baseline harness set APP_BASE_URL to an empty string through verificationEnvironment. The raw file's 'absent' label is inaccurate. The final harness deletes the variable for build and runtime.",
+    "clsMethod": "The baseline harness recorded a sum of observed layout shifts without recent input over navigation load plus 2500 ms. Its raw 'maximum layout-shift session-window' label is inaccurate. Compare this baseline value only with the final layoutShiftSum over the same observation window; report the final session-window CLS separately."
+  },
+  "unchangedConditions": "Baseline and final use Next.js Turbopack production builds, Chromium headless, the same mobile/desktop viewport and CDP CPU/network profiles, cold cache, reduced motion, three runs, and blocked external browser origins.",
+  "interpretation": "These are local lab observations, not field Core Web Vitals, INP, a Lighthouse score, indexing evidence or ranking effects."
+}

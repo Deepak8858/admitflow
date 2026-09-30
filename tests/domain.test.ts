@@ -49,6 +49,28 @@ test("campaign audience is revalidated and duplicate enrolment is prevented", ()
   assert.ok(w.jobs.filter(j => j.leadId === lead.id).every(j => j.status === "cancelled"));
 });
 
+test("counsellor takeover blocks new recovery enrolment until staff explicitly enables AI", () => {
+  const workspace = createWorkspace();
+  const lead = recoverableLeads(workspace)[0];
+  assert.ok(lead);
+  const action = { type: "campaign.create", name: "Follow-up", course: "All courses", message: "Hello {name}", leadIds: [lead.id] };
+  const campaignCount = workspace.campaigns.length;
+  const jobCount = workspace.jobs.length;
+
+  applyAction(workspace, { type: "lead.update", id: lead.id, changes: { humanOwned: true } });
+  assert.ok(!recoverableLeads(workspace).some(item => item.id === lead.id));
+  assert.throws(() => applyAction(workspace, action), /Explicitly enable AI/);
+  assert.equal(workspace.campaigns.length, campaignCount);
+  assert.equal(workspace.jobs.length, jobCount);
+  assert.equal(lead.humanOwned, true);
+
+  applyAction(workspace, { type: "lead.update", id: lead.id, changes: { humanOwned: false } });
+  assert.ok(recoverableLeads(workspace).some(item => item.id === lead.id));
+  applyAction(workspace, action);
+  assert.equal(workspace.campaigns.length, campaignCount + 1);
+  assert.ok(workspace.jobs.some(job => job.leadId === lead.id && job.status === "pending"));
+});
+
 test("a stage change does not create revenue; a receipt does, and cannot be duplicated", () => {
   const w = createWorkspace();
   const lead = recoverableLeads(w)[0];

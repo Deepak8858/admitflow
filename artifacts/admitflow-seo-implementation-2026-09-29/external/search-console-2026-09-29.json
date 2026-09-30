@@ -1,0 +1,51 @@
+{
+  "recordedAt": "2026-09-29",
+  "provenance": "Model transcription of successful read-only GSC Wizard connector responses; not a Google provider export.",
+  "property": "sc-domain:incfrog.ai",
+  "propertySelection": {
+    "listSitesFlagsCaptured": false,
+    "note": "The list_sites readability/activation flags were not captured in this workstream. Successful property-scoped connector reads show this connected account could read the selected property."
+  },
+  "searchAnalytics": {
+    "searchType": "web",
+    "dimensions": ["page"],
+    "filter": {
+      "dimension": "page",
+      "operator": "contains",
+      "expression": "https://admitflow.incfrog.ai/"
+    },
+    "startDate": "2026-08-30",
+    "endDate": "2026-09-26",
+    "settledThrough": "2026-09-26",
+    "dateBasis": "America/Los_Angeles",
+    "dataSource": "api",
+    "rowCount": 0,
+    "hasMore": false
+  },
+  "homepageInspectionHistory": {
+    "inspectionUrl": "https://admitflow.incfrog.ai/",
+    "requestedAt": "2026-09-28T15:16:35.910134+00:00",
+    "verdict": "NEUTRAL",
+    "coverageState": "URL is unknown to Google",
+    "lastCrawlTime": null,
+    "freshInspectionPerformed": false
+  },
+  "submittedSitemapsReadback": {
+    "returnedPaths": ["https://incfrog.ai/sitemap.xml"],
+    "note": "This is the parent-domain sitemap. The connector response did not show a submitted AdmitFlow sitemap."
+  },
+  "ga4Discovery": {
+    "connectedInGscWizard": false,
+    "note": "No connected Google account for this GSC Wizard account has the Google Analytics scope. This does not establish whether AdmitFlow has analytics configured elsewhere."
+  },
+  "bingDiscovery": {
+    "configuredInGscWizard": false,
+    "note": "No Bing Webmaster API key is configured through this GSC Wizard connection."
+  },
+  "googleGenerativeAi": {
+    "effectiveInclusionSettingInspected": false,
+    "performanceReportRetrieved": false,
+    "note": "No callable connector tool in this session exposed the effective inclusion setting or separate generative AI performance report."
+  },
+  "interpretation": "Zero filtered Search Analytics rows describe this property, filter, search type, and settled window only. The previous inspection is not evidence of a penalty or permanent indexing block. No ranking or AI citation outcome is claimed."
+}

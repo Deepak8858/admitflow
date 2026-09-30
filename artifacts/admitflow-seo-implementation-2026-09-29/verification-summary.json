@@ -1,0 +1,87 @@
+{
+  "description": "Portable result excerpts from original local verification logs; not a new execution. Sanitized fixture-only verification. See implementation report for split runs and remaining live limitations.",
+  "results": [
+    {
+      "sourceArchive": "pre-visual-full-verification.log",
+      "sha256": "4dc641de46020ae821360ae195f912abeb751a133fbd8554727642d2b1baba7c",
+      "bytes": 128631,
+      "resultLines": [
+        "Ran 3 tests in 0.072s",
+        "OK",
+        "ℹ tests 395",
+        "ℹ pass 395",
+        "ℹ fail 0",
+        "ℹ tests 120",
+        "ℹ pass 120",
+        "ℹ fail 0",
+        "ℹ tests 646",
+        "ℹ pass 646",
+        "ℹ fail 0",
+        "Verification failed: node_modules/next/dist/bin/next build: spawnSync C:\\nvm4w\\nodejs\\node.exe ETIMEDOUT"
+      ],
+      "rawLogIncluded": false
+    },
+    {
+      "sourceArchive": "final-corrected-public-build.log",
+      "sha256": "545b64cb9b8335cb70a8164099edeedca7154ffc1b2f864e3c2c1fab01c026bc",
+      "bytes": 3364,
+      "resultLines": [
+        "✓ Compiled successfully in 2.4min",
+        "Running TypeScript ...",
+        "Finished TypeScript in 113s ...",
+        "Generating static pages using 3 workers (0/27) ...",
+        "Generating static pages using 3 workers (6/27)",
+        "Generating static pages using 3 workers (13/27)",
+        "Generating static pages using 3 workers (20/27)",
+        "✓ Generating static pages using 3 workers (27/27) in 4.1s",
+        "Public SEO: 43 passed, 0 failed. Evidence: H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-verification.json"
+      ],
+      "rawLogIncluded": false
+    },
+    {
+      "sourceArchive": "final-corrected-preview-build.log",
+      "sha256": "c45163926a4a3f1660e4a34a0006ce42c26a789d81f3dd2b3c9c2c79156d326f",
+      "bytes": 6327,
+      "resultLines": [
+        "✓ Compiled successfully in 25.3s",
+        "Running TypeScript ...",
+        "Finished TypeScript in 52s ...",
+        "Generating static pages using 3 workers (0/27) ...",
+        "Generating static pages using 3 workers (6/27)",
+        "Generating static pages using 3 workers (13/27)",
+        "Generating static pages using 3 workers (20/27)",
+        "✓ Generating static pages using 3 workers (27/27) in 3.7s"
+      ],
+      "rawLogIncluded": false
+    },
+    {
+      "sourceArchive": "final-corrected-browser-public.log",
+      "sha256": "772ed4aacdab6ce9ace628d47ab42e5193e4143aca94f33cd5fd0a2b9c6a63b0",
+      "bytes": 60694,
+      "resultLines": [
+        "4 failed",
+        "79 passed (26.3m)",
+        "Verification failed: node_modules/@playwright/test/cli.js test: exit 1"
+      ],
+      "rawLogIncluded": false
+    },
+    {
+      "sourceArchive": "final-corrected-browser-targeted.log",
+      "sha256": "2b70a7f0a805c8087181febfe2b4b7df49ebe72f5bc74624bba4ddacff654566",
+      "bytes": 2245,
+      "resultLines": [
+        "4 passed (1.9m)"
+      ],
+      "rawLogIncluded": false
+    },
+    {
+      "sourceArchive": "final-corrected-browser-account.log",
+      "sha256": "63423c827f491014c15026e5fd0abe1e3457d2a6c051f10ce0d38ba59f38baae",
+      "bytes": 6894,
+      "resultLines": [
+        "10 passed (1.2m)"
+      ],
+      "rawLogIncluded": false
+    }
+  ]
+}

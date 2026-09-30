@@ -15,7 +15,12 @@ export function Illustration({ name, className = "", eager = false, decorative =
     if (element?.complete && element.naturalWidth === 0) setFailed(true);
   }, []);
   const image = illustrations[name];
+  const srcSet = [
+    `/media/${name}-small.webp 640w`,
+    ...(name === "admissions-mountain-hero" ? [`/media/${name}-960.webp 960w`] : []),
+    `/media/${name}.webp ${image.width}w`,
+  ].join(", ");
   return <div className={`illustration ${className}`}>
-    {failed ? <div className="illustration-fallback" role={decorative ? undefined : "img"} aria-label={decorative ? undefined : image.alt}><span aria-hidden="true">↗</span></div> : <img ref={imageRef} src={`/media/${name}.webp`} srcSet={`/media/${name}-small.webp 640w, /media/${name}.webp ${image.width}w`} sizes={sizes} width={image.width} height={image.height} alt={decorative ? "" : image.alt} loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : "auto"} onError={() => setFailed(true)} />}
+    {failed ? <div className="illustration-fallback" role={decorative ? undefined : "img"} aria-label={decorative ? undefined : image.alt}><span aria-hidden="true">↗</span></div> : <img ref={imageRef} src={`/media/${name}.webp`} srcSet={srcSet} sizes={sizes} width={image.width} height={image.height} alt={decorative ? "" : image.alt} loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : "auto"} onError={() => setFailed(true)} />}
   </div>;
 }

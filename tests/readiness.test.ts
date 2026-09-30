@@ -38,11 +38,12 @@ test("preflight validates roles, origin/callback, encryption and TLS queue confi
 
 test("verification excludes inherited provider credentials and uses only disposable browser data", async () => {
   const actualTemplate = await readFile(".env.example", "utf8");
-  const config = verificationEnvironment({ PATH: "system-path", DATABASE_URL: "must-not-inherit", WORKOS_API_KEY: "must-not-inherit", AWS_ACCESS_KEY_ID: "must-not-inherit", NODE_OPTIONS: "--require=unsafe" }, actualTemplate, "disposable-verification-dir");
+  const config = verificationEnvironment({ PATH: "system-path", APP_BASE_URL: "https://must-not-inherit.invalid", DATABASE_URL: "must-not-inherit", WORKOS_API_KEY: "must-not-inherit", AWS_ACCESS_KEY_ID: "must-not-inherit", NODE_OPTIONS: "--require=unsafe" }, actualTemplate, "disposable-verification-dir");
   assert.equal(config.DATABASE_URL, ""); assert.equal(config.WORKOS_API_KEY, "");
   assert.equal(config.AWS_ACCESS_KEY_ID, undefined); assert.equal(config.NODE_OPTIONS, undefined);
   assert.equal(config.ADMITFLOW_DB, ":memory:"); assert.match(config.ADMITFLOW_BROWSER_DB, /disposable-verification-dir/);
-  assert.equal(config.APP_BASE_URL, "");
+  assert.equal(config.APP_BASE_URL, undefined);
+  assert.equal(Object.hasOwn(config, "APP_BASE_URL"), false);
   // Do not put actual values into assertion failure messages.
   for (const name of ["DATABASE_URL", "DATABASE_URL_UNPOOLED", "WORKOS_API_KEY", "WORKOS_COOKIE_PASSWORD", "OPENAI_API_KEY", "ELEVENLABS_API_KEY", "R2_SECRET_ACCESS_KEY", "INTEGRATION_ENCRYPTION_KEY"]) {
     const match = actualTemplate.match(new RegExp(`^${name}=(.*)$`, "m"));

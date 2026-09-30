@@ -1,8 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { publicPages } from "../../src/lib/public-content";
 
 const routes = ["/overview", "/leads", "/pipeline", "/inbox", "/appointments", "/recovery", "/automations", "/knowledge", "/analytics", "/team", "/integrations", "/settings"];
-const publicRoutes = ["/", "/welcome", "/product", "/pricing", "/help"];
+const publicRoutes = ["/", "/contact", "/product", "/pricing", "/help"];
+const publishedRoutes = publicPages.map(page => page.pathname);
+const entryRoutes = ["/login", "/signup", "/onboarding", "/auth/error"];
+const publicRobots = process.env.PUBLIC_SEARCH_INDEXABLE === "true" ? "index, follow" : "noindex, nofollow";
 const runtimeErrors = new WeakMap<Page, string[]>();
 test.beforeEach(({ page }) => {
   const errors: string[] = [];
@@ -24,7 +28,205 @@ async function selectTheme(page: Page, theme: "light" | "dark" | "system") {
 }
 async function accessible(page: Page) {
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(result.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => ({ target: node.target, failure: node.failureSummary })) }))).toEqual([]);
+  expect(result.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => ({ target: node.target, failure: node.failureSummary })) })), `Accessibility at ${new URL(page.url()).pathname}`).toEqual([]);
+}
+
+test("a fresh visit uses the reference light palette even when the device prefers dark", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  const loadedFonts = await page.evaluate(async () => {
+    await document.fonts.load('400 14px "Geist Mono"');
+    await document.fonts.ready;
+    return Array.from(document.fonts).filter(face => face.status === "loaded").map(face => face.family.toLowerCase());
+  });
+  expect(loadedFonts).toContain("inter variable");
+  expect(loadedFonts).toContain("inter hero");
+  expect(loadedFonts).toContain("geist mono");
+  const theme = page.getByRole("combobox", { name: "Colour theme" });
+  await expect(theme).toHaveAttribute("data-appearance-ready", "true");
+  await expect(theme).toHaveValue("light");
+  await selectTheme(page, "dark");
+  await page.goto("/signup");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await selectTheme(page, "system");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(theme).toHaveValue("system");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});
+
+for (const width of [320, 375, 414, 768, 1440]) {
+  test(`reference typography and paper palette reach public, workspace and account pages at ${width}px`, async ({ page }) => {
+    test.setTimeout(360_000);
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    expect(publishedRoutes).toHaveLength(13);
+    for (const path of [...publishedRoutes, ...routes, ...entryRoutes]) {
+      await test.step(path, async () => {
+        if (path === entryRoutes[0]) {
+          await page.context().clearCookies();
+          await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
+        }
+        const response = await page.goto(path);
+        expect(response?.status(), path).toBe(200);
+        const marker = publishedRoutes.includes(path)
+          ? ".marketing-site"
+          : routes.includes(path)
+            ? ".app-shell"
+            : path === "/onboarding"
+              ? ".institute-onboarding"
+              : path === "/auth/error"
+                ? ".standalone-empty"
+                : ".account-entry";
+        await expect(page.locator(marker), `Expected ${path} to render its own page`).toBeVisible();
+        await expect(page.locator("h1")).toBeVisible();
+        await expect.poll(() => new URL(page.url()).pathname, `Unexpected redirect from ${path}`).toBe(path);
+        await page.evaluate(() => document.fonts.ready);
+        await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+        const appearance = await page.evaluate(() => {
+          const root = getComputedStyle(document.documentElement);
+          const body = getComputedStyle(document.body);
+          const heading = getComputedStyle(document.querySelector("h1")!);
+          const property = (name: string) => root.getPropertyValue(name).trim().toLowerCase();
+          const color = (name: string) => {
+            const probe = document.createElement("span");
+            probe.style.backgroundColor = `var(${name})`;
+            document.body.appendChild(probe);
+            const value = getComputedStyle(probe).backgroundColor;
+            probe.remove();
+            return value;
+          };
+          return {
+            fontDisplay: property("--font-display"),
+            fontBody: property("--font-body"),
+            fontMono: property("--font-mono"),
+            fontHero: property("--font-hero"),
+            paper: color("--color-paper"),
+            secondary: color("--color-paper-2"),
+            surface: color("--color-surface"),
+            ink: color("--color-ink"),
+            muted: color("--color-muted"),
+            bodyFont: body.fontFamily,
+            bodyWeight: body.fontWeight,
+            bodyLineRatio: Number.parseFloat(body.lineHeight) / Number.parseFloat(body.fontSize),
+            bodyLetterSpacing: Number.parseFloat(body.letterSpacing) / Number.parseFloat(body.fontSize),
+            bodyFeatures: body.fontFeatureSettings,
+            bodyVariation: body.fontVariationSettings,
+            bodyBackground: body.backgroundColor,
+            buyerHeading: Boolean(document.querySelector(".buyer-page .buyer-header h1")),
+            headingFont: heading.fontFamily,
+            headingWeight: heading.fontWeight,
+            headingSize: Number.parseFloat(heading.fontSize),
+            headingLineRatio: Number.parseFloat(heading.lineHeight) / Number.parseFloat(heading.fontSize),
+            headingLetterSpacing: Number.parseFloat(heading.letterSpacing) / Number.parseFloat(heading.fontSize),
+            headingFeatures: heading.fontFeatureSettings,
+            headingVariation: heading.fontVariationSettings,
+          };
+        });
+        expect(appearance.fontDisplay).toContain("inter variable");
+        expect(appearance.fontBody).toContain("inter variable");
+        expect(appearance.fontMono).toContain("geist mono");
+        expect(appearance.fontHero).toContain("inter");
+        expect(appearance.paper).toBe("rgb(250, 250, 247)");
+        expect(appearance.secondary).toBe("rgb(243, 242, 236)");
+        expect(appearance.surface).toBe("rgb(255, 255, 255)");
+        expect(appearance.ink).toBe("rgb(42, 42, 39)");
+        expect(appearance.muted).toBe("rgb(102, 100, 93)");
+        expect(appearance.bodyFont.toLowerCase()).toContain("inter variable");
+        expect(appearance.bodyWeight).toBe("400");
+        expect(appearance.bodyLineRatio).toBeCloseTo(1.55, 2);
+        expect(appearance.bodyLetterSpacing).toBeCloseTo(-0.008, 3);
+        for (const feature of ["blwf", "cv03", "cv04", "cv09", "cv11"]) expect(appearance.bodyFeatures).toContain(feature);
+        expect(appearance.bodyVariation).toContain("opsz");
+        expect(appearance.bodyBackground).toBe("rgb(250, 250, 247)");
+        expect(appearance.headingFont.toLowerCase()).toContain("inter");
+        expect(appearance.headingWeight).toBe("500");
+        const accountHero = ["/login", "/signup", "/onboarding"].includes(path);
+        if (appearance.buyerHeading || accountHero) {
+          expect(appearance.headingFont.toLowerCase()).toContain("inter hero");
+          expect(appearance.headingFeatures).toBe("normal");
+          expect(appearance.headingVariation).toBe("normal");
+          expect(appearance.headingSize).toBeCloseTo(
+            width <= 809.98
+              ? Math.min(28.4553, Math.max(20, (width - 40) / 12.3))
+              : accountHero ? Math.min(52, Math.max(44, 36 + width * 0.012)) : 52,
+            1,
+          );
+        }
+        if (publishedRoutes.includes(path) || ["/login", "/signup", "/onboarding"].includes(path)) {
+          expect(appearance.headingLineRatio).toBeCloseTo(1.02, 2);
+        }
+        expect(appearance.headingLetterSpacing).toBeCloseTo(-0.03, 2);
+        if (publishedRoutes.includes(path)) expect(appearance.headingSize).toBeLessThanOrEqual(52);
+        if (path.startsWith("/resources/") && width <= 768) {
+          const alignment = await page.evaluate(() => ({
+            meta: document.querySelector(".buyer-resource-meta.public-container")?.getBoundingClientRect().left,
+            article: document.querySelector(".buyer-measure.public-container")?.getBoundingClientRect().left,
+          }));
+          expect(alignment.meta, "Resource byline must share the article's mobile gutter").toBeCloseTo(alignment.article!, 0);
+        }
+        await noOverflow(page);
+      });
+    }
+  });
+}
+
+for (const width of [390, 768, 1440]) {
+  test(`reference hero and reading roles resolve at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await page.goto("/");
+    await page.evaluate(() => document.fonts.ready);
+    const hero = page.locator("#hero-title");
+    const intro = page.locator(".hero-copy > p");
+    const sectionHeading = page.locator(".voice-section h2");
+    const readingText = page.locator(".voice-section > div > p");
+    const measurements = await page.evaluate(() => {
+      const styles = (selector: string) => getComputedStyle(document.querySelector(selector)!);
+      const heroStyle = styles("#hero-title");
+      const introStyle = styles(".hero-copy > p");
+      const sectionStyle = styles(".voice-section h2");
+      const readingStyle = styles(".voice-section > div > p");
+      return {
+        heroSize: Number.parseFloat(heroStyle.fontSize),
+        heroFeatures: heroStyle.fontFeatureSettings,
+        heroVariation: heroStyle.fontVariationSettings,
+        introSize: Number.parseFloat(introStyle.fontSize),
+        introFeatures: introStyle.fontFeatureSettings,
+        introVariation: introStyle.fontVariationSettings,
+        sectionSize: Number.parseFloat(sectionStyle.fontSize),
+        sectionVariation: sectionStyle.fontVariationSettings,
+        readingSize: Number.parseFloat(readingStyle.fontSize),
+        readingColor: readingStyle.color,
+      };
+    });
+    await expect(hero).toHaveCSS("font-family", /Inter Hero/);
+    await expect(intro).toHaveCSS("font-family", /Inter Hero/);
+    await expect(sectionHeading).toHaveCSS("font-family", /Inter Variable/);
+    await expect(readingText).toHaveCSS("font-family", /Inter Variable/);
+    expect(measurements.heroSize).toBeCloseTo(width === 1440 ? 52 : 28.4553, 1);
+    expect(measurements.heroFeatures).toBe("normal");
+    expect(measurements.heroVariation).toBe("normal");
+    expect(measurements.introSize).toBe(width === 1440 ? 18 : 17);
+    expect(measurements.introFeatures).toBe("normal");
+    expect(measurements.introVariation).toBe("normal");
+    expect(measurements.sectionSize).toBe(width === 1440 ? 56 : 28);
+    expect(measurements.sectionVariation).toContain("opsz");
+    expect(measurements.readingSize).toBe(width === 1440 ? 18 : 15.5);
+    expect(measurements.readingColor).toBe("rgb(102, 100, 93)");
+    if (width === 1440) {
+      await expect(page.locator(".public-desktop-nav a").first()).toHaveCSS("font-size", "14px");
+    } else {
+      await page.locator(".public-mobile-nav summary").click();
+      const row = page.getByRole("navigation", { name: "Mobile public navigation" }).getByRole("link").first();
+      await expect(row).toHaveCSS("font-size", "17px");
+      await expect(row).toHaveCSS("font-weight", "500");
+      await expect(row).toHaveCSS("font-variation-settings", /"opsz" 17/);
+    }
+  });
 }
 
 for (const width of [320, 375, 768, 1440]) {
@@ -44,7 +246,7 @@ for (const width of [320, 375, 768, 1440]) {
       await noOverflow(page);
       await selectTheme(page, "light");
       await noOverflow(page);
-      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", publicRobots);
       if (path === "/") {
         const background = page.locator(".hero-background img");
         await expect(background).toHaveAttribute("alt", "");
@@ -56,18 +258,21 @@ for (const width of [320, 375, 768, 1440]) {
         const copy = await page.locator(".hero-copy").boundingBox();
         expect(hero?.width).toBe(width);
         expect(navigation && copy && navigation.y + navigation.height <= copy.y).toBe(true);
-        await expect(page.locator("#hero-title")).toHaveCSS("font-weight", "650");
-        await expect(page.locator("#hero-title")).toHaveText("Your admissions pipeline. One connected workspace.");
+        await expect(page.locator("#hero-title")).toHaveCSS("font-weight", "500");
+        await expect(page.locator("#hero-title")).toHaveText("Admissions CRM for coaching institutes.");
         await page.screenshot({ path: `test-results/hero-${width}.jpg`, type: "jpeg", quality: 80 });
         await page.locator(".hero-actions").getByRole("link", { name: "Explore the product" }).click();
-        await expect(page.locator("#workbench .workbench-heading")).toBeInViewport();
+        await expect(page).toHaveURL(/\/product$/);
+        await expect(page.getByRole("heading", { name: /The enquiry-to-admission workflow/i })).toBeVisible();
+        await page.goto("/");
+        await page.locator("#workbench").scrollIntoViewIfNeeded();
         await expect(page.locator(".feature-knowledge")).toHaveCSS("opacity", "1");
         for (const image of await page.locator(".illustration img").all()) {
           await image.scrollIntoViewIfNeeded();
           await expect.poll(() => image.evaluate(element => (element as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
         }
         await page.evaluate(() => window.scrollTo(0, 0));
-        await page.screenshot({ path: `test-results/welcome-${width}.png`, fullPage: true });
+        await page.screenshot({ path: `test-results/home-${width}.png`, fullPage: true });
       }
     }
     expect(workspaceRequests).toEqual([]);
@@ -75,10 +280,44 @@ for (const width of [320, 375, 768, 1440]) {
   });
 }
 
+test("public tables support keyboard scrolling in both themes", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const tables = [
+    ["/product/admissions-recovery", "What each admissions measure means"],
+    ["/resources/coaching-admissions-follow-up-checklist", "Manager review before a follow-up"],
+    ["/resources/how-to-evaluate-an-admissions-crm", "Admissions CRM requirements matrix"],
+    ["/resources/measuring-admissions-recovery-pilot", "Fictional four-week pilot scorecard"],
+  ] as const;
+  for (const theme of ["light", "dark"] as const) {
+    for (const [path, caption] of tables) {
+      await page.goto(path);
+      await selectTheme(page, theme);
+      const region = page.getByRole("region", { name: caption, exact: true });
+      await region.scrollIntoViewIfNeeded();
+      await region.focus();
+      // Confirm normal keyboard navigation can return to the scroll container.
+      await page.keyboard.press("Shift+Tab");
+      await expect(region).not.toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(region).toBeFocused();
+      await expect(region).toHaveCSS("outline-style", "solid");
+      await expect(region).toHaveCSS("outline-width", "2px");
+      expect(await region.evaluate(node => node.scrollWidth > node.clientWidth)).toBe(true);
+      await page.keyboard.press("ArrowRight");
+      await expect.poll(() => region.evaluate(node => node.scrollLeft)).toBeGreaterThan(0);
+      await noOverflow(page);
+      await accessible(page);
+    }
+  }
+});
+
 for (const theme of ["light", "dark"] as const) {
   test(`public accessibility in ${theme} theme`, async ({ page }) => {
+    test.setTimeout(240_000);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    for (const path of publicRoutes) {
+    for (const path of publishedRoutes) {
       await page.goto(path);
       await selectTheme(page, theme);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
@@ -88,6 +327,58 @@ for (const theme of ["light", "dark"] as const) {
     }
   });
 }
+
+test("account access and institute setup remain accessible in both themes", async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const theme of ["light", "dark"] as const) {
+    for (const path of ["/login", "/signup", "/onboarding"]) {
+      await page.goto(path);
+      await expect.poll(() => new URL(page.url()).pathname).toBe(path);
+      await expect(page.locator("h1")).toBeVisible();
+      await selectTheme(page, theme);
+      await accessible(page);
+    }
+  }
+});
+
+test("invalid-input message contrast remains readable", async ({ page }) => {
+  await page.goto("/signup");
+  await expect(page.locator(".account-entry form")).toBeVisible();
+  await page.evaluate(() => {
+    const message = document.createElement("p");
+    message.className = "account-entry-field-error";
+    message.setAttribute("role", "alert");
+    message.textContent = "Please enter a valid email address.";
+    document.querySelector(".account-entry form")?.appendChild(message);
+  });
+  const message = page.locator(".account-entry-field-error");
+  await expect(message).toBeVisible();
+  const style = await message.evaluate(element => {
+    const computed = getComputedStyle(element);
+    return { color: computed.color, background: computed.backgroundColor, fontSize: computed.fontSize };
+  });
+  expect(style.color).toBe("rgb(185, 54, 40)");
+  await page.screenshot({ path: "test-results/signup-invalid-style-probe.png" });
+  const result = await new AxeBuilder({ page }).include(".account-entry-field-error").withRules(["color-contrast"]).analyze();
+  expect(result.violations.map(item => ({ id: item.id, targets: item.nodes.map(node => node.target) })), JSON.stringify(style)).toEqual([]);
+});
+
+test("selected calendar date keeps small text readable", async ({ page }) => {
+  await page.goto("/appointments");
+  const day = page.locator(".week-strip > button").first();
+  await expect(day).toBeVisible();
+  await day.click();
+  await expect(day).toHaveAttribute("aria-pressed", "true");
+  const style = await day.evaluate(element => {
+    const computed = getComputedStyle(element.querySelector("small")!);
+    return { color: computed.color, background: getComputedStyle(element).backgroundColor, fontSize: computed.fontSize };
+  });
+  expect(style.background).toBe("rgb(107, 92, 218)");
+  await page.screenshot({ path: "test-results/calendar-selected-style-probe.png" });
+  const result = await new AxeBuilder({ page }).include(".week-strip > button.selected").withRules(["color-contrast"]).analyze();
+  expect(result.violations.map(item => ({ id: item.id, targets: item.nodes.map(node => node.target) })), JSON.stringify(style)).toEqual([]);
+});
 
 test("fictional preview requires review and pricing publishes no invented rate", async ({ page }) => {
   const writes: string[] = [];
@@ -105,11 +396,11 @@ test("fictional preview requires review and pricing publishes no invented rate",
   await expect(page.locator(".preview-statuses")).toContainText("No live request has been made.");
   expect(writes).toEqual([]);
   await page.goto("/pricing");
-  await expect(page.locator(".pricing-card")).toContainText("Rates, billing periods and plan entitlements are not available for publication yet.");
+  await expect(page.locator(".pricing-intro")).toContainText("There is no published rate or paid plan to select here yet.");
   await expect(page.locator(".pricing-card")).not.toContainText("₹");
-  await page.getByRole("link", { name: "Read the getting-started guide" }).click();
-  await expect(page).toHaveURL(/\/help$/);
-  await expect(page.locator(".help-guide li")).toHaveCount(5);
+  await page.locator(".pricing-card").getByRole("link", { name: "Discuss a pilot" }).click();
+  await expect(page).toHaveURL(/\/contact$/);
+  await expect(page.locator('a[href="mailto:support@admitflow.incfrog.ai"]').first()).toBeVisible();
 });
 
 test("audio plays only on request, pauses other samples and includes transcripts", async ({ page }) => {
@@ -125,17 +416,17 @@ test("audio plays only on request, pauses other samples and includes transcripts
     await expect.poll(() => sample.locator("audio").evaluate(element => (element as HTMLAudioElement).currentTime)).toBeGreaterThan(0);
     expect(await players.evaluateAll(items => items.filter(item => !(item as HTMLAudioElement).paused).length)).toBe(1);
   }
-  await page.goto("/welcome");
+  await page.goto("/");
   await page.locator("audio").evaluate(async element => { await (element as HTMLAudioElement).play(); });
   await expect.poll(() => page.locator("audio").evaluate(element => (element as HTMLAudioElement).currentTime)).toBeGreaterThan(0);
 });
 
 test("missing media keeps readable fallback and transcript", async ({ page }) => {
   await page.route("**/media/**", route => route.abort());
-  await page.goto("/welcome");
+  await page.goto("/");
   await expect(page.locator(".hero-background .illustration-fallback")).toBeVisible();
   await expect(page.locator("#hero-title")).toBeVisible();
-  await expect(page.locator(".hero-actions").getByRole("link", { name: "Get started" })).toBeVisible();
+  await expect(page.locator(".hero-actions").getByRole("link", { name: "Create account" })).toBeVisible();
   await page.locator("audio").evaluate(element => (element as HTMLAudioElement).load());
   await expect(page.getByRole("status")).toContainText("Audio is unavailable");
   await page.getByText("Read transcript", { exact: true }).click();
@@ -146,13 +437,13 @@ test("theme selection is disabled until appearance hydration is ready", async ({
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const serverPage = await context.newPage();
-    await serverPage.goto("http://127.0.0.1:3100/welcome");
+    await serverPage.goto("http://127.0.0.1:3100/");
     const select = serverPage.getByRole("combobox", { name: "Colour theme" });
     await expect(select).toHaveAttribute("data-appearance-ready", "false");
     await expect(select).toBeDisabled();
   } finally { await context.close(); }
   await page.addInitScript(() => localStorage.setItem("admitflow:theme", "dark"));
-  await page.goto("/welcome");
+  await page.goto("/");
   const select = page.getByRole("combobox", { name: "Colour theme" });
   await expect(select).toHaveAttribute("data-appearance-ready", "true");
   await expect(select).toBeEnabled();

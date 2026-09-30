@@ -1,0 +1,107 @@
+{
+  "capturedAt": "2026-09-29T15:57:35.381Z",
+  "reducedMotion": "reduce",
+  "screenshots": [
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-home.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-product.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-heaviest-new.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-contact.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-resource.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-workspace.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-signup.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-onboarding.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-desktop-not-found.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-mobile-320-home.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-mobile-320-menu.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-390-home.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-390-team-image-scrolled.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-390-closing-image-scrolled.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-390-workspace.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-390-signup.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-390-onboarding.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-390-resource.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-768-home.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-768-workspace.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-768-signup.png",
+    "H:\\new-app\\artifacts\\admitflow-seo-implementation-2026-09-29\\final-corrected-public-lab-768-onboarding.png"
+  ],
+  "headings": {
+    "/resources/measuring-admissions-recovery-pilot": {
+      "text": "Measuring an admissions recovery pilot",
+      "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif",
+      "fontWeight": "500",
+      "fontSize": "52px",
+      "fontFeatureSettings": "\"blwf\", \"cv03\", \"cv04\", \"cv09\", \"cv11\"",
+      "fontVariationSettings": "\"opsz\" 32",
+      "lineHeight": "53.04px",
+      "letterSpacing": "-1.56px"
+    },
+    "/contact": {
+      "text": "Talk to AdmitFlow about your admissions workflow.",
+      "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif",
+      "fontWeight": "500",
+      "fontSize": "52px",
+      "fontFeatureSettings": "\"blwf\", \"cv03\", \"cv04\", \"cv09\", \"cv11\"",
+      "fontVariationSettings": "\"opsz\" 32",
+      "lineHeight": "53.04px",
+      "letterSpacing": "-1.56px"
+    },
+    "/resources/how-to-evaluate-an-admissions-crm": {
+      "text": "How to evaluate an admissions CRM",
+      "fontFamily": "\"Inter Variable\", \"Segoe UI\", sans-serif",
+      "fontWeight": "500",
+      "fontSize": "36px",
+      "fontFeatureSettings": "\"blwf\", \"cv03\", \"cv04\", \"cv09\", \"cv11\"",
+      "fontVariationSettings": "\"opsz\" 32",
+      "lineHeight": "36.72px",
+      "letterSpacing": "-1.08px"
+    }
+  },
+  "lazyImages": {
+    ".feature-team": {
+      "complete": true,
+      "naturalWidth": 390,
+      "naturalHeight": 260,
+      "currentSrc": "/media/next-chapter-campus-small.webp"
+    },
+    ".closing-cta": {
+      "complete": true,
+      "naturalWidth": 390,
+      "naturalHeight": 260,
+      "currentSrc": "/media/next-chapter-campus-small.webp"
+    }
+  },
+  "interactions": {
+    "desktopTheme": {
+      "passed": true,
+      "result": {
+        "selected": "dark",
+        "applied": "dark"
+      }
+    },
+    "productAudioAndTranscript": {
+      "passed": true,
+      "result": {
+        "playbackAdvanced": true,
+        "transcriptVisible": true,
+        "simultaneouslyPlaying": 1
+      }
+    },
+    "mobileKeyboardMenu": {
+      "passed": true,
+      "result": {
+        "openedWithEnter": true,
+        "closedWithEscape": true,
+        "focusReturned": true,
+        "horizontalOverflow": false
+      }
+    },
+    "mobile390LazyTeamImage": {
+      "passed": true
+    },
+    "mobile390LazyClosingImage": {
+      "passed": true
+    }
+  },
+  "blockedOrigins": []
+}

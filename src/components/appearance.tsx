@@ -1,19 +1,23 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { MotionConfig, motion, useInView, useReducedMotion } from "framer-motion";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { MotionConfig, motion, useReducedMotion } from "framer-motion";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Monitor, Moon, Sun } from "lucide-react";
 
 export type Theme = "system" | "light" | "dark";
 export const spring = { type: "spring", stiffness: 350, damping: 28 } as const;
-const AppearanceContext = createContext<{ theme: Theme; ready: boolean; setTheme: (theme: Theme) => void }>({ theme: "system", ready: false, setTheme: () => {} });
+const AppearanceContext = createContext<{ theme: Theme; ready: boolean; setTheme: (theme: Theme) => void }>({ theme: "light", ready: false, setTheme: () => {} });
+
+function savedTheme(value: string | null): Theme {
+  return value === "dark" || value === "system" ? value : "light";
+}
 
 export function AppearanceProvider({ children }: { children: ReactNode }) {
-  const [theme, updateTheme] = useState<Theme>("system");
+  const [theme, updateTheme] = useState<Theme>("light");
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    try { const stored = localStorage.getItem("admitflow:theme"); if (stored === "light" || stored === "dark") updateTheme(stored); } catch { /* Storage can be unavailable in private browsing. */ }
+    try { updateTheme(savedTheme(localStorage.getItem("admitflow:theme"))); } catch { /* The default stays light when storage is unavailable. */ }
     setReady(true);
   }, []);
   useEffect(() => {
@@ -21,7 +25,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const apply = () => { document.documentElement.dataset.theme = theme === "system" ? media.matches ? "dark" : "light" : theme; };
     apply(); media.addEventListener("change", apply);
-    const sync = (event: StorageEvent) => { if (event.key === "admitflow:theme") updateTheme(event.newValue === "light" || event.newValue === "dark" ? event.newValue : "system"); };
+    const sync = (event: StorageEvent) => { if (event.key === "admitflow:theme" || event.key === null) updateTheme(savedTheme(event.newValue)); };
     window.addEventListener("storage", sync);
     return () => { media.removeEventListener("change", apply); window.removeEventListener("storage", sync); };
   }, [theme, ready]);
@@ -35,15 +39,10 @@ export function ThemeSelect() {
   return <label className="theme-select"><Icon size={15} aria-hidden="true" /><span className="sr-only">Colour theme</span><select aria-label="Colour theme" data-appearance-ready={ready} disabled={!ready} value={theme} onChange={event => setTheme(event.target.value as Theme)}><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>;
 }
 
-export function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
-  const reduced = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const visible = useInView(ref, { once: true, amount: 0.08 });
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-  // SSR and first hydration stay visible and identical; motion is progressive enhancement.
-  const hidden = mounted && !reduced && !visible;
-  return <motion.div ref={ref} className={className} initial={false} animate={{ opacity: hidden ? 0 : 1, y: hidden ? 12 : 0 }} transition={reduced ? { duration: 0 } : { ...spring, delay }}>{children}</motion.div>;
+export function Reveal({ children, className = "" }: { children: ReactNode; className?: string; delay?: number }) {
+  // Marketing headings and copy must remain visible through hydration, failed
+  // JavaScript, reduced motion, and visitors who never scroll to a section.
+  return <div className={className}>{children}</div>;
 }
 
 export function ActiveIndicator({ id }: { id: string }) {

@@ -236,7 +236,7 @@ export function sortLeads(leads: Lead[], sort: LeadSort = "newest", now = Date.n
 
 export function recoverableLeads(workspace: Workspace, now = Date.now()) {
   const enrolled = new Set(workspace.campaigns.filter(c => c.status !== "completed").flatMap(c => c.leadIds));
-  return workspace.leads.filter(lead => isStale(lead, now) && !contactBlock(lead) && !enrolled.has(lead.id))
+  return workspace.leads.filter(lead => isStale(lead, now) && !contactBlock(lead) && !lead.humanOwned && !enrolled.has(lead.id))
     .sort((a, b) => scoreLead(b, now).score - scoreLead(a, now).score);
 }
 

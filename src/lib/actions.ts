@@ -115,6 +115,9 @@ function applyHydratedAction(workspace: Workspace, action: Record<string, unknow
       if (!workspace.sequence.enabled) throw new Error("Enable recovery sequences in Automations before scheduling a campaign.");
       const eligible = new Set(recoverableLeads(workspace).map(lead => lead.id));
       const leadIds = [...new Set(input.leadIds)];
+      if (leadIds.some(id => workspace.leads.some(lead => lead.id === id && lead.humanOwned))) {
+        throw new Error("A counsellor owns one or more conversations. Explicitly enable AI for those enquiries before scheduling recovery.");
+      }
       if (leadIds.some(id => !eligible.has(id))) throw new Error("Some enquiries are no longer eligible. Refresh the audience and try again.");
       const template = z.object({ templateName: z.string().max(100).optional(), templateLanguage: z.string().max(20).optional() }).parse(action);
       const campaign = { ...template, id: uid(), name: input.name, course: input.course, message: input.message, leadIds, createdAt: isoNow(), status: "active" as const, delays: [...workspace.sequence.delays] };

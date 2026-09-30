@@ -33,6 +33,7 @@ jobs:
       NODE_IMAGE: ${{ vars.NODE_IMAGE }}
       RUNTIME_IMAGE: cgr.dev/chainguard/wolfi-base@sha256:08df5982c3d27e70a4ce1607e3bb9af09d746f8722cf135a7694afef879fc5a2
       BUILDS_APPROVED: ${{ vars.BUILDS_APPROVED }}
+      PUBLIC_SEARCH_INDEXABLE: 'true'
       NEXT_PUBLIC_META_APP_ID: ${{ vars.NEXT_PUBLIC_META_APP_ID }}
       NEXT_PUBLIC_META_CONFIG_ID: ${{ vars.NEXT_PUBLIC_META_CONFIG_ID }}
       NEXT_PUBLIC_WORKOS_REDIRECT_URI: https://admitflow.incfrog.ai/callback
@@ -50,6 +51,7 @@ jobs:
           [[ "$ECR_REPOSITORY" =~ ^[a-z0-9][a-z0-9._/-]*$ ]]
           [[ "$DEPOT_PROJECT_ID" =~ ^[a-z0-9]+$ ]]
           [[ "$NODE_IMAGE" =~ ^node:24-trixie-slim@sha256:[a-f0-9]{64}$ ]]
+          [[ "$PUBLIC_SEARCH_INDEXABLE" == 'true' ]]
           [[ "$NEXT_PUBLIC_META_APP_ID" =~ ^[0-9]*$ ]]
           [[ "$NEXT_PUBLIC_META_CONFIG_ID" =~ ^[0-9]*$ ]]
       - name: Require successful CI for this exact main commit
@@ -89,6 +91,7 @@ jobs:
             NEXT_PUBLIC_META_APP_ID=${{ env.NEXT_PUBLIC_META_APP_ID }}
             NEXT_PUBLIC_META_CONFIG_ID=${{ env.NEXT_PUBLIC_META_CONFIG_ID }}
             NEXT_PUBLIC_WORKOS_REDIRECT_URI=${{ env.NEXT_PUBLIC_WORKOS_REDIRECT_URI }}
+            PUBLIC_SEARCH_INDEXABLE=${{ env.PUBLIC_SEARCH_INDEXABLE }}
       - name: Build and publish worker
         id: worker
         uses: depot/build-push-action@98e78adca7817480b8185f474a400b451d74e287 # v1
@@ -142,8 +145,9 @@ jobs:
             --arg repository "$REGISTRY/$ECR_REPOSITORY" --arg nodeImage "$NODE_IMAGE" --arg runtimeImage "$RUNTIME_IMAGE" \
             --arg webDigest "$WEB_DIGEST" --arg workerDigest "$WORKER_DIGEST" \
             --arg callback "$NEXT_PUBLIC_WORKOS_REDIRECT_URI" \
+            --arg searchIndexable "$PUBLIC_SEARCH_INDEXABLE" \
             --arg metaAppId "$NEXT_PUBLIC_META_APP_ID" --arg metaConfigId "$NEXT_PUBLIC_META_CONFIG_ID" \
-            '{commit:$commit,region:$region,repository:$repository,nodeImage:$nodeImage,runtimeImage:$runtimeImage,webDigest:$webDigest,workerDigest:$workerDigest,publicConfig:{callback:$callback,metaAppId:$metaAppId,metaConfigId:$metaConfigId}}' > release-manifest.json
+            '{commit:$commit,region:$region,repository:$repository,nodeImage:$nodeImage,runtimeImage:$runtimeImage,webDigest:$webDigest,workerDigest:$workerDigest,publicConfig:{callback:$callback,searchIndexable:($searchIndexable == "true"),metaAppId:$metaAppId,metaConfigId:$metaConfigId}}' > release-manifest.json
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6, Node 24 runtime
         with:
           name: release-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
