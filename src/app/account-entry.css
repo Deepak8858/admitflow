@@ -1,10 +1,24 @@
 .account-entry {
-  --entry-blue: #173c66;
-  --entry-blue-deep: #102b4d;
-  --entry-blue-light: #dbeaf7;
+  --entry-body-size: 15.5px;
+  --entry-lead-size: 17px;
   min-height: 100dvh;
-  background: var(--color-surface);
+  background: var(--color-paper);
   color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--entry-body-size);
+  font-weight: var(--font-weight-body, 400);
+  font-feature-settings: var(--font-features, "blwf" on, "cv03" on, "cv04" on, "cv09" on, "cv11" on);
+  font-variation-settings: "opsz" var(--font-optical-body, 18);
+  line-height: var(--leading-body, 1.55);
+  letter-spacing: var(--tracking-body, -.008em);
+}
+
+.account-entry :is(button, input, select),
+.account-entry .field > span:first-child {
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-nav, 500);
+  font-variation-settings: "opsz" var(--font-optical-nav, 14);
+  letter-spacing: var(--tracking-nav, -.003em);
 }
 
 .account-entry-header {
@@ -17,21 +31,33 @@
   border-bottom: 1px solid var(--color-rule);
 }
 
+.account-entry-header .brand { font-size: 21px; font-weight: var(--font-weight-emphasis, 550); font-variation-settings: "opsz" 20; letter-spacing: -.8px; }
+
 .account-entry-header-actions {
   display: flex;
   align-items: center;
   gap: clamp(12px, 2vw, 28px);
   color: var(--color-body);
-  font-size: 13px;
+  font-size: var(--text-nav-mobile, 15px);
+  font-weight: var(--font-weight-nav, 500);
+  font-variation-settings: "opsz" var(--font-optical-nav, 14);
+  letter-spacing: var(--tracking-nav, -.003em);
 }
+
+.account-entry-header .theme-select select { font-size: inherit; color: var(--color-body); }
 
 .account-entry-header-actions > a,
 .account-entry-switch a,
 .account-entry-unavailable a {
-  color: var(--color-accent);
-  font-weight: 600;
+  color: var(--color-ink);
+  font-weight: var(--font-weight-nav, 500);
+  text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+.account-entry-header-actions > a:hover,
+.account-entry-switch a:hover,
+.account-entry-unavailable a:hover { text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; }
 
 .account-entry-main {
   display: grid;
@@ -48,23 +74,27 @@
 }
 
 .account-entry-form-inner {
+  min-width: 0;
   width: min(100%, 480px);
 }
 
 .account-entry-eyebrow {
   display: inline-block;
   margin-bottom: 19px;
-  color: var(--color-accent);
-  font: 650 11px/1.5 var(--font-body);
-  letter-spacing: .13em;
+  color: var(--color-body);
+  font: 400 var(--text-eyebrow, 11px)/1.3 var(--font-mono);
+  font-variation-settings: normal;
+  letter-spacing: .16em;
 }
 
 .account-entry h1 {
   max-width: 13ch;
-  font-size: clamp(37px, 4.2vw, 59px);
-  font-weight: 650;
-  line-height: 1.06;
-  letter-spacing: -.055em;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4.2vw, 52px);
+  font-weight: var(--font-weight-heading, 500);
+  font-variation-settings: "opsz" var(--font-optical-heading, 32);
+  line-height: 1.02;
+  letter-spacing: var(--tracking-heading, -.03em);
   text-wrap: balance;
 }
 
@@ -72,8 +102,10 @@
   max-width: 39ch;
   margin-top: 17px;
   color: var(--color-body);
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: var(--entry-lead-size);
+  font-variation-settings: "opsz" 22;
+  line-height: 1.45;
+  letter-spacing: -.012em;
   text-wrap: pretty;
 }
 
@@ -94,15 +126,18 @@
   flex: 1 1 0;
   padding: 13px 5px 0 0;
   border-top: 2px solid var(--color-rule-strong);
-  color: var(--color-muted);
-  font-size: 12px;
-  font-weight: 550;
+  color: var(--color-body);
+  font-size: var(--text-nav, 14px);
+  font-weight: var(--font-weight-nav, 500);
+  font-variation-settings: "opsz" var(--font-optical-nav, 14);
+  line-height: 1.45;
+  letter-spacing: var(--tracking-nav, -.003em);
 }
 
 .account-entry-steps li + li { margin-left: 12px; }
 .account-entry-steps li[aria-current="step"] { border-top-color: var(--color-accent); color: var(--color-ink); }
-.account-entry-step-number { color: var(--color-muted); font: 600 10px/1.5 var(--font-mono); }
-.account-entry-steps li[aria-current="step"] .account-entry-step-number { color: var(--color-accent); }
+.account-entry-step-number { color: var(--color-body); font: 400 var(--text-eyebrow, 11px)/1.3 var(--font-mono); font-variation-settings: normal; letter-spacing: .06em; }
+.account-entry-steps li[aria-current="step"] .account-entry-step-number { color: var(--color-ink); }
 
 .account-entry-card {
   margin-top: 35px;
@@ -113,34 +148,42 @@
   box-shadow: 0 14px 48px var(--color-shadow);
 }
 
-.account-entry-card-heading h2 { font-size: 21px; font-weight: 625; line-height: 1.3; letter-spacing: -.035em; }
-.account-entry-card-heading p { margin-top: 6px; font-size: 13px; line-height: 1.6; }
+.account-entry-card-heading h2 { font-family: var(--font-display); font-size: 22px; font-weight: var(--font-weight-heading, 500); font-variation-settings: "opsz" var(--font-optical-heading, 32); line-height: 1.2; letter-spacing: var(--tracking-heading, -.03em); }
+.account-entry-card-heading p { margin-top: 8px; color: var(--color-body); font-size: var(--entry-body-size); line-height: var(--leading-body, 1.55); }
 .account-entry-card form { margin-top: 26px; }
-.account-entry-card .field { margin-bottom: 0; font-size: 13px; }
+.account-entry-card .field { margin-bottom: 0; font-size: var(--text-nav, 14px); }
 .account-entry-card .field > span:first-child { color: var(--color-ink); }
-.account-entry-card .field input { min-height: 49px; padding-inline: 14px; border-radius: 9px; font-size: 16px; }
+.account-entry-card .field input { min-width: 0; min-height: 49px; padding-inline: 14px; border-radius: 9px; font-size: 15px; }
 .account-entry-card .field input:disabled { opacity: .75; }
 
 .account-entry-submit.button {
   width: 100%;
   min-height: 49px;
   margin-top: 20px;
+  border-color: var(--color-ink);
   border-radius: 9px;
-  font-size: 14px;
-  font-weight: 600;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  box-shadow: var(--shadow-control);
+  font-size: 15px;
+  font-weight: var(--font-weight-nav, 500);
+  white-space: normal;
 }
+
+.account-entry-submit.button:hover:not(:disabled):not(.disabled) { border-color: var(--color-body); background: var(--color-body); color: var(--color-paper); box-shadow: var(--shadow-control); }
+.account-entry-submit.button svg { flex-shrink: 0; }
 
 .account-entry-next {
   margin-top: 19px;
-  color: var(--color-muted);
-  font-size: 12px;
-  line-height: 1.65;
+  color: var(--color-body);
+  font-size: 14px;
+  line-height: var(--leading-body, 1.55);
 }
 
 .account-entry-switch {
   margin-top: 27px;
   color: var(--color-body);
-  font-size: 13px;
+  font-size: var(--entry-body-size);
   text-align: center;
 }
 
@@ -151,12 +194,13 @@
   border-radius: 9px;
   background: var(--color-error-soft);
   color: var(--color-ink);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: var(--leading-body, 1.55);
+  overflow-wrap: anywhere;
 }
 
 .account-entry-error { margin-bottom: 18px; }
-.account-entry-field-error { margin-top: 7px; color: var(--color-error); font-size: 12px; }
+.account-entry-field-error { margin-top: 7px; color: var(--color-error-ink); font-size: 14px; overflow-wrap: anywhere; }
 .account-entry-unavailable { margin-top: 22px; border-color: var(--color-rule-strong); background: var(--color-paper-2); }
 .account-entry-unavailable strong { display: block; }
 .account-entry-unavailable p { margin-top: 3px; color: var(--color-body); }
@@ -176,24 +220,25 @@
   min-width: 0;
   justify-content: space-between;
   overflow: hidden;
+  border: 1px solid var(--color-rule);
   border-radius: 22px;
-  background: radial-gradient(circle at 76% 28%, #386d9b 0%, transparent 42%), linear-gradient(155deg, var(--entry-blue) 0%, var(--entry-blue-deep) 100%);
-  color: #f4f8ff;
+  background: var(--color-paper-2);
+  color: var(--color-ink);
 }
 
 .account-entry-visual-copy { position: relative; z-index: 1; padding: clamp(32px, 5vw, 76px) clamp(27px, 5vw, 74px) 20px; }
-.account-entry-visual-copy > span { color: #bad5ec; font: 650 10px/1.5 var(--font-body); letter-spacing: .14em; }
-.account-entry-visual-copy h2 { max-width: 12ch; margin-top: 21px; font-size: clamp(29px, 3vw, 44px); font-weight: 630; line-height: 1.12; letter-spacing: -.05em; text-wrap: balance; }
-.account-entry-visual-copy p { max-width: 34ch; margin-top: 14px; color: #dbeaf7; font-size: 14px; line-height: 1.7; }
+.account-entry-visual-copy > span { color: var(--color-body); font: 400 var(--text-eyebrow, 11px)/1.3 var(--font-mono); font-variation-settings: normal; letter-spacing: .16em; }
+.account-entry-visual-copy h2 { max-width: 12ch; margin-top: 21px; font-family: var(--font-display); font-size: 28px; font-weight: var(--font-weight-heading, 500); font-variation-settings: "opsz" var(--font-optical-heading, 32); line-height: var(--leading-heading, 1.04); letter-spacing: var(--tracking-heading, -.03em); text-wrap: balance; }
+.account-entry-visual-copy p { max-width: 34ch; margin-top: 14px; color: var(--color-body); font-size: var(--entry-body-size); line-height: var(--leading-body, 1.55); }
 
 .account-entry-art-frame {
   width: calc(100% - clamp(54px, 10vw, 148px));
   margin: 22px auto;
   padding: 8px;
-  border: 1px solid #ffffff4d;
+  border: 1px solid var(--color-rule-strong);
   border-radius: 19px;
-  background: #ffffff1c;
-  box-shadow: 0 25px 65px #061c3799;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-floating);
   transform: rotate(-2deg);
 }
 
@@ -201,38 +246,40 @@
 .account-entry-art img,
 .account-entry-art .illustration-fallback { width: 100%; border-radius: 12px; }
 .account-entry-art img { aspect-ratio: 3 / 2; object-fit: cover; }
-.account-entry-visual-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px clamp(27px, 5vw, 74px) 30px; color: #c5dcec; font-size: 12px; }
+.account-entry-visual-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px clamp(27px, 5vw, 74px) 30px; color: var(--color-body); font: 400 var(--text-label, 12px)/1.5 var(--font-mono); font-variation-settings: normal; letter-spacing: .06em; }
+.account-entry-visual-footer > span:first-child { min-width: 0; }
 .account-entry-visual-footer > span:last-child { font-size: 22px; }
 
-:root[data-theme="dark"] .account-entry {
-  --entry-blue: #173454;
-  --entry-blue-deep: #0b2038;
+@media (min-width: 810px) {
+  .account-entry { --entry-body-size: var(--text-body, 16px); --entry-lead-size: 18px; }
+  .account-entry-header-actions { font-size: var(--text-nav, 14px); }
+  .account-entry-visual-copy h2 { font-size: 36px; }
 }
 
-:root[data-theme="dark"] .account-entry-card { box-shadow: 0 14px 48px #00000028; }
+@media (min-width: 1440px) {
+  .account-entry { --entry-body-size: 18px; --entry-lead-size: 22px; }
+  .account-entry-visual-copy h2 { font-size: 56px; }
+}
 
-@media (max-width: 800px) {
+@media (max-width: 809px) {
   .account-entry-main { grid-template-columns: 1fr; }
   .account-entry-form-panel { padding: 52px 24px 66px; }
+  .account-entry-card .field input { font-size: 16px; }
   .account-entry-visual { min-height: 390px; padding: 16px; }
   .account-entry-visual-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; }
   .account-entry-visual-copy { padding: 32px; }
-  .account-entry-visual-copy h2 { font-size: clamp(27px, 4vw, 36px); }
   .account-entry-art-frame { width: calc(100% - 24px); margin: 0 24px 0 0; }
   .account-entry-visual-footer { grid-column: 1 / -1; padding: 12px 32px 22px; }
 }
 
 @media (max-width: 520px) {
   .account-entry-header { min-height: 66px; gap: 8px; padding: 12px; }
-  .account-entry-header .brand { font-size: 20px; }
   .account-entry-header-actions { gap: 8px; }
   .account-entry-header .theme-select select { max-width: 75px; }
   .account-entry-form-panel { padding: 43px 18px 58px; }
-  .account-entry h1 { font-size: clamp(36px, 10vw, 46px); }
-  .account-entry-intro { font-size: 14px; }
   .account-entry-card { margin-top: 28px; }
   .account-entry-steps { margin-top: 29px; }
-  .account-entry-steps li { flex-wrap: wrap; column-gap: 5px; font-size: 11px; }
+  .account-entry-steps li { flex-direction: column; align-items: flex-start; gap: 6px; font-size: 13px; }
   .account-entry-steps li + li { margin-left: 6px; }
   .account-entry-visual { min-height: 0; }
   .account-entry-visual-inner { display: flex; }

@@ -1,0 +1,467 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-29T16:45:51.659Z",
+  "baseUrl": "http://127.0.0.1:59067",
+  "publicOrigin": "https://admitflow.incfrog.ai",
+  "mode": "preview",
+  "publishedPaths": [
+    "/",
+    "/product",
+    "/product/whatsapp-follow-up",
+    "/product/admissions-recovery",
+    "/pricing",
+    "/help",
+    "/about",
+    "/contact",
+    "/security",
+    "/resources",
+    "/resources/coaching-admissions-follow-up-checklist",
+    "/resources/how-to-evaluate-an-admissions-crm",
+    "/resources/measuring-admissions-recovery-pilot"
+  ],
+  "passed": 43,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "page /",
+      "ok": true,
+      "result": {
+        "pathname": "/",
+        "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+        "description": "AdmitFlow helps coaching institute teams organize enquiries, WhatsApp follow-ups, counselling and admissions recovery in one workspace.",
+        "h1": "Admissions CRM for coaching institutes.",
+        "canonical": "https://admitflow.incfrog.ai/",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "Organization",
+          "WebSite",
+          "SoftwareApplication"
+        ]
+      }
+    },
+    {
+      "name": "stale session /",
+      "ok": true,
+      "result": {
+        "pathname": "/",
+        "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/"
+      }
+    },
+    {
+      "name": "page /product",
+      "ok": true,
+      "result": {
+        "pathname": "/product",
+        "title": "Coaching Admissions Software Features | AdmitFlow",
+        "description": "Explore how AdmitFlow connects enquiries, team ownership, follow-ups, counselling and recovery with human control and clear reporting.",
+        "h1": "The enquiry-to-admission workflow, in one place.",
+        "canonical": "https://admitflow.incfrog.ai/product",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "SoftwareApplication"
+        ]
+      }
+    },
+    {
+      "name": "stale session /product",
+      "ok": true,
+      "result": {
+        "pathname": "/product",
+        "title": "Coaching Admissions Software Features | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/product"
+      }
+    },
+    {
+      "name": "page /product/whatsapp-follow-up",
+      "ok": true,
+      "result": {
+        "pathname": "/product/whatsapp-follow-up",
+        "title": "WhatsApp Follow-Up for Coaching Institutes | AdmitFlow",
+        "description": "Understand how coaching admissions teams review contact permissions, approved WhatsApp templates, conversation ownership and delivery status.",
+        "h1": "Follow up on WhatsApp with permission and a person in control.",
+        "canonical": "https://admitflow.incfrog.ai/product/whatsapp-follow-up",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "SoftwareApplication",
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /product/whatsapp-follow-up",
+      "ok": true,
+      "result": {
+        "pathname": "/product/whatsapp-follow-up",
+        "title": "WhatsApp Follow-Up for Coaching Institutes | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/product/whatsapp-follow-up"
+      }
+    },
+    {
+      "name": "page /product/admissions-recovery",
+      "ok": true,
+      "result": {
+        "pathname": "/product/admissions-recovery",
+        "title": "Admissions Enquiry Recovery | AdmitFlow",
+        "description": "See a measured approach to reviewing inactive admissions enquiries, planning eligible follow-ups and tracking outcomes without guaranteed claims.",
+        "h1": "Bring missed enquiries back into a managed admissions workflow.",
+        "canonical": "https://admitflow.incfrog.ai/product/admissions-recovery",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "SoftwareApplication",
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /product/admissions-recovery",
+      "ok": true,
+      "result": {
+        "pathname": "/product/admissions-recovery",
+        "title": "Admissions Enquiry Recovery | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/product/admissions-recovery"
+      }
+    },
+    {
+      "name": "page /pricing",
+      "ok": true,
+      "result": {
+        "pathname": "/pricing",
+        "title": "Pricing and Pilot Enquiries | AdmitFlow",
+        "description": "AdmitFlow rates have not been published. Contact AdmitFlow to discuss a pilot for your coaching institute and the admissions workflows you want to evaluate.",
+        "h1": "Pricing is being finalized for launch.",
+        "canonical": "https://admitflow.incfrog.ai/pricing",
+        "robots": "noindex, nofollow",
+        "schemaTypes": []
+      }
+    },
+    {
+      "name": "stale session /pricing",
+      "ok": true,
+      "result": {
+        "pathname": "/pricing",
+        "title": "Pricing and Pilot Enquiries | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/pricing"
+      }
+    },
+    {
+      "name": "page /help",
+      "ok": true,
+      "result": {
+        "pathname": "/help",
+        "title": "AdmitFlow Help and Setup Questions",
+        "description": "Learn the steps for bringing enquiries, institute knowledge, WhatsApp follow-up, counselling and recorded outcomes into one workflow.",
+        "h1": "From first enquiry to a clear next step.",
+        "canonical": "https://admitflow.incfrog.ai/help",
+        "robots": "noindex, nofollow",
+        "schemaTypes": []
+      }
+    },
+    {
+      "name": "stale session /help",
+      "ok": true,
+      "result": {
+        "pathname": "/help",
+        "title": "AdmitFlow Help and Setup Questions",
+        "canonical": "https://admitflow.incfrog.ai/help"
+      }
+    },
+    {
+      "name": "page /about",
+      "ok": true,
+      "result": {
+        "pathname": "/about",
+        "title": "About AdmitFlow",
+        "description": "Learn why AdmitFlow is being built for coaching institute admissions teams and what the workspace is designed to help them organize.",
+        "h1": "Make every admissions enquiry easier to follow through.",
+        "canonical": "https://admitflow.incfrog.ai/about",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "Organization",
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /about",
+      "ok": true,
+      "result": {
+        "pathname": "/about",
+        "title": "About AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/about"
+      }
+    },
+    {
+      "name": "page /contact",
+      "ok": true,
+      "result": {
+        "pathname": "/contact",
+        "title": "Contact AdmitFlow",
+        "description": "Contact AdmitFlow about organizing enquiries, follow-ups, counselling and admissions recovery for your coaching institute.",
+        "h1": "Talk to AdmitFlow about your admissions workflow.",
+        "canonical": "https://admitflow.incfrog.ai/contact",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "Organization",
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /contact",
+      "ok": true,
+      "result": {
+        "pathname": "/contact",
+        "title": "Contact AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/contact"
+      }
+    },
+    {
+      "name": "page /security",
+      "ok": true,
+      "result": {
+        "pathname": "/security",
+        "title": "Security and Data Handling | AdmitFlow",
+        "description": "Read about AdmitFlow's documented approach to institute access, student data handling and connected service boundaries.",
+        "h1": "Controls for admissions data, with a clear scope.",
+        "canonical": "https://admitflow.incfrog.ai/security",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /security",
+      "ok": true,
+      "result": {
+        "pathname": "/security",
+        "title": "Security and Data Handling | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/security"
+      }
+    },
+    {
+      "name": "page /resources",
+      "ok": true,
+      "result": {
+        "pathname": "/resources",
+        "title": "Admissions Operations Resources | AdmitFlow",
+        "description": "Practical guides for coaching institute teams evaluating admissions follow-up, CRM workflows and recovery measurement.",
+        "h1": "Practical guides for a clearer admissions process.",
+        "canonical": "https://admitflow.incfrog.ai/resources",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /resources",
+      "ok": true,
+      "result": {
+        "pathname": "/resources",
+        "title": "Admissions Operations Resources | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/resources"
+      }
+    },
+    {
+      "name": "page /resources/coaching-admissions-follow-up-checklist",
+      "ok": true,
+      "result": {
+        "pathname": "/resources/coaching-admissions-follow-up-checklist",
+        "title": "Coaching Admissions Follow-Up Checklist | AdmitFlow",
+        "description": "A practical checklist for coaching admissions teams to assign enquiries, plan follow-ups, respect contact preferences and record outcomes.",
+        "h1": "Coaching admissions follow-up checklist",
+        "canonical": "https://admitflow.incfrog.ai/resources/coaching-admissions-follow-up-checklist",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /resources/coaching-admissions-follow-up-checklist",
+      "ok": true,
+      "result": {
+        "pathname": "/resources/coaching-admissions-follow-up-checklist",
+        "title": "Coaching Admissions Follow-Up Checklist | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/resources/coaching-admissions-follow-up-checklist"
+      }
+    },
+    {
+      "name": "page /resources/how-to-evaluate-an-admissions-crm",
+      "ok": true,
+      "result": {
+        "pathname": "/resources/how-to-evaluate-an-admissions-crm",
+        "title": "How to Evaluate an Admissions CRM | AdmitFlow",
+        "description": "Questions coaching institute owners can use to evaluate enquiry ownership, follow-ups, integrations, access and reporting in an admissions CRM.",
+        "h1": "How to evaluate an admissions CRM",
+        "canonical": "https://admitflow.incfrog.ai/resources/how-to-evaluate-an-admissions-crm",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /resources/how-to-evaluate-an-admissions-crm",
+      "ok": true,
+      "result": {
+        "pathname": "/resources/how-to-evaluate-an-admissions-crm",
+        "title": "How to Evaluate an Admissions CRM | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/resources/how-to-evaluate-an-admissions-crm"
+      }
+    },
+    {
+      "name": "page /resources/measuring-admissions-recovery-pilot",
+      "ok": true,
+      "result": {
+        "pathname": "/resources/measuring-admissions-recovery-pilot",
+        "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+        "description": "Define a baseline, enquiry cohort, measurement window and outcomes before evaluating an admissions recovery pilot.",
+        "h1": "Measuring an admissions recovery pilot",
+        "canonical": "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot",
+        "robots": "noindex, nofollow",
+        "schemaTypes": [
+          "BreadcrumbList"
+        ]
+      }
+    },
+    {
+      "name": "stale session /resources/measuring-admissions-recovery-pilot",
+      "ok": true,
+      "result": {
+        "pathname": "/resources/measuring-admissions-recovery-pilot",
+        "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+        "canonical": "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot"
+      }
+    },
+    {
+      "name": "unique page titles, descriptions, and H1",
+      "ok": true
+    },
+    {
+      "name": "robots policy",
+      "ok": true
+    },
+    {
+      "name": "metadata assets bypass stale hosted sessions",
+      "ok": true
+    },
+    {
+      "name": "sitemap content and MIME",
+      "ok": true,
+      "result": {
+        "urls": []
+      }
+    },
+    {
+      "name": "/welcome GET permanent redirect",
+      "ok": true,
+      "result": {
+        "status": 308,
+        "destination": "/?utm_source=google&trace=once"
+      }
+    },
+    {
+      "name": "/welcome HEAD permanent redirect",
+      "ok": true,
+      "result": {
+        "status": 308,
+        "destination": "/?utm_source=google&trace=once"
+      }
+    },
+    {
+      "name": "owned social card",
+      "ok": true,
+      "result": {
+        "width": 1200,
+        "height": 630,
+        "bytes": 182645
+      }
+    },
+    {
+      "name": "favicon response",
+      "ok": true,
+      "result": {
+        "bytes": 21942
+      }
+    },
+    {
+      "name": "private or auth /login",
+      "ok": true,
+      "result": {
+        "pathname": "/login",
+        "status": 200,
+        "disposition": "noindex"
+      }
+    },
+    {
+      "name": "private or auth /signup",
+      "ok": true,
+      "result": {
+        "pathname": "/signup",
+        "status": 200,
+        "disposition": "noindex"
+      }
+    },
+    {
+      "name": "private or auth /auth/error",
+      "ok": true,
+      "result": {
+        "pathname": "/auth/error",
+        "status": 200,
+        "disposition": "noindex"
+      }
+    },
+    {
+      "name": "private or auth /overview",
+      "ok": true,
+      "result": {
+        "pathname": "/overview",
+        "status": 200,
+        "disposition": "noindex"
+      }
+    },
+    {
+      "name": "unknown /privacy",
+      "ok": true,
+      "result": {
+        "pathname": "/privacy",
+        "status": 404
+      }
+    },
+    {
+      "name": "unknown /terms",
+      "ok": true,
+      "result": {
+        "pathname": "/terms",
+        "status": 404
+      }
+    },
+    {
+      "name": "unknown /__seo_unknown__",
+      "ok": true,
+      "result": {
+        "pathname": "/__seo_unknown__",
+        "status": 404
+      }
+    },
+    {
+      "name": "unknown /product/unknown-feature",
+      "ok": true,
+      "result": {
+        "pathname": "/product/unknown-feature",
+        "status": 404
+      }
+    },
+    {
+      "name": "unknown /resources/unknown-guide",
+      "ok": true,
+      "result": {
+        "pathname": "/resources/unknown-guide",
+        "status": 404
+      }
+    }
+  ]
+}

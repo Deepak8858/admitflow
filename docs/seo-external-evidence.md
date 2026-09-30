@@ -1,0 +1,46 @@
+# AdmitFlow external search and live release evidence
+
+Recorded 29 September 2026 for the implementation based on source commit `02a03632957610765ba8911a1db0ea37d628d45f`. This is a read-only evidence record. The live HTTP capture describes the deployment at the time of the requests, before this workstream verified any new release. Local source changes from other workstreams were in progress and are not evidence of a deployed change.
+
+## Search Console and connected measurement
+
+The connected Search Console property used for reads was `sc-domain:incfrog.ai`. GSC Wizard successfully returned property-scoped Search Analytics and historical inspection data. Repeated attempts to invoke `list_sites` in this session resolved to other list tools instead, so its `activated` and `readable` flags were **not captured or verified**. The owner should rerun `list_sites` before relying on further property-scoped reads or taking a Search Console action; no flags are inferred from successful data responses.
+
+The Search Analytics query used `searchType=web`, dimension `page`, and a `page contains https://admitflow.incfrog.ai/` filter. For the **28 settled days from 30 August through 26 September 2026**, it returned **zero rows**, with `hasMore=false` and API source. The connector reported `settledThrough=2026-09-26` on an `America/Los_Angeles` date basis. This is a product-specific observation for that window. It does not establish no earlier traffic, a Google penalty, a permanent indexing block, or a future ranking result. [Transcribed response summary](../artifacts/admitflow-seo-implementation-2026-09-29/external/search-console-2026-09-29.json).
+
+The existing homepage URL Inspection history entry was requested at `2026-09-28T15:16:35.910134+00:00`. It reports verdict `NEUTRAL`, coverage state `URL is unknown to Google`, and no last crawl time. No new, quota-consuming inspection was run. `list_sitemaps` returned only `https://incfrog.ai/sitemap.xml`, a parent-domain sitemap; it did not show a submitted AdmitFlow sitemap. Its submitted and indexed counts must not be attributed to AdmitFlow.
+
+GSC Wizard reports that the connected account lacks Google Analytics scope and has no configured Bing Webmaster API key. Those results describe this connector, not every possible external analytics or Bing setup. No callable tool exposed Google's effective generative AI inclusion setting or its separate generative AI performance report, so neither was inspected.
+
+## Public HTTPS snapshot
+
+[Credential-free capture](../artifacts/admitflow-seo-implementation-2026-09-29/external/public-http-2026-09-29.json) ran on 29 September 2026, finishing at `2026-09-29T12:56:58.959Z`. It sent GET requests to the production HTTPS origin without cookies or authentication, followed no redirects, and retained status, selected headers, metadata and limited text only. These responses are the **old live state**, not acceptance of the source changes underway.
+
+| URL | Status | Observed search behavior |
+| --- | ---: | --- |
+| `/` | 200 | `index, follow`; one meaningful H1; no canonical, Open Graph URL/image, Twitter card or JSON-LD detected |
+| `/welcome` | 200 | Same title, H1 and description as `/`; no redirect or canonical detected |
+| `/product` | 200 | `index, follow`; no canonical or social metadata detected |
+| `/pricing` | 200 | `index, follow`; no canonical or social metadata detected |
+| `/help` | 200 | `index, follow`; no canonical or social metadata detected |
+| `/robots.txt` | 404 | HTML 404 rather than a robots text response |
+| `/sitemap.xml` | 404 | HTML 404 rather than a sitemap XML response |
+| `/seo-evidence-unknown-20260929` | 404 | Real 404 with `noindex` metadata; no soft-404 status in this check |
+
+No `X-Robots-Tag` was observed on these responses. A separate root GET with a `Googlebot` User-Agent returned the same status, title, H1, description and robots metadata as the ordinary request. This only checks content parity for a spoofed header. It does not prove genuine Googlebot reachability through DNS, CDN, WAF or crawler IP rules.
+
+## Current source guidance and limits
+
+Official pages were fetched with public HTTPS on 29 September 2026. Google [says its core SEO practices remain relevant to AI Overviews and AI Mode](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide?hl=en), and that special `llms.txt` files are not required for those Search features. Google [treats most `robots.txt` 4xx responses as no robots file](https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec?hl=en), so the observed 404 is a missing crawler policy and sitemap-discovery opportunity, not proof that crawling is blocked. Google's [Search documentation update](https://developers.google.com/search/updates?hl=en) says the FAQ rich result feature is no longer shown; visible answers should serve buyers without a rich-result promise. [OpenAI's crawler guidance](https://developers.openai.com/api/docs/bots) distinguishes `OAI-SearchBot` from `GPTBot` and says their robots controls are independent. The [Next.js Metadata API reference](https://nextjs.org/docs/app/api-reference/functions/generate-metadata) documents canonical alternatives, robots directives, social metadata and `metadataBase` used by the implementation. Fetched excerpts (local-only archive: `artifacts/admitflow-seo-implementation-2026-09-29/external/official-guidance-2026-09-29.json`; see [portable evidence summary](seo-release-snapshot.md)) and addendum (local-only archive: `artifacts/admitflow-seo-implementation-2026-09-29/external/official-guidance-addendum-2026-09-29.json`; see [portable evidence summary](seo-release-snapshot.md)) retain the retrieval status and source URLs.
+
+The owner confirmed the public business name **AdmitFlow** and enquiry address **support@admitflow.incfrog.ai** in this chat. `/contact` is intended to offer `mailto:` links, which do not establish an accepted or sent enquiry. Specific policy, legal and retention facts remain missing, so they need owner review before publication as claims.
+
+The release gates in [release-gates.md](release-gates.md) still govern a new image build, security review, application acceptance and publication. This workstream did not toggle `BUILDS_APPROVED`, build or deploy images, request indexing, submit a sitemap, or modify Google/Bing account settings. After a gated release, the owner or release team should verify the exact live public routes, robots and sitemap responses, canonical and `noindex` behavior, hosted-auth routing with stale sessions, and production search eligibility. Search Console submissions and the Google generative AI setting/report remain separate owner/account actions when authorized.
+
+## Independent source review, 29 September
+
+This review read the current in-progress source and did not execute a build or browser suite. The [exact public-route list](../src/lib/public-routes.ts) derives only from the published content registry plus explicit auth and metadata endpoints. The [proxy](../src/proxy.ts) bypasses hosted authentication for that bounded set, retains API, callback and workspace handling, and lets unknown page paths reach Next's real 404. The private catch-all checks the [workspace route allowlist](../src/lib/workspace-routes.ts) before mounting the workspace client. The fixed-origin [metadata helper](../src/lib/seo.ts), [robots route](../src/app/robots.ts) and [sitemap route](../src/app/sitemap.ts) share an exact build-time indexing flag; private root metadata remains `noindex`. The JSON-LD serializer [escapes HTML-sensitive characters](../src/components/marketing/structured-data.tsx). The public analytics contract [reduces acquisition input to enumerated UTM values](../src/lib/public-analytics.ts); its current component dispatches local fixed-shape events, without a provider request. The new public assets observed under `public/media` are illustrations, audio samples and provenance records; this review found no student record there. The image publication workflow retains its manual `PUBLISH`, `BUILDS_APPROVED`, exact-commit CI and scan gates.
+
+One conditional release boundary needs an explicit deployment check: `PUBLIC_SEARCH_INDEXABLE=true` is embedded when the production web image is built. If that **same image** is later served on a preview hostname, its static public page metadata and robots response would remain indexable, with production canonicals. A preview built with the default `false` remains excluded as intended. The release owner should confirm image reuse and preview-host behavior before calling preview indexing guarded; if reuse is part of deployment, add a host-level preview `X-Robots-Tag: noindex` rule or use a separately built preview image. This is a conditional risk, not evidence that a preview hostname currently exposes those pages.
+
+No unconditional source blocker was established in the reviewed boundaries. The hosted-auth routing, generated metadata, asset responses and gate settings still require execution-based acceptance on the exact revision; another workstream owns that verification. The recovery-queue `humanOwned` exclusion was fixed by its owner and reported with 19/19 domain coverage, so it is not left open here.

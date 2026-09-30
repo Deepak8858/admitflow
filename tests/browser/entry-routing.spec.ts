@@ -6,12 +6,12 @@ test("the domain opens the existing landing page without creating a workspace se
   const workspaceRequests: string[] = [];
   page.on("request", request => { if (new URL(request.url()).pathname === "/api/workspace") workspaceRequests.push(request.url()); });
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Your admissions pipeline. One connected workspace." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Admissions CRM for coaching institutes." })).toBeVisible();
   await expect(page.getByRole("combobox", { name: "Colour theme" })).toHaveAttribute("data-appearance-ready", "true");
   await expect(page.locator(".sidebar")).toHaveCount(0);
   expect(workspaceRequests).toEqual([]);
   expect((await page.context().cookies()).some(cookie => cookie.name === "admitflow_session")).toBe(false);
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", process.env.PUBLIC_SEARCH_INDEXABLE === "true" ? "index, follow" : "noindex, nofollow");
   await page.locator(".public-nav").getByRole("link", { name: "Product", exact: true }).click();
   await expect(page).toHaveURL(/\/product$/);
   await page.locator(".public-nav").getByRole("link", { name: "AdmitFlow home", exact: true }).click();
@@ -72,14 +72,15 @@ test("HTML unauthorized responses still send visitors to sign-in", async ({ page
 test("mobile visitors can navigate the public pages and getting-started guide", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
-  const navigation = page.getByRole("navigation", { name: "Public navigation" });
+  const navigation = page.getByRole("navigation", { name: "Mobile public navigation" });
+  const menu = page.locator(".public-mobile-nav summary");
   await expect(navigation).toBeHidden();
-  await page.getByRole("button", { name: "Open menu", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Close menu", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await menu.click();
+  await expect(page.locator(".public-mobile-nav")).toHaveAttribute("open", "");
   await navigation.getByRole("link", { name: "Help", exact: true }).click();
   await expect(page).toHaveURL(/\/help$/);
   await expect(page.locator(".help-guide li")).toHaveCount(5);
-  await expect(page.getByRole("button", { name: "Open menu", exact: true })).toBeVisible();
+  await expect(menu).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
 
@@ -89,8 +90,10 @@ test("landing actions keep readable text while hovered in both themes", async ({
   await expect(theme).toHaveAttribute("data-appearance-ready", "true");
   for (const value of ["light", "dark"]) {
     await theme.selectOption(value);
-    for (const selector of [".hero-actions .primary", ".hero-actions .secondary", ".public-nav .primary"]) {
-      await page.locator(selector).hover();
+    for (const selector of [".hero-actions .primary", ".hero-actions .secondary", ".public-header-cta"]) {
+      const action = page.locator(selector);
+      await expect(action).toBeVisible();
+      await action.hover();
       const result = await new AxeBuilder({ page }).include(selector).withRules(["color-contrast"]).analyze();
       expect(result.violations.map(item => ({ id: item.id, nodes: item.nodes.map(node => node.failureSummary) }))).toEqual([]);
     }

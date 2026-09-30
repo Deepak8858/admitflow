@@ -3,7 +3,7 @@ body { background: var(--color-paper); }
 ::selection { background: var(--color-accent-soft); color: var(--color-ink); }
 .app-shell { background: var(--color-paper); }
 .topbar { background: var(--color-surface); }
-.nav-item { position: relative; isolation: isolate; font-size: 13px; }
+.nav-item { position: relative; isolation: isolate; font-size: var(--text-nav); }
 .nav-item.active { background: transparent; color: var(--color-accent-hover); }
 .nav-item > :not(.active-indicator) { position: relative; z-index: 1; }
 .nav-item .active-indicator { position: absolute; inset: 0; z-index: 0; border: 1px solid var(--color-accent-light); border-radius: 8px; background: var(--color-sidebar-active); pointer-events: none; }
@@ -41,9 +41,9 @@ body { background: var(--color-paper); }
 .onboarding-art img { display: block; width: 100%; height: auto; }
 .campaign-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 0 0 20px; margin: 0 0 24px; list-style: none; border-bottom: 1px solid var(--color-rule); }
 .campaign-steps li { display: flex; align-items: center; gap: 8px; color: var(--color-muted); font-size: 12px; }
-.campaign-steps b { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border: 1px solid var(--color-rule-strong); border-radius: 50%; font-weight: 500; }
+.campaign-steps b { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border: 1px solid var(--color-rule-strong); border-radius: 50%; font-weight: var(--font-weight-label); font-family: var(--font-mono); font-feature-settings: normal; font-variation-settings: normal; }
 .campaign-steps [aria-current="step"] { color: var(--color-ink); }
-.campaign-steps [aria-current="step"] b { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-ink); }
+.campaign-steps [aria-current="step"] b { background: var(--color-accent-control); border-color: var(--color-accent-control); color: var(--color-accent-ink); }
 .campaign-stage-title { margin-bottom: 16px; outline-offset: 5px; }
 .campaign-audience-list { max-height: 220px; overflow-y: auto; margin: 16px 0; padding: 0; list-style: none; }
 .campaign-audience-list li { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--color-rule); color: var(--color-body); font-size: 13px; }
@@ -56,7 +56,7 @@ body { background: var(--color-paper); }
   .nav-item:hover:not(.active), .sidebar-search:hover, .sidebar-help:hover, .sidebar-profile:hover { background: var(--color-paper-2); }
   .nav-item.active:hover { background: transparent; }
   .sidebar-assistant:hover { background: var(--color-paper-2); border-color: var(--color-accent-light); }
-  .button.danger:hover:not(:disabled) { background: var(--color-error-soft); color: var(--color-error); }
+  .button.danger:hover:not(:disabled) { background: var(--color-error-soft); color: var(--color-error-ink); }
   .button.secondary:hover:not(:disabled):not(.disabled), .field :is(input, select, textarea):hover:not(:disabled) { border-color: var(--color-rule-strong); }
 }
 @media (prefers-reduced-motion: no-preference) {

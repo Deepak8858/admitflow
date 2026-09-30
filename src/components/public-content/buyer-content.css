@@ -1,0 +1,91 @@
+.buyer-page {
+  --buyer-body-size: 15.5px;
+  --buyer-lead-size: 17px;
+  --buyer-heading-size: 28px;
+  min-width: 0;
+  color: var(--color-body);
+  font-family: var(--font-body);
+  font-size: var(--buyer-body-size);
+  font-weight: var(--font-weight-body, 400);
+  font-feature-settings: var(--font-features, "blwf" on, "cv03" on, "cv04" on, "cv09" on, "cv11" on);
+  font-variation-settings: "opsz" var(--font-optical-body, 18);
+  line-height: var(--leading-body, 1.55);
+  letter-spacing: var(--tracking-body, -.008em);
+  overflow-wrap: anywhere;
+  padding-bottom: 80px;
+}
+
+.buyer-page a { text-underline-offset: 3px; }
+.buyer-page a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+.buyer-page p, .buyer-page li, .buyer-page dd { line-height: var(--leading-body, 1.55); }
+.buyer-page strong { color: var(--color-ink); font-weight: var(--font-weight-emphasis, 550); }
+.buyer-header { padding-top: clamp(44px, 8vw, 92px); padding-bottom: clamp(42px, 6vw, 72px); border-bottom: 1px solid var(--color-rule); }
+.buyer-breadcrumbs ol { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 56px; padding: 0; list-style: none; font-size: var(--text-nav-mobile, 15px); font-weight: var(--font-weight-nav, 500); font-variation-settings: "opsz" var(--font-optical-nav, 14); letter-spacing: var(--tracking-nav, -.003em); color: var(--color-body); }
+.buyer-breadcrumbs li { min-width: 0; }
+.buyer-breadcrumbs li + li::before { content: "/"; margin-right: 8px; color: var(--color-body); }
+.buyer-breadcrumbs a:hover { color: var(--color-ink); text-decoration: underline; }
+.buyer-page .buyer-eyebrow { margin: 0 0 14px; color: var(--color-body); font: 400 var(--text-eyebrow, 11px)/1.3 var(--font-mono); font-variation-settings: normal; letter-spacing: .16em; text-transform: uppercase; }
+.buyer-page .buyer-header h1 { max-width: 17ch; font-family: var(--font-display); font-size: clamp(36px, 5vw, 52px); font-weight: var(--font-weight-heading, 500); font-feature-settings: var(--font-features); font-variation-settings: "opsz" var(--font-optical-heading, 32); line-height: 1.02; letter-spacing: var(--tracking-heading, -.03em); color: var(--color-ink); text-wrap: balance; }
+.buyer-page .buyer-lead { max-width: 65ch; margin: 24px 0 0; font-size: var(--buyer-lead-size); font-variation-settings: "opsz" 22; line-height: 1.45; letter-spacing: -.012em; text-wrap: pretty; }
+.buyer-header-note { max-width: 65ch; margin: 20px 0 0; font-size: 14px; color: var(--color-body); }
+.buyer-section { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: clamp(28px, 5vw, 96px); padding-top: clamp(48px, 6vw, 80px); padding-bottom: clamp(48px, 6vw, 80px); border-bottom: 1px solid var(--color-rule); scroll-margin-top: 96px; }
+.buyer-section-heading, .buyer-section-body { min-width: 0; }
+.buyer-page .buyer-section-heading h2, .buyer-page .buyer-cta h2, .buyer-page .buyer-measure h2 { font-family: var(--font-display); font-size: var(--buyer-heading-size); font-weight: var(--font-weight-heading, 500); font-variation-settings: "opsz" var(--font-optical-heading, 32); line-height: var(--leading-heading, 1.04); letter-spacing: var(--tracking-heading, -.03em); color: var(--color-ink); text-wrap: balance; }
+.buyer-section-body { max-width: 760px; }
+.buyer-section-body > :first-child { margin-top: 0; }
+.buyer-section-body p { margin: 0 0 18px; }
+.buyer-section-body h3, .buyer-measure h3 { margin: 30px 0 10px; font-family: var(--font-display); font-size: 22px; font-weight: var(--font-weight-heading, 500); font-variation-settings: "opsz" var(--font-optical-heading, 32); line-height: 1.2; letter-spacing: var(--tracking-heading, -.03em); color: var(--color-ink); }
+.buyer-section-body h3:first-child { margin-top: 0; }
+.buyer-section-body ul, .buyer-section-body ol { margin: 16px 0 24px; padding-left: 24px; }
+.buyer-section-body li { padding-left: 5px; margin: 6px 0; }
+.buyer-section-body a, .buyer-text-link { color: var(--color-ink); text-decoration: underline; }
+.buyer-section-body a:hover, .buyer-text-link:hover, .buyer-related a:hover, .buyer-measure a:hover { text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; }
+.buyer-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.buyer-card { min-width: 0; padding: 26px; border: 1px solid var(--color-rule-strong); border-radius: 14px; background: var(--color-surface); }
+.buyer-card h3 { margin: 0 0 12px; font-size: 22px; }
+.buyer-card p:last-child { margin-bottom: 0; }
+.buyer-card .buyer-text-link { display: inline-block; margin-top: 10px; font-size: 15px; font-weight: var(--font-weight-nav, 500); font-variation-settings: "opsz" var(--font-optical-nav, 14); letter-spacing: var(--tracking-nav, -.003em); }
+.buyer-note { margin: 22px 0; padding: 18px 22px; border-left: 3px solid var(--color-accent); background: var(--color-paper-2); border-radius: 0 8px 8px 0; overflow-wrap: anywhere; }
+.buyer-note p:last-child { margin-bottom: 0; }
+.buyer-table-scroll { max-width: 100%; overflow-x: auto; margin: 20px 0 26px; }
+.buyer-table { width: 100%; border-collapse: collapse; min-width: 560px; font-size: 14px; }
+.buyer-table caption { margin-bottom: 10px; text-align: left; font-weight: var(--font-weight-nav, 500); color: var(--color-ink); }
+.buyer-table th, .buyer-table td { padding: 13px 15px; border: 1px solid var(--color-rule-strong); text-align: left; vertical-align: top; line-height: var(--leading-body, 1.55); }
+.buyer-table th { background: var(--color-paper-2); color: var(--color-ink); font-weight: var(--font-weight-nav, 500); }
+.buyer-cta { display: flex; justify-content: space-between; align-items: center; gap: 32px; margin-top: 80px; padding-block: 44px; border-top: 1px solid var(--color-rule); border-bottom: 1px solid var(--color-rule); }
+.buyer-cta > div { min-width: 0; }
+.buyer-cta h2 { max-width: 20ch; }
+.buyer-cta p:last-child { max-width: 56ch; margin: 14px 0 0; }
+.buyer-button { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; flex: none; min-width: 160px; max-width: 100%; min-height: 48px; padding: 12px 18px; border-radius: 8px; color: var(--color-paper); background: var(--color-ink); font-family: var(--font-body); font-size: 15px; font-weight: var(--font-weight-nav, 500); font-variation-settings: "opsz" var(--font-optical-nav, 14); line-height: 1.45; letter-spacing: var(--tracking-nav, -.003em); text-decoration: none; }
+.buyer-button:hover { background: var(--color-body); }
+.buyer-resource-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 24px 0 0; color: var(--color-body); font: 400 var(--text-label, 12px)/1.5 var(--font-mono); font-variation-settings: normal; letter-spacing: .06em; }
+.buyer-resource-meta.public-container { margin-inline: auto; }
+.buyer-resource-meta span + span::before { content: "·"; margin-right: 18px; }
+.buyer-related { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 18px; }
+.buyer-related a { color: var(--color-ink); text-decoration: underline; }
+.buyer-measure { max-width: 740px; }
+.buyer-measure h2 { margin: 42px 0 14px; }
+.buyer-measure p { margin: 0 0 18px; }
+.buyer-measure ul, .buyer-measure ol { margin: 16px 0 24px; padding-left: 24px; }
+.buyer-measure li { margin: 7px 0; }
+.buyer-measure a { color: var(--color-ink); text-decoration: underline; }
+@media (min-width: 810px) {
+  .buyer-page { --buyer-body-size: var(--text-body, 16px); --buyer-lead-size: 18px; --buyer-heading-size: 36px; }
+  .buyer-breadcrumbs ol { font-size: var(--text-nav, 14px); }
+}
+@media (min-width: 1440px) {
+  .buyer-page { --buyer-body-size: 18px; --buyer-lead-size: 22px; --buyer-heading-size: 56px; }
+  .buyer-section { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
+  .buyer-table { font-size: 15px; }
+}
+@media (max-width: 809px) {
+  .buyer-section { grid-template-columns: 1fr; }
+  .buyer-card-grid { grid-template-columns: 1fr; }
+  .buyer-cta { align-items: flex-start; flex-direction: column; }
+  .buyer-breadcrumbs ol { margin-bottom: 40px; }
+}
+@media (max-width: 430px) {
+  .buyer-card { padding: 20px; }
+  .buyer-note { padding: 16px; }
+  .buyer-cta { margin-top: 48px; gap: 24px; }
+}

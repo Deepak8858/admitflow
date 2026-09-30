@@ -1,0 +1,268 @@
+{
+  "description": "Original local archive hashes (sha256/bytes) and portable file hashes where included. Omitted files are deliberately not Git links. Raw provider logs and recorded cookie values are excluded.",
+  "files": [
+    {
+      "path": "artifacts/admitflow-market-brand-search-2026-09-28/REPORT.md",
+      "bytes": 31711,
+      "sha256": "238ea83962b9294d3189a3602075d2f2041047a0fc61502bf49e8a1dc1c4329e",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-market-brand-search-2026-09-28/search-console-baseline.json",
+      "bytes": 1840,
+      "sha256": "4ba01cdface9f49911582c390a2c7b64fc51d11dc0a689a618d22641ca7ffee1",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-market-brand-search-2026-09-28/live-audit.json",
+      "bytes": 10942,
+      "sha256": "ccd9cd47dc90f4ff1a8410f9aff93f44f7ed8a47e78e749eb42866e76d869ab8",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/external/search-console-2026-09-29.json",
+      "bytes": 2289,
+      "sha256": "b7607304f74ce07280789a2514243b4ef342c4d172b4ea4146352a6f06f489c8",
+      "includedInGit": true,
+      "portableBytes": 2289,
+      "portableSha256": "b7607304f74ce07280789a2514243b4ef342c4d172b4ea4146352a6f06f489c8"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/external/public-http-2026-09-29.json",
+      "bytes": 28406,
+      "sha256": "f43a40efed5ecba173b511283587dfbc1fbefe1257b5bfcad488821845a877be",
+      "includedInGit": true,
+      "portableBytes": 28406,
+      "portableSha256": "f43a40efed5ecba173b511283587dfbc1fbefe1257b5bfcad488821845a877be"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/external/official-guidance-2026-09-29.json",
+      "bytes": 9832,
+      "sha256": "8d2726843420bbc9298418386d793a62ac995fbcbb1078c70dea37203ecfa340",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/external/official-guidance-addendum-2026-09-29.json",
+      "bytes": 4683,
+      "sha256": "83537c3947a7923759d62b7b796383b64b44e0d1a3f3bf240ffede51fd64def6",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-verification.json",
+      "bytes": 15529,
+      "sha256": "0d3add445c5f352114a64f006a21f6efc5792b0373bdc1f551ac0c5a63b27742",
+      "includedInGit": true,
+      "portableBytes": 15529,
+      "portableSha256": "0d3add445c5f352114a64f006a21f6efc5792b0373bdc1f551ac0c5a63b27742"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-hosted-v2-hosted-fixture.json",
+      "bytes": 11925,
+      "sha256": "56dd9b9ace647805549279a90b6951ab12a27aa725a25e3c7a81c54406c25fa3",
+      "includedInGit": true,
+      "portableBytes": 11925,
+      "portableSha256": "56dd9b9ace647805549279a90b6951ab12a27aa725a25e3c7a81c54406c25fa3"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-preview-verification.json",
+      "bytes": 14778,
+      "sha256": "e6df97ddeda61cddf23c8bd9d001a1dfa48bb5c8b5d8326eff11a35d3d53151a",
+      "includedInGit": true,
+      "portableBytes": 14778,
+      "portableSha256": "e6df97ddeda61cddf23c8bd9d001a1dfa48bb5c8b5d8326eff11a35d3d53151a"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-tested-source-fingerprint.json",
+      "bytes": 28596,
+      "sha256": "418a7b345f437f857d74517f4fdc296db135a00e7a1225728876a8fd43facd38",
+      "includedInGit": true,
+      "portableBytes": 27819,
+      "portableSha256": "6befd87adfaed610479a43dc7282df6ee1000a8e17875afddeeaa10eee3ab9a0",
+      "portableNote": "Text line endings normalized to LF for the repository; parsed fingerprint contents unchanged."
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/baseline-turbopack-measurements.json",
+      "bytes": 60228,
+      "sha256": "cd856d7eead9aca30656a9449e626d1c23041fac2e321612511e6b81a3065582",
+      "includedInGit": true,
+      "portableBytes": 60228,
+      "portableSha256": "cd856d7eead9aca30656a9449e626d1c23041fac2e321612511e6b81a3065582"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/baseline-methodology-correction.json",
+      "bytes": 1109,
+      "sha256": "04be3ff06b78065be46437571c45348d04bd4715ac0dbb8d182003fbbf3fa617",
+      "includedInGit": true,
+      "portableBytes": 1109,
+      "portableSha256": "04be3ff06b78065be46437571c45348d04bd4715ac0dbb8d182003fbbf3fa617"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-lab-measurements.json",
+      "bytes": 158620,
+      "sha256": "eaa62e0d8382c4c8ae40e14d3f86ebe279bff6503f7b41e8b9581234f12b7cdb",
+      "includedInGit": true,
+      "portableBytes": 158620,
+      "portableSha256": "eaa62e0d8382c4c8ae40e14d3f86ebe279bff6503f7b41e8b9581234f12b7cdb"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/preload-paired-desktop-measurements.json",
+      "bytes": 78295,
+      "sha256": "8a8cb176c0d41a017eca5f560fe82d423fdabed14fef8d6266f7737e8c944313",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/preload-paired-all-measurements.json",
+      "bytes": 80183,
+      "sha256": "d53494332c33bbcf83e771e4d85720b34ecb0c94e76a759d860a2382cb35b784",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-lab-visual-interactions.json",
+      "bytes": 5062,
+      "sha256": "33cf13c47f0cb81d59d55e145518dc3810073d1af0af19195f43afbdb7b6cc56",
+      "includedInGit": true,
+      "portableBytes": 5062,
+      "portableSha256": "33cf13c47f0cb81d59d55e145518dc3810073d1af0af19195f43afbdb7b6cc56"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-browser-public.log",
+      "bytes": 60694,
+      "sha256": "772ed4aacdab6ce9ace628d47ab42e5193e4143aca94f33cd5fd0a2b9c6a63b0",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/browser-first-run-failures.json",
+      "bytes": 1820,
+      "sha256": "5429d33448d0d04de93ff7cc1945b4d2a5d87a2c0b8e580a83d0e3fdbd3ac56e",
+      "includedInGit": true,
+      "portableBytes": 1820,
+      "portableSha256": "5429d33448d0d04de93ff7cc1945b4d2a5d87a2c0b8e580a83d0e3fdbd3ac56e"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-browser-targeted.log",
+      "bytes": 2245,
+      "sha256": "2b70a7f0a805c8087181febfe2b4b7df49ebe72f5bc74624bba4ddacff654566",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-browser-account.log",
+      "bytes": 6894,
+      "sha256": "63423c827f491014c15026e5fd0abe1e3457d2a6c051f10ce0d38ba59f38baae",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-public-verification.json",
+      "bytes": 15529,
+      "sha256": "f7261452271d314fef274d600ccd111a8e10e4d37698712758dce467b25a0fb7",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-public-lab-measurements.json",
+      "bytes": 88228,
+      "sha256": "48122fa1609be7ef438497e900a8bc866c4bd30ae027120d28d8929a7723ddee",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/prepatch-shift-attribution-measurements.json",
+      "bytes": 41833,
+      "sha256": "c55c5a1b639fbe91a198cb47b86f0c97a455f629692c534eef1cb2f1d6ee5dd0",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/prepatch-product-preload-diagnostic-measurements.json",
+      "bytes": 36007,
+      "sha256": "6e2add458d87409f45c99cedb28aa1ced1d6c9955c8f9f0c75a433b57402898c",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/pre-visual-full-verification.log",
+      "bytes": 128631,
+      "sha256": "4dc641de46020ae821360ae195f912abeb751a133fbd8554727642d2b1baba7c",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-build.log",
+      "bytes": 3364,
+      "sha256": "545b64cb9b8335cb70a8164099edeedca7154ffc1b2f864e3c2c1fab01c026bc",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-preview-build.log",
+      "bytes": 6327,
+      "sha256": "c45163926a4a3f1660e4a34a0006ce42c26a789d81f3dd2b3c9c2c79156d326f",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/computed-styles.json",
+      "bytes": 72908,
+      "sha256": "fdb362e0046ef2b5c45df07595696ab5bb931cef9e21ba77980d4086f5ef398a",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/rendered-addenda.json",
+      "bytes": 50552,
+      "sha256": "6ef82668d6efc0da961435d3bb35cbe40851b85fa5d0b91c1e0842bd4b1ddda9",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/app-source-audit.json",
+      "bytes": 5251,
+      "sha256": "31907d1fc045508f1c6ef69c6155a8f2da7f25cd74632a08ab9b434eeac9b4b7",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/evidence-manifest.json",
+      "bytes": 3007,
+      "sha256": "1472fa8a6171d21658526bd80f6fe1f517d50037db53c9cc065869386fa28762",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/browser-lifecycle.json",
+      "bytes": 219,
+      "sha256": "1efba35fa4f19e71ea81a83f35db222c9ed0e465c1177d58702db2c7def64323",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/moonjar-1440-hero.png",
+      "bytes": 391684,
+      "sha256": "09e179d94e1992293ed511224897163984edff6b932409c6a5fb4eea8e5286c6",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/moonjar-1440-type-section.png",
+      "bytes": 77237,
+      "sha256": "c8cabfac4d31a31801cbb6ca647df96eb0384bc305e53761e0b028b917536373",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/moonjar-768-hero.png",
+      "bytes": 231511,
+      "sha256": "01711ed69e4fa10659f9b72d942544994f938f30cb415b607e95b4739c2af952",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/moonjar-768-type-section.png",
+      "bytes": 110529,
+      "sha256": "005ec50eeff0ebd772241fba97d03a78685a87239c2a4854ee51c1f950649f71",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/moonjar-390-hero.png",
+      "bytes": 99329,
+      "sha256": "913e76762a2e5550fa428d08e2d5c495b7cbe1b7c3369fb4355d96119830fe91",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/moonjar-390-type-section.png",
+      "bytes": 66136,
+      "sha256": "f48593b2ae7c024d86493cfa873ae835b29f147b485b7ab2114edbf8d6385445",
+      "includedInGit": false
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/moonjar-reference/moonjar-390-menu.png",
+      "bytes": 61309,
+      "sha256": "a52678e839704d23626b04dfa6c508b5b65fec996a64b195a8ea99616353775e",
+      "includedInGit": false
+    }
+  ]
+}

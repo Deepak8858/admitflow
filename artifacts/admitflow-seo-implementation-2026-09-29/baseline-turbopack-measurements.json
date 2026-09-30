@@ -1,0 +1,1678 @@
+{
+  "label": "baseline-turbopack",
+  "capturedAt": "2026-09-29T13:55:54.842Z",
+  "source": "H:\\admitflow-seo-baseline-lab",
+  "sourceCommit": "02a03632957610765ba8911a1db0ea37d628d45f",
+  "browser": "Chromium 153.0.8010.12",
+  "bundler": "Turbopack",
+  "node": "v24.18.0",
+  "os": "win32 10.0.26200 x64",
+  "searchIndexableBuildSetting": "unset",
+  "appBaseUrlBuildAndRuntime": "absent",
+  "searchIndexableRuntimeSetting": "unset",
+  "runsPerPageAndProfile": 3,
+  "reducedMotion": "reduce",
+  "observationWindow": "navigation load plus 2500 ms; cold cache on each run; no interactions",
+  "clsMethod": "maximum layout-shift session-window sum (1 s gap, 5 s maximum), excluding recent input",
+  "externalOriginPolicy": "requests to origins other than the local production server were blocked; each sample lists any attempted origins",
+  "profiles": {
+    "mobile": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "deviceScaleFactor": 2,
+      "isMobile": true,
+      "hasTouch": true,
+      "cpuRate": 4,
+      "latencyMs": 150,
+      "downloadBytesPerSecond": 200000,
+      "uploadBytesPerSecond": 90000
+    },
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "deviceScaleFactor": 1,
+      "isMobile": false,
+      "hasTouch": false,
+      "cpuRate": 1,
+      "latencyMs": 40,
+      "downloadBytesPerSecond": 1250000,
+      "uploadBytesPerSecond": 625000
+    }
+  },
+  "results": {
+    "/": {
+      "rawHtmlStatus": 200,
+      "rawHtmlContentType": "text/html; charset=utf-8",
+      "profiles": {
+        "mobile": {
+          "median": {
+            "lcpMs": 4352,
+            "cls": 0.03174199448661219,
+            "ttfbMs": 190.79999999981374,
+            "scriptTransferBytes": 248764,
+            "stylesheetTransferBytes": 33858,
+            "imageTransferBytes": 307754,
+            "totalTransferBytes": 630312
+          },
+          "samples": [
+            {
+              "path": "/",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 3776,
+              "cls": 0.03174199448661219,
+              "layoutShiftSum": 0.03174199448661219,
+              "lcpElement": "h1#hero-title",
+              "shiftSessionStart": 5218.699999999255,
+              "shiftSessionLast": 5218.699999999255,
+              "shiftSessionValue": 0.03174199448661219,
+              "ttfbMs": 313.79999999981374,
+              "title": "AdmitFlow — Good conversations. Great beginnings.",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Your admissions pipeline. One connected workspace."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 307754,
+              "totalTransferBytes": 630312,
+              "resourceCount": 21,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 4352,
+              "cls": 0.03174199448661219,
+              "layoutShiftSum": 0.03174199448661219,
+              "lcpElement": "img",
+              "shiftSessionStart": 4000.699999999255,
+              "shiftSessionLast": 4000.699999999255,
+              "shiftSessionValue": 0.03174199448661219,
+              "ttfbMs": 190.79999999981374,
+              "title": "AdmitFlow — Good conversations. Great beginnings.",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Your admissions pipeline. One connected workspace."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 307754,
+              "totalTransferBytes": 630312,
+              "resourceCount": 21,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 4520,
+              "cls": 0.03174199448661219,
+              "layoutShiftSum": 0.03174199448661219,
+              "lcpElement": "img",
+              "shiftSessionStart": 4259.5,
+              "shiftSessionLast": 4259.5,
+              "shiftSessionValue": 0.03174199448661219,
+              "ttfbMs": 57.200000000186265,
+              "title": "AdmitFlow — Good conversations. Great beginnings.",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Your admissions pipeline. One connected workspace."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 307754,
+              "totalTransferBytes": 630312,
+              "resourceCount": 21,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:65247/",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 7253
+            },
+            {
+              "url": "http://127.0.0.1:65247/media/admissions-mountain-hero.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 307754
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2ktjvlirsto7_.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2274
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/0xjr_8k-g6sqq.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 31584
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/310vm2bl3xxpt.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 2514
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/turbopack-2wnqhy5joint8.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4864
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2tswzwt7g9k6a.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9226
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1kzwji2i0y9o0.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5513
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/03d01g0ct-ex-.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36340
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/15b8oqzupk3ce.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4154
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1hnqcn8rbu0gz.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11482
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3-n5narmngqcu.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 46100
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3mjf75bzqi67o.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 10196
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2s3-629m3meu2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 13555
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/27t_qfc-3_lzs.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 72216
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/media/geist-latin-wght-normal.20f3xrkj613ah.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 29848
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 779
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=8nTjltbQWvg6NcbE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2056
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "lcpMs": 1832,
+            "cls": 0.003703418370627572,
+            "ttfbMs": 68.20000000018626,
+            "scriptTransferBytes": 248764,
+            "stylesheetTransferBytes": 33858,
+            "imageTransferBytes": 717918,
+            "totalTransferBytes": 1049096
+          },
+          "samples": [
+            {
+              "path": "/",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 2312,
+              "cls": 0.003703418370627572,
+              "layoutShiftSum": 0.003703418370627572,
+              "lcpElement": "h1#hero-title",
+              "shiftSessionStart": 3943.7999999998137,
+              "shiftSessionLast": 3959.899999999441,
+              "shiftSessionValue": 0.003703418370627572,
+              "ttfbMs": 99.59999999962747,
+              "title": "AdmitFlow — Good conversations. Great beginnings.",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Your admissions pipeline. One connected workspace."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 717918,
+              "totalTransferBytes": 1049096,
+              "resourceCount": 29,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 1832,
+              "cls": 0.003703418370627572,
+              "layoutShiftSum": 0.003703418370627572,
+              "lcpElement": "h1#hero-title",
+              "shiftSessionStart": 3715.9000000003725,
+              "shiftSessionLast": 3731.2999999998137,
+              "shiftSessionValue": 0.003703418370627572,
+              "ttfbMs": 68.20000000018626,
+              "title": "AdmitFlow — Good conversations. Great beginnings.",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Your admissions pipeline. One connected workspace."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 717918,
+              "totalTransferBytes": 1049096,
+              "resourceCount": 29,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 1452,
+              "cls": 0.003703418370627572,
+              "layoutShiftSum": 0.003703418370627572,
+              "lcpElement": "h1#hero-title",
+              "shiftSessionStart": 2565.600000000559,
+              "shiftSessionLast": 2582,
+              "shiftSessionValue": 0.003703418370627572,
+              "ttfbMs": 40,
+              "title": "AdmitFlow — Good conversations. Great beginnings.",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Your admissions pipeline. One connected workspace."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 717918,
+              "totalTransferBytes": 1049096,
+              "resourceCount": 29,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:65247/",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 7253
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/0xjr_8k-g6sqq.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 31584
+            },
+            {
+              "url": "http://127.0.0.1:65247/media/admissions-mountain-hero.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 307754
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2ktjvlirsto7_.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2274
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/310vm2bl3xxpt.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 2514
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/03d01g0ct-ex-.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36340
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/27t_qfc-3_lzs.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 72216
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2tswzwt7g9k6a.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9226
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1kzwji2i0y9o0.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5513
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/turbopack-2wnqhy5joint8.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4864
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3-n5narmngqcu.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 46100
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/15b8oqzupk3ce.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4154
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1hnqcn8rbu0gz.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11482
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2s3-629m3meu2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 13555
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3mjf75bzqi67o.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 10196
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/media/geist-latin-wght-normal.20f3xrkj613ah.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 29848
+            },
+            {
+              "url": "http://127.0.0.1:65247/media/knowledge-observatory.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 129618
+            },
+            {
+              "url": "http://127.0.0.1:65247/media/next-chapter-campus.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 280546
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 779
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=8nTjltbQWvg6NcbE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2056
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 792
+            },
+            {
+              "url": "http://127.0.0.1:65247/pricing?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 792
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 790
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=VBn6xwPKNK4Ukesu",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2069
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=7s-QXMluF-D1As7I",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2099
+            },
+            {
+              "url": "http://127.0.0.1:65247/pricing?_rsc=e-TVHDPN8vGDTXUP",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2078
+            }
+          ]
+        }
+      }
+    },
+    "/product": {
+      "rawHtmlStatus": 200,
+      "rawHtmlContentType": "text/html; charset=utf-8",
+      "profiles": {
+        "mobile": {
+          "median": {
+            "lcpMs": 2172,
+            "cls": 0.0029123176674332313,
+            "ttfbMs": 64.5,
+            "scriptTransferBytes": 248764,
+            "stylesheetTransferBytes": 33858,
+            "imageTransferBytes": 129618,
+            "totalTransferBytes": 451357
+          },
+          "samples": [
+            {
+              "path": "/product",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 1892,
+              "cls": 0.0029123176674332313,
+              "layoutShiftSum": 0.0029123176674332313,
+              "lcpElement": "h1",
+              "shiftSessionStart": 3299,
+              "shiftSessionLast": 3299,
+              "shiftSessionValue": 0.0029123176674332313,
+              "ttfbMs": 49.700000000186265,
+              "title": "Product — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Follow the conversation.Not another spreadsheet."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 129618,
+              "totalTransferBytes": 451357,
+              "resourceCount": 21,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 2172,
+              "cls": 0.0029123176674332313,
+              "layoutShiftSum": 0.0029123176674332313,
+              "lcpElement": "h1",
+              "shiftSessionStart": 3203.7999999998137,
+              "shiftSessionLast": 3203.7999999998137,
+              "shiftSessionValue": 0.0029123176674332313,
+              "ttfbMs": 64.5,
+              "title": "Product — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Follow the conversation.Not another spreadsheet."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 129618,
+              "totalTransferBytes": 451357,
+              "resourceCount": 21,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 2392,
+              "cls": 0.0029123176674332313,
+              "layoutShiftSum": 0.0029123176674332313,
+              "lcpElement": "h1",
+              "shiftSessionStart": 3918,
+              "shiftSessionLast": 3918,
+              "shiftSessionValue": 0.0029123176674332313,
+              "ttfbMs": 64.5,
+              "title": "Product — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Follow the conversation.Not another spreadsheet."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 129618,
+              "totalTransferBytes": 451357,
+              "resourceCount": 21,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:65247/product",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 6434
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/0xjr_8k-g6sqq.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 31584
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2ktjvlirsto7_.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2274
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/310vm2bl3xxpt.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 2514
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2tswzwt7g9k6a.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9226
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/turbopack-2wnqhy5joint8.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4864
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1kzwji2i0y9o0.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5513
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/03d01g0ct-ex-.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36340
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/15b8oqzupk3ce.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4154
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1hnqcn8rbu0gz.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11482
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3mjf75bzqi67o.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 10196
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2s3-629m3meu2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 13555
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3-n5narmngqcu.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 46100
+            },
+            {
+              "url": "http://127.0.0.1:65247/media/knowledge-observatory.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 129618
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/27t_qfc-3_lzs.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 72216
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/media/geist-latin-wght-normal.20f3xrkj613ah.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 29848
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 779
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=701_4j2zWPJn7ZKN",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2056
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "lcpMs": 1092,
+            "cls": 0.0024891262645747596,
+            "ttfbMs": 57.09999999962747,
+            "scriptTransferBytes": 248764,
+            "stylesheetTransferBytes": 33858,
+            "imageTransferBytes": 129618,
+            "totalTransferBytes": 459977
+          },
+          "samples": [
+            {
+              "path": "/product",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 1440,
+              "cls": 0.0024891262645747596,
+              "layoutShiftSum": 0.0024891262645747596,
+              "lcpElement": "h1",
+              "shiftSessionStart": 2436.199999999255,
+              "shiftSessionLast": 2447,
+              "shiftSessionValue": 0.0024891262645747596,
+              "ttfbMs": 57.09999999962747,
+              "title": "Product — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Follow the conversation.Not another spreadsheet."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 129618,
+              "totalTransferBytes": 459977,
+              "resourceCount": 27,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 908,
+              "cls": 0.0024891262645747596,
+              "layoutShiftSum": 0.0024891262645747596,
+              "lcpElement": "h1",
+              "shiftSessionStart": 1173.7999999998137,
+              "shiftSessionLast": 1188.4000000003725,
+              "shiftSessionValue": 0.0024891262645747596,
+              "ttfbMs": 30.59999999962747,
+              "title": "Product — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Follow the conversation.Not another spreadsheet."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 129618,
+              "totalTransferBytes": 459977,
+              "resourceCount": 27,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 1092,
+              "cls": 0.0024891262645747596,
+              "layoutShiftSum": 0.0024891262645747596,
+              "lcpElement": "h1",
+              "shiftSessionStart": 1860.7999999998137,
+              "shiftSessionLast": 1886.5,
+              "shiftSessionValue": 0.0024891262645747596,
+              "ttfbMs": 63.19999999925494,
+              "title": "Product — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Follow the conversation.Not another spreadsheet."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 129618,
+              "totalTransferBytes": 459977,
+              "resourceCount": 27,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:65247/product",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 6434
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2ktjvlirsto7_.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2274
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/0xjr_8k-g6sqq.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 31584
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/310vm2bl3xxpt.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 2514
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/03d01g0ct-ex-.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36340
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2tswzwt7g9k6a.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9226
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/turbopack-2wnqhy5joint8.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4864
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1kzwji2i0y9o0.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5513
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/27t_qfc-3_lzs.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 72216
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3-n5narmngqcu.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 46100
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/media/geist-latin-wght-normal.20f3xrkj613ah.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 29848
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/15b8oqzupk3ce.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4154
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1hnqcn8rbu0gz.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11482
+            },
+            {
+              "url": "http://127.0.0.1:65247/media/knowledge-observatory.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 129618
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2s3-629m3meu2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 13555
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3mjf75bzqi67o.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 10196
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 779
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 792
+            },
+            {
+              "url": "http://127.0.0.1:65247/pricing?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 792
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 790
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=701_4j2zWPJn7ZKN",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2056
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=xUN6X9OpsyOcHBpl",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2069
+            },
+            {
+              "url": "http://127.0.0.1:65247/pricing?_rsc=O9tzF6iXNI-aN-8T",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2078
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=0uX3G0WL-5IUHexI",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2099
+            }
+          ]
+        }
+      }
+    },
+    "/pricing": {
+      "rawHtmlStatus": 200,
+      "rawHtmlContentType": "text/html; charset=utf-8",
+      "profiles": {
+        "mobile": {
+          "median": {
+            "lcpMs": 1992,
+            "cls": 0.0021438096916522827,
+            "ttfbMs": 171.80000000074506,
+            "scriptTransferBytes": 248764,
+            "stylesheetTransferBytes": 33858,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 325630
+          },
+          "samples": [
+            {
+              "path": "/pricing",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 1516,
+              "cls": 0.0021438096916522827,
+              "layoutShiftSum": 0.0021438096916522827,
+              "lcpElement": "h1",
+              "shiftSessionStart": 3573.9000000003725,
+              "shiftSessionLast": 3573.9000000003725,
+              "shiftSessionValue": 0.0021438096916522827,
+              "ttfbMs": 171.80000000074506,
+              "title": "Pricing availability — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "A thoughtful workspace.Clear expectations."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 325630,
+              "resourceCount": 24,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 1992,
+              "cls": 0.0021438096916522827,
+              "layoutShiftSum": 0.0021438096916522827,
+              "lcpElement": "h1",
+              "shiftSessionStart": 3674.100000000559,
+              "shiftSessionLast": 3674.100000000559,
+              "shiftSessionValue": 0.0021438096916522827,
+              "ttfbMs": 158.1000000005588,
+              "title": "Pricing availability — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "A thoughtful workspace.Clear expectations."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 325630,
+              "resourceCount": 24,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 2212,
+              "cls": 0.0021438096916522827,
+              "layoutShiftSum": 0.0021438096916522827,
+              "lcpElement": "h1",
+              "shiftSessionStart": 3560,
+              "shiftSessionLast": 3560,
+              "shiftSessionValue": 0.0021438096916522827,
+              "ttfbMs": 232.5,
+              "title": "Pricing availability — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "A thoughtful workspace.Clear expectations."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 325630,
+              "resourceCount": 24,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:65247/pricing",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 4575
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/0xjr_8k-g6sqq.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 31584
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2ktjvlirsto7_.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2274
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/310vm2bl3xxpt.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 2514
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/03d01g0ct-ex-.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36340
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2tswzwt7g9k6a.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9226
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/turbopack-2wnqhy5joint8.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4864
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/27t_qfc-3_lzs.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 72216
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1kzwji2i0y9o0.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5513
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3-n5narmngqcu.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 46100
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/15b8oqzupk3ce.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4154
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1hnqcn8rbu0gz.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11482
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2s3-629m3meu2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 13555
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3mjf75bzqi67o.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 10196
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/media/geist-latin-wght-normal.20f3xrkj613ah.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 29848
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 779
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 792
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 790
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=hJ2_o2LoVuxp5YaM",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2056
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=Wd0gymlv8yuSU5o8",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2069
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=2ja-4-xvKMEH5MUy",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2099
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "lcpMs": 768,
+            "cls": 0.018186008230452678,
+            "ttfbMs": 82.1000000005588,
+            "scriptTransferBytes": 248764,
+            "stylesheetTransferBytes": 33858,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 328500
+          },
+          "samples": [
+            {
+              "path": "/pricing",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 1228,
+              "cls": 0.018186008230452678,
+              "layoutShiftSum": 0.018186008230452678,
+              "lcpElement": "h1",
+              "shiftSessionStart": 2311.600000000559,
+              "shiftSessionLast": 2317,
+              "shiftSessionValue": 0.018186008230452678,
+              "ttfbMs": 82.1000000005588,
+              "title": "Pricing availability — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "A thoughtful workspace.Clear expectations."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 328500,
+              "resourceCount": 26,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 764,
+              "cls": 0.018186008230452678,
+              "layoutShiftSum": 0.018186008230452678,
+              "lcpElement": "h1",
+              "shiftSessionStart": 1316.7000000001863,
+              "shiftSessionLast": 1325.4000000003725,
+              "shiftSessionValue": 0.018186008230452678,
+              "ttfbMs": 85.79999999981374,
+              "title": "Pricing availability — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "A thoughtful workspace.Clear expectations."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 328500,
+              "resourceCount": 26,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 768,
+              "cls": 0.018186008230452678,
+              "layoutShiftSum": 0.018186008230452678,
+              "lcpElement": "h1",
+              "shiftSessionStart": 1286.7999999998137,
+              "shiftSessionLast": 1305.5,
+              "shiftSessionValue": 0.018186008230452678,
+              "ttfbMs": 30.5,
+              "title": "Pricing availability — AdmitFlow",
+              "canonical": [],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "A thoughtful workspace.Clear expectations."
+              ],
+              "scriptTransferBytes": 248764,
+              "stylesheetTransferBytes": 33858,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 328500,
+              "resourceCount": 26,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:65247/pricing",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 4575
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2ktjvlirsto7_.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2274
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/0xjr_8k-g6sqq.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 31584
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/310vm2bl3xxpt.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 2514
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/03d01g0ct-ex-.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36340
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2tswzwt7g9k6a.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9226
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/27t_qfc-3_lzs.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 72216
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/turbopack-2wnqhy5joint8.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4864
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1kzwji2i0y9o0.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5513
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3-n5narmngqcu.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 46100
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/media/geist-latin-wght-normal.20f3xrkj613ah.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 29848
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/15b8oqzupk3ce.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4154
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/1hnqcn8rbu0gz.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11482
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/2s3-629m3meu2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 13555
+            },
+            {
+              "url": "http://127.0.0.1:65247/_next/static/chunks/3mjf75bzqi67o.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 10196
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 779
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 792
+            },
+            {
+              "url": "http://127.0.0.1:65247/pricing?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 792
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 790
+            },
+            {
+              "url": "http://127.0.0.1:65247/?_rsc=hJ2_o2LoVuxp5YaM",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2056
+            },
+            {
+              "url": "http://127.0.0.1:65247/help?_rsc=2ja-4-xvKMEH5MUy",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2099
+            },
+            {
+              "url": "http://127.0.0.1:65247/product?_rsc=Wd0gymlv8yuSU5o8",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2069
+            },
+            {
+              "url": "http://127.0.0.1:65247/pricing?_rsc=cEZXiMQbAqkBuU8b",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 2078
+            }
+          ]
+        }
+      }
+    }
+  }
+}

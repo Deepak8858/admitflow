@@ -1,99 +1,30 @@
-"use client";
+import { PublicLayout } from "./public-layout";
+import { HelpPage, PricingPage, ProductPage, WelcomePage } from "./marketing-pages";
 
-import Link from "next/link";
-import { useId, useState } from "react";
-import { ArrowRight, ArrowUpRight, BookOpen, CalendarDays, Check, CheckCheck, ChevronRight, CircleCheck, Inbox, Layers3, Menu, MessageCircle, Search, ShieldCheck, Sparkles, UsersRound, X } from "lucide-react";
-import { Brand, Badge, Button } from "../ui";
-import { ActiveIndicator, Reveal, ThemeSelect } from "../appearance";
-import { Illustration } from "../illustration";
-import { SampleAudio } from "../sample-audio";
+export { PublicLayout } from "./public-layout";
+export { ProductPreview } from "./product-preview";
 
 type PublicPage = "welcome" | "product" | "pricing" | "help";
-const links: { href: string; label: string; page: PublicPage }[] = [{ href: "/", label: "Why AdmitFlow", page: "welcome" }, { href: "/product", label: "Product", page: "product" }, { href: "/pricing", label: "Pricing", page: "pricing" }, { href: "/help", label: "Help", page: "help" }];
+
+const paths: Record<PublicPage, string> = {
+  welcome: "/",
+  product: "/product",
+  pricing: "/pricing",
+  help: "/help",
+};
 
 export function MarketingPage({ page }: { page: PublicPage }) {
-  const [navOpen, setNavOpen] = useState(false);
-  const navId = useId();
-  return <div className="marketing-site" data-public-page={page}>
-    <a className="skip-link" href="#public-content">Skip to main content</a>
-    <header className="public-nav"><Link href="/" aria-label="AdmitFlow home"><Brand /></Link><nav id={navId} className={navOpen ? "is-open" : ""} aria-label="Public navigation">{links.map(link => <Link key={link.page} href={link.href} aria-current={page === link.page ? "page" : undefined} onClick={() => setNavOpen(false)}>{link.label}</Link>)}</nav><div className="public-nav-actions"><ThemeSelect /><a href="/login" className="public-login">Log in</a><a href="/signup" className="button primary">Get started<ArrowUpRight size={15} /></a><button type="button" className="public-menu-toggle" aria-label={navOpen ? "Close menu" : "Open menu"} aria-expanded={navOpen} aria-controls={navId} onClick={() => setNavOpen(open => !open)}>{navOpen ? <X size={19} /> : <Menu size={19} />}</button></div></header>
-    <main id="public-content">
-      {page === "welcome" ? <Welcome /> : page === "product" ? <Product /> : page === "pricing" ? <Pricing /> : <Help />}
-    </main>
-    <footer className="public-footer"><div><Link href="/" aria-label="AdmitFlow home"><Brand /></Link><h2>Behind every enquiry,<br />a new possibility.</h2><p>A more thoughtful admissions workspace.</p></div><nav aria-label="Footer navigation"><span>EXPLORE</span>{links.map(link => <Link key={link.href} href={link.href}>{link.label}<ArrowUpRight size={14} /></Link>)}<a href="/overview">Your workspace<ArrowUpRight size={14} /></a></nav><div className="footer-bottom"><span>AdmitFlow · Built for coaching teams</span><span>Illustrative product previews. No real student data.</span></div></footer>
-  </div>;
+  return (
+    <PublicLayout pathname={paths[page]}>
+      {page === "welcome" ? (
+        <WelcomePage />
+      ) : page === "product" ? (
+        <ProductPage />
+      ) : page === "pricing" ? (
+        <PricingPage />
+      ) : (
+        <HelpPage />
+      )}
+    </PublicLayout>
+  );
 }
-
-function Welcome() {
-  return <>
-    <section className="public-hero" aria-labelledby="hero-title">
-      <div className="hero-background" aria-hidden="true"><Illustration name="admissions-mountain-hero" eager decorative sizes="100vw" /></div>
-      <div className="hero-copy public-container"><div className="public-eyebrow"><span className="eyebrow-dot" />ADMISSIONS SOFTWARE FOR COACHING TEAMS</div><h1 id="hero-title">Your admissions pipeline.<br />{" "}One connected workspace.</h1><p>Manage enquiries, follow up on WhatsApp and book counselling—with AI assistance and your team in control.</p><div className="hero-actions"><a className="button primary public-cta" href="/signup">Get started<ArrowUpRight size={18} /></a><a className="button secondary public-cta" href="#workbench">Explore the product<ArrowRight size={17} /></a></div><div className="hero-assurance"><ShieldCheck size={15} />Human-led conversations. Clear ownership. Connected reporting.</div></div>
-      <div className="hero-product public-container" id="workbench"><ProductPreview /><div className="preview-caption"><span><ShieldCheck size={14} />Interactive sample · not connected to your workspace</span><Link href="/product">Take a closer look<ArrowRight size={15} /></Link></div></div>
-    </section>
-    <div className="capability-strip public-container"><span>ONE CONNECTED WORKSPACE</span>{[[UsersRound, "Enquiries"], [MessageCircle, "Conversations"], [CalendarDays, "Counselling"], [Layers3, "Recovery"]].map(([Icon, label]) => { const I = Icon as typeof UsersRound; return <span key={String(label)}><I size={18} />{String(label)}</span>; })}</div>
-    <FeatureBento />
-    <section className="public-section public-container voice-section"><div><div className="public-eyebrow">THOUGHTFUL BY DESIGN</div><h2>Human context.<br />A little extra help.</h2><p>An assistant grounded in your institute’s knowledge. A team that can review, step in and own the conversation.</p><Link href="/product#voice-examples" className="text-link">Explore the voice examples<ArrowRight size={16} /></Link></div><SampleAudio slug="walkthrough" /></section>
-    <ClosingCTA />
-  </>;
-}
-
-function SectionHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
-  return <Reveal className="public-section-heading"><div className="public-eyebrow">{eyebrow}</div><h2>{title}</h2><p>{body}</p></Reveal>;
-}
-
-const previewSteps = ["Prioritise", "Review context", "Compose", "Check status"];
-export function ProductPreview() {
-  const [step, setStep] = useState(0);
-  const [student, setStudent] = useState("Aanya");
-  const [message, setMessage] = useState("Hi Aanya, would you like to find a time to talk through your course options? Happy to answer any questions.");
-  const [reviewed, setReviewed] = useState(false);
-  const id = useId();
-  function chooseStudent(name: string) { setStudent(name); setMessage(`Hi ${name}, would you like to find a time to talk through your course options? Happy to answer any questions.`); setReviewed(false); setStep(1); }
-  return <div className="product-workbench">
-    <div className="workbench-chrome"><span><span className="workbench-logo"><Layers3 size={16} /></span>Northstar Academy<ChevronRight size={13} /><strong>Recovery workbench</strong></span><Badge tone="violet">Fictional preview</Badge></div>
-    <div className="workbench-body"><aside className="workbench-rail"><span>THE NEXT STEP</span>{previewSteps.map((label, index) => <button key={label} onClick={() => setStep(index)} aria-pressed={step === index} className={step === index ? "active" : ""}><b>{String(index + 1).padStart(2, "0")}</b>{label}{step === index && <ActiveIndicator id={`${id}-preview`} />}</button>)}<p>Try it out.<br />Nothing here is sent.</p></aside>
-      <section className="workbench-canvas" aria-label="Interactive product example"><div className="workbench-heading"><div><span className="public-eyebrow">{String(step + 1).padStart(2, "0")} / RECOVERY WORKFLOW</span><h3>{["A fresh conversation starts here.", "Context before contact.", "Make it sound like you.", "Accepted is not delivered."][step]}</h3></div><span className="workbench-tool"><Search size={16} /></span></div>
-        {step === 0 && <><p>Choose a fictional enquiry to explore their next step.</p><div className="preview-table"><div className="preview-table-heading"><span>STUDENT</span><span>INTEREST</span><span>NEXT STEP</span></div>{[{ name: "Aanya", initials: "AS", course: "Entrance preparation", next: "Review course questions" }, { name: "Kabir", initials: "KM", course: "Foundation programme", next: "Arrange counselling" }, { name: "Meera", initials: "MP", course: "Weekend preparation", next: "Discuss availability" }].map((person, i) => <button onClick={() => chooseStudent(person.name)} key={person.name}><span><i className={`preview-avatar tone-${i}`}>{person.initials}</i><strong>{person.name}</strong></span><span>{person.course}</span><span>{person.next}<ArrowUpRight size={14} /></span></button>)}</div><div className="preview-note"><Sparkles size={16} />Priority signals help your team decide. They don’t guarantee an admission.</div></>}
-        {step === 1 && <div className="preview-context"><div><span className="preview-avatar tone-0">{student.slice(0, 1)}</span><h4>{student}’s enquiry</h4><p>Interested in course options and study schedules.</p><dl><div><dt>Contact preference</dt><dd>Opted in · sample</dd></div><div><dt>Conversation owner</dt><dd>Human counsellor</dd></div><div><dt>Next action</dt><dd>Answer course questions</dd></div></dl></div><blockquote>“I’d like to understand how the classes fit around my school schedule.”<cite>Fictional student message</cite></blockquote><Button variant="primary" onClick={() => setStep(2)}>Draft a follow-up<ArrowRight size={15} /></Button></div>}
-        {step === 2 && <div className="preview-compose"><label htmlFor={`${id}-message`}>Sample follow-up for {student}</label><textarea id={`${id}-message`} value={message} onChange={event => { setMessage(event.target.value); setReviewed(false); }} maxLength={500} rows={4} /><p>This is an editable illustration, not an approved WhatsApp template.</p><label className="preview-checkbox"><input type="checkbox" checked={reviewed} onChange={event => setReviewed(event.target.checked)} />I’ve reviewed this fictional message.</label><Button variant="primary" disabled={!reviewed || !message.trim()} onClick={() => setStep(3)}>See example statuses<ArrowRight size={15} /></Button><small>No message will be sent.</small></div>}
-        {step === 3 && <div className="preview-statuses"><div><CircleCheck size={21} /><span><strong>Queued</strong><p>The request is waiting to be processed.</p></span></div><div><Check size={21} /><span><strong>Provider accepted</strong><p>The provider accepted the request—not proof of delivery.</p></span></div><div><CheckCheck size={21} /><span><strong>Delivered</strong><p>Only shown when a delivery receipt confirms it.</p></span></div><p className="preview-note">Illustrative states only. No live request has been made.</p><Button onClick={() => setStep(0)}>Explore another enquiry<ArrowRight size={15} /></Button></div>}
-      </section>
-    </div>
-  </div>;
-}
-
-function FeatureBento() {
-  return <section className="public-section public-container"><SectionHeading eyebrow="EVERYTHING HAS A PLACE" title="Less chasing. More connecting." body="A shared view of your admissions work, with the details that make the next conversation better." /><div className="feature-bento">
-    <Reveal className="feature-tile feature-knowledge" delay={0}><div className="feature-copy"><span className="feature-icon"><BookOpen size={20} /></span><h3>Your knowledge.<br />Ready for the next question.</h3><p>Give your assistant approved courses, fees and policies. Keep your team’s answers grounded in institute context.</p><Link href="/product#knowledge">Meet your knowledge base<ArrowUpRight size={16} /></Link></div><Illustration name="knowledge-observatory" /></Reveal>
-    <Reveal className="feature-tile feature-conversations" delay={0.06}><span className="feature-icon"><Inbox size={20} /></span><h3>One inbox.<br />The whole conversation.</h3><p>See who owns the next step. Review an AI draft or take over when a human touch matters.</p><div className="bento-conversation"><span>FICTIONAL CONVERSATION</span><p>Can someone help me compare the course options?</p><div><span className="preview-avatar tone-1">NC</span><strong>Your counsellor has it from here.</strong><Check size={16} /></div></div></Reveal>
-    <Reveal className="feature-tile feature-outcomes" delay={0.12}><span className="feature-icon"><ShieldCheck size={20} /></span><h3>Numbers with<br />a story behind them.</h3><p>Keep collections, refunds and net revenue distinct. Trace recorded payments back to an enquiry.</p><div className="outcome-equation"><span>Collections</span><b>−</b><span>Refunds</span><b>=</b><strong>Net revenue</strong></div></Reveal>
-    <Reveal className="feature-tile feature-team" delay={0.18}><Illustration name="next-chapter-campus" /><div className="feature-copy"><span className="feature-icon"><UsersRound size={20} /></span><h3>Your team.<br />On the same page.</h3><p>Assign enquiries, plan counselling and keep access specific to each institute.</p><Link href="/product">Explore the product<ArrowUpRight size={16} /></Link></div></Reveal>
-  </div></section>;
-}
-
-function Product() {
-  return <><section className="public-container product-intro"><Reveal><div className="public-eyebrow">A WORKSPACE FOR WHAT COMES NEXT</div><h1>Follow the conversation.<br /><em>Not another spreadsheet.</em></h1><p>Enquiries, your team’s context, and the next action—connected.</p></Reveal></section><section className="public-container"><ProductPreview /></section>
-    <section className="public-section public-container product-story" id="knowledge"><Illustration name="knowledge-observatory" /><div><div className="public-eyebrow">KNOWLEDGE, WITH GUARDRAILS</div><h2>A helpful assistant.<br />An accountable team.</h2><p>Your approved knowledge gives the assistant context. Your team can review drafts, manage ownership and take over a conversation.</p><ul className="public-checks"><li><Check />Institute-specific knowledge sources</li><li><Check />Assisted, autonomous and paused modes</li><li><Check />Human ownership stays explicit</li><li><Check />Contact preferences and eligibility checks</li></ul></div></section>
-    <section className="public-section public-container" id="voice-examples"><SectionHeading eyebrow="LISTEN TO THE POSSIBILITIES" title="A little warmth goes a long way." body="Three fictional examples of a counselling conversation. AI-generated stock voice, never an impersonation. Playback does not send anything." /><div className="audio-grid">{["counselling-invitation", "session-reminder", "thoughtful-followup"].map(slug => <SampleAudio slug={slug} key={slug} />)}</div></section>
-    <section className="public-section public-container"><SectionHeading eyebrow="A CLEAR PATH, NOT A BLACK BOX" title="Choose. Review. Reconnect." body="Recovery starts with eligibility and ends with a verifiable status—not a promise of guaranteed results." /><div className="process-grid">{[{ title: "Choose the audience", body: "Review stale enquiries, ownership and contact preferences before selecting recipients." }, { title: "Review the message", body: "Use approved templates and check institute, course and student context before launching." }, { title: "Follow the outcome", body: "Keep queued, accepted and delivered states distinct. Link counselling and payments to the enquiry." }].map((item, index) => <Reveal key={item.title} delay={index * 0.06}><span>{String(index + 1).padStart(2, "0")}</span><h3>{item.title}</h3><p>{item.body}</p></Reveal>)}</div></section><ClosingCTA /></>;
-}
-
-function Pricing() {
-  return <><section className="public-container pricing-intro"><div className="public-eyebrow">ROOM FOR YOUR NEXT CHAPTER</div><h1>A thoughtful workspace.<br /><em>Clear expectations.</em></h1><p>Explore the product now. Public commercial plans are still being finalised.</p></section><section className="public-container pricing-card"><div><Badge tone="violet">Pricing not published</Badge><h2>Built around your<br />admissions workflow.</h2><p>Rates, billing periods and plan entitlements are not available for publication yet. The product overview shows what AdmitFlow is built to support.</p><Link href="/product" className="button primary public-cta">Explore the product<ArrowUpRight size={17} /></Link><Link href="/help" className="text-link">Read the getting-started guide<ArrowRight size={15} /></Link></div><div><span className="public-eyebrow">PRODUCT CAPABILITIES</span><ul className="public-checks">{["Shared enquiry and pipeline views", "Conversation context and human takeover", "Counselling and recovery workflows", "Institute-specific knowledge", "Collections, refunds and net reporting", "Team roles and institute access"].map(text => <li key={text}><Check size={18} />{text}</li>)}</ul><p>Capabilities shown for product exploration, not a commercial plan or entitlement guarantee.</p></div></section><section className="public-section public-container public-faq"><h2>A few things to know.</h2>{[["Can I see the product before signing in?", "Yes. The product page has an interactive fictional workflow and voice examples. They do not access an institute workspace."], ["Are messages sent from the preview?", "No. Public previews are local illustrations. Live messaging requires the appropriate workspace access, connection, contact permissions and approved templates."], ["Where can existing customers find billing?", "Sign in and open workspace Settings. Private billing shows the information available to your institute and role."], ["Are rates or annual terms available here?", "Public rates, billing periods and commercial terms have not been published."]].map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</section></>;
-}
-
-const guideSteps = [
-  { id: "enquiries", title: "Bring enquiries together", body: "Import a CSV, review the preview and assign the next action to a teammate. Keep the student’s interests and contact preferences with the enquiry." },
-  { id: "knowledge", title: "Give your team the right context", body: "Add your institute’s approved courses, fees and policies to the knowledge base. An owner or administrator manages assistant settings and access." },
-  { id: "whatsapp", title: "Reconnect on WhatsApp", body: "Connect the institute’s WhatsApp account, check contact permissions and eligibility, then review an approved message template. Check the delivery status after sending; provider acceptance alone is not a delivery receipt." },
-  { id: "counselling", title: "Book counselling", body: "Use the shared inbox and enquiry record to keep the conversation owner clear. Arrange a counselling session and track the next step with the student." },
-  { id: "receipts", title: "Record the outcome", body: "Link a received payment and its receipt or transaction reference to the enquiry. Record any refund separately so collections and net revenue stay distinct. A manually recorded payment does not charge the student or verify a bank transaction." },
-] as const;
-
-function Help() {
-  return <><section className="public-container help-intro"><div className="public-eyebrow">GETTING STARTED</div><h1>From first enquiry<br /><em>to a clear next step.</em></h1><p>A short guide to the workflow your admissions team can set up in AdmitFlow. Available actions depend on your institute’s access and connected services.</p><Link href="/product" className="text-link">See the interactive product example<ArrowRight size={16} /></Link></section>
-    <section className="public-section public-container help-guide" aria-label="Getting-started steps"><div className="help-guide-aside"><span className="public-eyebrow">THE WORKFLOW</span><h2>Start with context.<br />Keep the trail.</h2><p>Work through these steps with your team. The public product example uses fictional students and sends nothing.</p><Link href="/product">Explore the product<ArrowUpRight size={16} /></Link></div><ol>{guideSteps.map((item, index) => <li key={item.id} id={item.id}><span className="help-step-number">{String(index + 1).padStart(2, "0")}</span><div><h3>{item.title}</h3><p>{item.body}</p></div></li>)}</ol></section>
-    <section className="closing-cta public-container"><div><div className="public-eyebrow">READY FOR YOUR FIRST STEP?</div><h2>Make the next<br />conversation count.</h2><a href="/signup" className="button primary public-cta">Get started<ArrowUpRight size={18} /></a><a href="/login" className="text-link">Already have a workspace? Log in<ArrowRight size={16} /></a></div><Illustration name="next-chapter-campus" /></section></>;
-}
-function ClosingCTA() { return <section className="closing-cta public-container"><div><div className="public-eyebrow">EVERY ENQUIRY IS A BEGINNING</div><h2>Make the next<br />conversation count.</h2><a href="/signup" className="button primary public-cta">Open your next chapter<ArrowUpRight size={18} /></a></div><Illustration name="next-chapter-campus" /></section>; }

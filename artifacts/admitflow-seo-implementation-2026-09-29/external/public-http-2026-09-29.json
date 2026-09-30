@@ -1,0 +1,295 @@
+{
+  "capturedAt": "2026-09-29T12:56:58.959Z",
+  "method": "credential-free HTTPS GET, redirect manual, no cookies or authentication",
+  "origin": "https://admitflow.incfrog.ai",
+  "responses": [
+    {
+      "path": "/",
+      "requestAt": "2026-09-29T12:56:58.990Z",
+      "userAgent": null,
+      "status": 200,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "s-maxage=31536000"
+      },
+      "bytes": 30865,
+      "title": "AdmitFlow — Good conversations. Great beginnings.",
+      "h1": [
+        "Your admissions pipeline. One connected workspace."
+      ],
+      "description": [
+        "Bring enquiries, counselling and thoughtful recovery into one workspace for your coaching team."
+      ],
+      "robots": [
+        "index, follow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "7a464482a33fe117727c8363f54145cba7f17fc1f52602c36827d22694c0e2aa"
+    },
+    {
+      "path": "/welcome",
+      "requestAt": "2026-09-29T12:57:03.863Z",
+      "userAgent": null,
+      "status": 200,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/welcome",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "s-maxage=31536000"
+      },
+      "bytes": 31371,
+      "title": "AdmitFlow — Good conversations. Great beginnings.",
+      "h1": [
+        "Your admissions pipeline. One connected workspace."
+      ],
+      "description": [
+        "Bring enquiries, counselling and thoughtful recovery into one workspace for your coaching team."
+      ],
+      "robots": [
+        "index, follow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "a0c9dffeb40bb0366b4bb193c777148b0045737e5e7553346b862ae990488d8e"
+    },
+    {
+      "path": "/product",
+      "requestAt": "2026-09-29T12:57:04.043Z",
+      "userAgent": null,
+      "status": 200,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/product",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "s-maxage=31536000"
+      },
+      "bytes": 25696,
+      "title": "Product — AdmitFlow",
+      "h1": [
+        "Follow the conversation. Not another spreadsheet."
+      ],
+      "description": [
+        "Explore the enquiry, conversation and recovery workflow with interactive fictional examples."
+      ],
+      "robots": [
+        "index, follow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "66c96e25dd6ffadaeb7b351ee6dc242460a282f9f02276030bb0ac6b46a03d74"
+    },
+    {
+      "path": "/pricing",
+      "requestAt": "2026-09-29T12:57:04.195Z",
+      "userAgent": null,
+      "status": 200,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/pricing",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "s-maxage=31536000"
+      },
+      "bytes": 17812,
+      "title": "Pricing availability — AdmitFlow",
+      "h1": [
+        "A thoughtful workspace. Clear expectations."
+      ],
+      "description": [
+        "Public pricing is being finalised. Explore AdmitFlow product capabilities and find existing workspace billing."
+      ],
+      "robots": [
+        "index, follow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "71de93585a59f928f39284ce2a575873b464a2f58c191737115524e2fc30dd7c"
+    },
+    {
+      "path": "/help",
+      "requestAt": "2026-09-29T12:57:04.357Z",
+      "userAgent": null,
+      "status": 200,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/help",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "s-maxage=31536000"
+      },
+      "bytes": 17705,
+      "title": "Getting started — AdmitFlow",
+      "h1": [
+        "From first enquiry to a clear next step."
+      ],
+      "description": [
+        "A short guide to bringing enquiries, institute knowledge, WhatsApp follow-up, counselling and receipt references into one admissions workflow."
+      ],
+      "robots": [
+        "index, follow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "77def7f4f7ab879dfca4545df2f0316b7ca2470b6b26da1412f2246b0b160674"
+    },
+    {
+      "path": "/robots.txt",
+      "requestAt": "2026-09-29T12:57:04.490Z",
+      "userAgent": null,
+      "status": 404,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/robots.txt",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+      },
+      "bytes": 7907,
+      "title": "AdmitFlow — Every enquiry deserves a follow-up",
+      "h1": [],
+      "description": [
+        "An admissions recovery workspace for coaching institutes. Prioritise enquiries, follow up, book counselling and track recovered admission revenue."
+      ],
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "cc66f44a40907b8913fe205c56d4925c895f441804fd0c4cf02fb60b9c27bce3",
+      "textSample": "<!DOCTYPE html><html id=\"__next_error__\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/310vm2bl3xxpt.js\"/><script src=\"/_next/static/chunks/43qi2ef0_-07u.js\" async=\"\"></script><script src=\"/_next/static/chunks/03d01g0ct-ex-.js\" async=\"\"></script><script src=\"/_next/static/chunks/27t_qfc-3_lzs.js\" async=\"\"></script><script src=\"/_next/static/chunks/2tswzwt7g9k6a.js\" async=\"\"></script><script src=\"/_next/static/chunks/turbopack-2wnqhy5joint8.js\" async=\"\"></script><meta name=\"robots\" content=\"noindex\"/><title>AdmitFlow — Every enquiry deserves a follow-up</title><meta name=\"description\" content=\"An admissions recovery workspace for coaching institutes. Prioritise enquiries, follow up, book counselling and track recovered admission revenue.\"/><meta name=\"robots\" content=\"noindex, nofollow\"/><script src=\"/_next/static/chunks/0cz1d0mv5g_q7.js\" noModule=\"\"></script></head><body><div hidden=\"\"><!--$--><!--/$--></div><script src=\"/_next/static/chunks/310vm2bl3xxpt.js\" id=\"_R_\" async=\"\"></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,\"1:\\\"$Sreact.fragment\\\"\\n2:I[124,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"AppearanceProvider\\\"]\\n3:I[39756,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"default\\\"]\\n4:I[58298,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\",\\\"/_next/static/chunks/2iw4624dtoe4d.js\\\"],\\\"default\\\"]\\n5:I[37457,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"default\\\"]\\n6:I[22016,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\",\\\"/_next/static/chunks/15b8oqzupk3ce.js\\\"],\\\"\\\"]\\n9:I[97367,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"OutletBoundary\\\"]\\na:\\\"$Sreact.suspense\\\"\\nc:I[97367,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"ViewportBoundary\\\"]\\ne:I[97367,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"MetadataBoundary\\\"]\\n10:I[68027,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"default\\\",1]\\n:HL[\\\"/_next/static/chunks/2ktjvlirsto7_.css\\\",\\\"style\\\"]\\n:HL[\\\"/_next/static/chunks/0wa7kndf373eu.css\\\",\\\"style\\\"]\\n:HC[\\\"/\\\",\\\"\\\"]\\n0:{\\\"P\\\":null,\\\"c\\\":[\\\"\\\",\\\"robots.txt\\\"],\\\"q\\\":\\\"\\\",\\\"i\\\":false,\\\"f\\\":[[[\\\"\\\",{\\\"children\\\":[[\\\"view\\\",\\\"robots.txt\\\",\\\"c\\\",[\\\"api\\\",\\\"auth\\\",\\\"callback\\\",\\\"help\\\",\\\"login\\\",\\\"onboarding\\\",\\\"pricing\\\",\\\"product\\\",\\\"signup\\\",\\\"welcome\\\"]],{\\\"children\\\":[\\\"__PAGE__\\\",{},\\\"$undefined\\\",\\\"$undefined\\\",4096]},\\\"$undefined\\\",\\\"$undefined\\\",4096]},\\\"$undefined\\\",\\\"$undefined\\\",4112],[[\\\"$\\\",\\\"$1\\\",\\\"c\\\",{\\\"children\\\":[[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/2ktjvlirsto7_.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"link\\\",\\\"1\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/0wa7kndf373eu.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-2\\\",{\\\"src\\\":\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],[\\\"$\\\",\\\"html\\\",null,{\\\"lang\\\":\\\"en\\\",\\\"suppressHydrationWarning\\\":true,\\\"children\\\":[[\\\"$\\\",\\\"head\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"script\\\",null,{\\\"dangerouslySetInnerHTML\\\":{\\\"__html\\\":\\\"(function(){try{var t=localStorage.getItem('admitflow:theme');document.documentElement.dataset.theme=(t==='dark'||t==='light')?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}})()\\\"}}]}],[\\\"$\\\",\\\"body\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$L2\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$L3\\\",null,{\\\"parallelRouterKey\\\":\\\"children\\\",\\\"error\\\":\\\"$4\\\",\\\"errorStyles\\\":[],\\\"errorScripts\\\":[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/2iw4624dtoe4d.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],\\\"template\\\":[\\\"$\\\",\\\"$L5\\\",null,{}],\\\"templateStyles\\\":\\\"$undefined\\\",\\\"templateScripts\\\":\\\"$undefined\\\",\\\"notFound\\\":[[\\\"$\\\",\\\"main\\\",null,{\\\"className\\\":\\\"standalone-empty\\\",\\\"children\\\":[[\\\"$\\\",\\\"p\\\",null,{\\\"className\\\":\\\"page-eyebrow\\\",\\\"children\\\":\\\"404 · PAGE NOT FOUND\\\"}],[\\\"$\\\",\\\"h1\\\",null,{\\\"children\\\":\\\"This page isn’t here.\\\"}],[\\\"$\\\",\\\"p\\\",null,{\\\"children\\\":\\\"The link may have changed. Head home or open your admissions workspace.\\\"}],[\\\"$\\\",\\\"$L6\\\",null,{\\\"className\\\":\\\"button primary\\\",\\\"href\\\":\\\"/\\\",\\\"children\\\":\\\"Back to home\\\"}],[\\\"$\\\",\\\"$L6\\\",null,{\\\"className\\\":\\\"button secondary\\\",\\\"href\\\":\\\"/overview\\\",\\\"children\\\":\\\"Open workspace\\\"}]]}],[]],\\\"forbidden\\\":\\\"$undefined\\\",\\\"unauthorized\\\":\\\"$undefined\\\"}]}]}]]}]]}],{\\\"children\\\":[[\\\"$\\\",\\\"$1\\\",\\\"c\\\",{\\\"children\\\":[[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/3-fjuk7-yzjg_.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/2s3-629m3meu2.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],\\\"$L7\\\"]}],{\\\"children\\\":[[\\\"$\\\",\\\"$1\\\",\\\"c\\\",{\\\"children\\\":[\\\"$L8\\\",[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/05uhxalmwoet6.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/21143up_k_hny.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-2\\\",{\\\"src\\\":\\\"/_next/static/chunks/1hnqcn8rbu0gz.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],[\\\"$\\\",\\\"$L9\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$a\\\",null,{\\\"name\\\":\\\"Next.MetadataOutlet\\\",\\\"children\\\":\\\"$@b\\\"}]}]]}],{},null,false,null]},null,false,null]},null,false,null],[\\\"$\\\",\\\"$1\\\",\\\"h\\\",{\\\"children\\\":[null,[\\\"$\\\",\\\"$Lc\\\",null,{\\\"children\\\":\\\"$Ld\\\"}],[\\\"$\\\",\\\"div\\\",null,{\\\"hidden\\\":true,\\\"children\\\":[\\\"$\\\",\\\"$Le\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$a\\\",null,{\\\"name\\\":\\\"Next.Metadata\\\",\\\"children\\\":\\\"$Lf\\\"}]}]}],null]}],false]],\\\"m\\\":\\\"$undefined\\\",\\\"G\\\":[\\\"$10\\\",[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/2ktjvlirsto7_.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"link\\\",\\\"1\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/0wa7kndf373eu.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}]]],\\\"S\\\":false,\\\"h\\\":null,\\\"r\\\":\\\"$undefined\\\",\\\"s\\\":\\\"$undefined\\\",\\\"a\\\":\\\"$undefined\\\",\\\"l\\\":\\\"$undefined\\\",\\\"p\\\":\\\"$undefined\\\",\\\"d\\\":\\\"$undefined\\\",\\\"b\\\":\\\"9nMpgYZd_8QiDN_PJnCZU\\\"}\\n7:E{\\\"digest\\\":\\\"NEXT_HTTP_ERROR_FALLBACK;404\\\"}\\n8:E{\\\"digest\\\":\\\"NEXT_HTTP_ERROR_FALLBACK;404\\\"}\\nd:[[\\\"$\\\",\\\"meta\\\",\\\"0\\\",{\\\"charSet\\\":\\\"utf-8\\\"}],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"viewport\\\",\\\"content\\\":\\\"width=device-width, initial-scale=1\\\"}]]\\nb:null\\nf:[[\\\"$\\\",\\\"title\\\",\\\"0\\\",{\\\"children\\\":\\\"Page not found — AdmitFlow\\\"}],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"description\\\",\\\"content\\\":\\\"An admissions recovery workspace for coaching institutes. Prioritise enquiries, follow up, book counselling and track recovered admission revenue.\\\"}],[\\\"$\\\",\\\"meta\\\",\\\"2\\\",{\\\"name\\\":\\\"robots\\\",\\\"content\\\":\\\"noindex, nofollow\\\"}]]\\n\"])</script></body></html>"
+    },
+    {
+      "path": "/sitemap.xml",
+      "requestAt": "2026-09-29T12:57:04.711Z",
+      "userAgent": null,
+      "status": 404,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/sitemap.xml",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+      },
+      "bytes": 7909,
+      "title": "AdmitFlow — Every enquiry deserves a follow-up",
+      "h1": [],
+      "description": [
+        "An admissions recovery workspace for coaching institutes. Prioritise enquiries, follow up, book counselling and track recovered admission revenue."
+      ],
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "e1cafe92ac5e8defd611b006c2f42ba7f73f7ce037b68af2881ee91ff61afcd6",
+      "textSample": "<!DOCTYPE html><html id=\"__next_error__\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"preload\" as=\"script\" fetchPriority=\"low\" href=\"/_next/static/chunks/310vm2bl3xxpt.js\"/><script src=\"/_next/static/chunks/43qi2ef0_-07u.js\" async=\"\"></script><script src=\"/_next/static/chunks/03d01g0ct-ex-.js\" async=\"\"></script><script src=\"/_next/static/chunks/27t_qfc-3_lzs.js\" async=\"\"></script><script src=\"/_next/static/chunks/2tswzwt7g9k6a.js\" async=\"\"></script><script src=\"/_next/static/chunks/turbopack-2wnqhy5joint8.js\" async=\"\"></script><meta name=\"robots\" content=\"noindex\"/><title>AdmitFlow — Every enquiry deserves a follow-up</title><meta name=\"description\" content=\"An admissions recovery workspace for coaching institutes. Prioritise enquiries, follow up, book counselling and track recovered admission revenue.\"/><meta name=\"robots\" content=\"noindex, nofollow\"/><script src=\"/_next/static/chunks/0cz1d0mv5g_q7.js\" noModule=\"\"></script></head><body><div hidden=\"\"><!--$--><!--/$--></div><script src=\"/_next/static/chunks/310vm2bl3xxpt.js\" id=\"_R_\" async=\"\"></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,\"1:\\\"$Sreact.fragment\\\"\\n2:I[124,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"AppearanceProvider\\\"]\\n3:I[39756,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"default\\\"]\\n4:I[58298,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\",\\\"/_next/static/chunks/2iw4624dtoe4d.js\\\"],\\\"default\\\"]\\n5:I[37457,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"default\\\"]\\n6:I[22016,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\",\\\"/_next/static/chunks/15b8oqzupk3ce.js\\\"],\\\"\\\"]\\n9:I[97367,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"OutletBoundary\\\"]\\na:\\\"$Sreact.suspense\\\"\\nc:I[97367,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"ViewportBoundary\\\"]\\ne:I[97367,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"MetadataBoundary\\\"]\\n10:I[68027,[\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\"],\\\"default\\\",1]\\n:HL[\\\"/_next/static/chunks/2ktjvlirsto7_.css\\\",\\\"style\\\"]\\n:HL[\\\"/_next/static/chunks/0wa7kndf373eu.css\\\",\\\"style\\\"]\\n:HC[\\\"/\\\",\\\"\\\"]\\n0:{\\\"P\\\":null,\\\"c\\\":[\\\"\\\",\\\"sitemap.xml\\\"],\\\"q\\\":\\\"\\\",\\\"i\\\":false,\\\"f\\\":[[[\\\"\\\",{\\\"children\\\":[[\\\"view\\\",\\\"sitemap.xml\\\",\\\"c\\\",[\\\"api\\\",\\\"auth\\\",\\\"callback\\\",\\\"help\\\",\\\"login\\\",\\\"onboarding\\\",\\\"pricing\\\",\\\"product\\\",\\\"signup\\\",\\\"welcome\\\"]],{\\\"children\\\":[\\\"__PAGE__\\\",{},\\\"$undefined\\\",\\\"$undefined\\\",4096]},\\\"$undefined\\\",\\\"$undefined\\\",4096]},\\\"$undefined\\\",\\\"$undefined\\\",4112],[[\\\"$\\\",\\\"$1\\\",\\\"c\\\",{\\\"children\\\":[[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/2ktjvlirsto7_.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"link\\\",\\\"1\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/0wa7kndf373eu.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/1kzwji2i0y9o0.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/3-n5narmngqcu.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-2\\\",{\\\"src\\\":\\\"/_next/static/chunks/1zaoqvq-ktldd.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],[\\\"$\\\",\\\"html\\\",null,{\\\"lang\\\":\\\"en\\\",\\\"suppressHydrationWarning\\\":true,\\\"children\\\":[[\\\"$\\\",\\\"head\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"script\\\",null,{\\\"dangerouslySetInnerHTML\\\":{\\\"__html\\\":\\\"(function(){try{var t=localStorage.getItem('admitflow:theme');document.documentElement.dataset.theme=(t==='dark'||t==='light')?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}})()\\\"}}]}],[\\\"$\\\",\\\"body\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$L2\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$L3\\\",null,{\\\"parallelRouterKey\\\":\\\"children\\\",\\\"error\\\":\\\"$4\\\",\\\"errorStyles\\\":[],\\\"errorScripts\\\":[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/2iw4624dtoe4d.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],\\\"template\\\":[\\\"$\\\",\\\"$L5\\\",null,{}],\\\"templateStyles\\\":\\\"$undefined\\\",\\\"templateScripts\\\":\\\"$undefined\\\",\\\"notFound\\\":[[\\\"$\\\",\\\"main\\\",null,{\\\"className\\\":\\\"standalone-empty\\\",\\\"children\\\":[[\\\"$\\\",\\\"p\\\",null,{\\\"className\\\":\\\"page-eyebrow\\\",\\\"children\\\":\\\"404 · PAGE NOT FOUND\\\"}],[\\\"$\\\",\\\"h1\\\",null,{\\\"children\\\":\\\"This page isn’t here.\\\"}],[\\\"$\\\",\\\"p\\\",null,{\\\"children\\\":\\\"The link may have changed. Head home or open your admissions workspace.\\\"}],[\\\"$\\\",\\\"$L6\\\",null,{\\\"className\\\":\\\"button primary\\\",\\\"href\\\":\\\"/\\\",\\\"children\\\":\\\"Back to home\\\"}],[\\\"$\\\",\\\"$L6\\\",null,{\\\"className\\\":\\\"button secondary\\\",\\\"href\\\":\\\"/overview\\\",\\\"children\\\":\\\"Open workspace\\\"}]]}],[]],\\\"forbidden\\\":\\\"$undefined\\\",\\\"unauthorized\\\":\\\"$undefined\\\"}]}]}]]}]]}],{\\\"children\\\":[[\\\"$\\\",\\\"$1\\\",\\\"c\\\",{\\\"children\\\":[[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/3-fjuk7-yzjg_.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/2s3-629m3meu2.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],\\\"$L7\\\"]}],{\\\"children\\\":[[\\\"$\\\",\\\"$1\\\",\\\"c\\\",{\\\"children\\\":[\\\"$L8\\\",[[\\\"$\\\",\\\"script\\\",\\\"script-0\\\",{\\\"src\\\":\\\"/_next/static/chunks/05uhxalmwoet6.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-1\\\",{\\\"src\\\":\\\"/_next/static/chunks/21143up_k_hny.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"script\\\",\\\"script-2\\\",{\\\"src\\\":\\\"/_next/static/chunks/1hnqcn8rbu0gz.js\\\",\\\"async\\\":true,\\\"nonce\\\":\\\"$undefined\\\"}]],[\\\"$\\\",\\\"$L9\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$a\\\",null,{\\\"name\\\":\\\"Next.MetadataOutlet\\\",\\\"children\\\":\\\"$@b\\\"}]}]]}],{},null,false,null]},null,false,null]},null,false,null],[\\\"$\\\",\\\"$1\\\",\\\"h\\\",{\\\"children\\\":[null,[\\\"$\\\",\\\"$Lc\\\",null,{\\\"children\\\":\\\"$Ld\\\"}],[\\\"$\\\",\\\"div\\\",null,{\\\"hidden\\\":true,\\\"children\\\":[\\\"$\\\",\\\"$Le\\\",null,{\\\"children\\\":[\\\"$\\\",\\\"$a\\\",null,{\\\"name\\\":\\\"Next.Metadata\\\",\\\"children\\\":\\\"$Lf\\\"}]}]}],null]}],false]],\\\"m\\\":\\\"$undefined\\\",\\\"G\\\":[\\\"$10\\\",[[\\\"$\\\",\\\"link\\\",\\\"0\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/2ktjvlirsto7_.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}],[\\\"$\\\",\\\"link\\\",\\\"1\\\",{\\\"rel\\\":\\\"stylesheet\\\",\\\"href\\\":\\\"/_next/static/chunks/0wa7kndf373eu.css\\\",\\\"precedence\\\":\\\"next\\\",\\\"crossOrigin\\\":\\\"$undefined\\\",\\\"nonce\\\":\\\"$undefined\\\"}]]],\\\"S\\\":false,\\\"h\\\":null,\\\"r\\\":\\\"$undefined\\\",\\\"s\\\":\\\"$undefined\\\",\\\"a\\\":\\\"$undefined\\\",\\\"l\\\":\\\"$undefined\\\",\\\"p\\\":\\\"$undefined\\\",\\\"d\\\":\\\"$undefined\\\",\\\"b\\\":\\\"9nMpgYZd_8QiDN_PJnCZU\\\"}\\n7:E{\\\"digest\\\":\\\"NEXT_HTTP_ERROR_FALLBACK;404\\\"}\\n8:E{\\\"digest\\\":\\\"NEXT_HTTP_ERROR_FALLBACK;404\\\"}\\nd:[[\\\"$\\\",\\\"meta\\\",\\\"0\\\",{\\\"charSet\\\":\\\"utf-8\\\"}],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"viewport\\\",\\\"content\\\":\\\"width=device-width, initial-scale=1\\\"}]]\\nb:null\\nf:[[\\\"$\\\",\\\"title\\\",\\\"0\\\",{\\\"children\\\":\\\"Page not found — AdmitFlow\\\"}],[\\\"$\\\",\\\"meta\\\",\\\"1\\\",{\\\"name\\\":\\\"description\\\",\\\"content\\\":\\\"An admissions recovery workspace for coaching institutes. Prioritise enquiries, follow up, book counselling and track recovered admission revenue.\\\"}],[\\\"$\\\",\\\"meta\\\",\\\"2\\\",{\\\"name\\\":\\\"robots\\\",\\\"content\\\":\\\"noindex, nofollow\\\"}]]\\n\"])</script></body></html>"
+    },
+    {
+      "path": "/seo-evidence-unknown-20260929",
+      "requestAt": "2026-09-29T12:57:05.218Z",
+      "userAgent": null,
+      "status": 404,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/seo-evidence-unknown-20260929",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+      },
+      "bytes": 7945,
+      "title": "AdmitFlow — Every enquiry deserves a follow-up",
+      "h1": [],
+      "description": [
+        "An admissions recovery workspace for coaching institutes. Prioritise enquiries, follow up, book counselling and track recovered admission revenue."
+      ],
+      "robots": [
+        "noindex",
+        "noindex, nofollow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "413188d509af6604445cbfd9cdda391b249afc1a2fdd45916f66cec2a5065761",
+      "notFoundMarker": true
+    },
+    {
+      "path": "/",
+      "requestAt": "2026-09-29T12:57:05.425Z",
+      "userAgent": "Googlebot",
+      "status": 200,
+      "location": null,
+      "finalUrl": "https://admitflow.incfrog.ai/",
+      "headers": {
+        "contentType": "text/html; charset=utf-8",
+        "xRobotsTag": null,
+        "contentSecurityPolicy": null,
+        "cacheControl": "s-maxage=31536000"
+      },
+      "bytes": 30865,
+      "title": "AdmitFlow — Good conversations. Great beginnings.",
+      "h1": [
+        "Your admissions pipeline. One connected workspace."
+      ],
+      "description": [
+        "Bring enquiries, counselling and thoughtful recovery into one workspace for your coaching team."
+      ],
+      "robots": [
+        "index, follow"
+      ],
+      "googlebot": [],
+      "canonical": [],
+      "openGraphUrl": [],
+      "openGraphImage": [],
+      "twitterCard": [],
+      "jsonLd": [],
+      "bodySha256": "7a464482a33fe117727c8363f54145cba7f17fc1f52602c36827d22694c0e2aa"
+    }
+  ]
+}

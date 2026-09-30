@@ -1,0 +1,490 @@
+{
+  "label": "final-corrected-public-hosted-v2",
+  "capturedAt": "2026-09-29T16:03:27.726Z",
+  "mode": "runtime-only fake hosted WorkOS/Postgres fixture; public build unchanged",
+  "appBaseUrlRuntime": "absent",
+  "databaseEndpoint": "unused loopback port 1",
+  "cookieCases": [
+    "anonymous",
+    "malformed",
+    "stale"
+  ],
+  "publicPaths": [
+    "/",
+    "/product",
+    "/product/whatsapp-follow-up",
+    "/product/admissions-recovery",
+    "/pricing",
+    "/help",
+    "/about",
+    "/contact",
+    "/security",
+    "/resources",
+    "/resources/coaching-admissions-follow-up-checklist",
+    "/resources/how-to-evaluate-an-admissions-crm",
+    "/resources/measuring-admissions-recovery-pilot"
+  ],
+  "assetPaths": [
+    "/robots.txt",
+    "/sitemap.xml",
+    "/favicon.ico",
+    "/opengraph-image.png",
+    "/media/walkthrough.mp3",
+    "/media/admissions-mountain-hero-960.webp",
+    "/fonts/inter-variable-4.0-latin.woff2",
+    "/fonts/inter-medium-4.0-latin.woff2"
+  ],
+  "cases": [
+    {
+      "cookieCase": "anonymous",
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/product",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/product/whatsapp-follow-up",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/product/admissions-recovery",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/pricing",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/help",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/about",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/contact",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/security",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/resources",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/resources/coaching-admissions-follow-up-checklist",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/resources/how-to-evaluate-an-admissions-crm",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/resources/measuring-admissions-recovery-pilot",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/robots.txt",
+      "status": 200,
+      "contentType": "text/plain"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/sitemap.xml",
+      "status": 200,
+      "contentType": "application/xml"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/favicon.ico",
+      "status": 200,
+      "contentType": "image/x-icon"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/opengraph-image.png",
+      "status": 200,
+      "contentType": "image/png"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/media/walkthrough.mp3",
+      "status": 200,
+      "contentType": "audio/mpeg"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/media/admissions-mountain-hero-960.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/fonts/inter-variable-4.0-latin.woff2",
+      "status": 200,
+      "contentType": "font/woff2"
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/fonts/inter-medium-4.0-latin.woff2",
+      "status": 200,
+      "contentType": "font/woff2"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/product",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/product/whatsapp-follow-up",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/product/admissions-recovery",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/pricing",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/help",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/about",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/contact",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/security",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/resources",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/resources/coaching-admissions-follow-up-checklist",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/resources/how-to-evaluate-an-admissions-crm",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/resources/measuring-admissions-recovery-pilot",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/robots.txt",
+      "status": 200,
+      "contentType": "text/plain"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/sitemap.xml",
+      "status": 200,
+      "contentType": "application/xml"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/favicon.ico",
+      "status": 200,
+      "contentType": "image/x-icon"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/opengraph-image.png",
+      "status": 200,
+      "contentType": "image/png"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/media/walkthrough.mp3",
+      "status": 200,
+      "contentType": "audio/mpeg"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/media/admissions-mountain-hero-960.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/fonts/inter-variable-4.0-latin.woff2",
+      "status": 200,
+      "contentType": "font/woff2"
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/fonts/inter-medium-4.0-latin.woff2",
+      "status": 200,
+      "contentType": "font/woff2"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/product",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/product/whatsapp-follow-up",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/product/admissions-recovery",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/pricing",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/help",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/about",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/contact",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/security",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/resources",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/resources/coaching-admissions-follow-up-checklist",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/resources/how-to-evaluate-an-admissions-crm",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/resources/measuring-admissions-recovery-pilot",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/robots.txt",
+      "status": 200,
+      "contentType": "text/plain"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/sitemap.xml",
+      "status": 200,
+      "contentType": "application/xml"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/favicon.ico",
+      "status": 200,
+      "contentType": "image/x-icon"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/opengraph-image.png",
+      "status": 200,
+      "contentType": "image/png"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/media/walkthrough.mp3",
+      "status": 200,
+      "contentType": "audio/mpeg"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/media/admissions-mountain-hero-960.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/fonts/inter-variable-4.0-latin.woff2",
+      "status": 200,
+      "contentType": "font/woff2"
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/fonts/inter-medium-4.0-latin.woff2",
+      "status": 200,
+      "contentType": "font/woff2"
+    }
+  ],
+  "protected": [
+    {
+      "cookieCase": "anonymous",
+      "path": "/overview",
+      "status": 200,
+      "locationPath": null,
+      "noindex": true,
+      "emptyWorkspaceShell": true
+    },
+    {
+      "cookieCase": "anonymous",
+      "path": "/api/workspace",
+      "status": 401,
+      "locationPath": null,
+      "noindex": null,
+      "emptyWorkspaceShell": null
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/overview",
+      "status": 200,
+      "locationPath": null,
+      "noindex": true,
+      "emptyWorkspaceShell": true
+    },
+    {
+      "cookieCase": "malformed",
+      "path": "/api/workspace",
+      "status": 401,
+      "locationPath": null,
+      "noindex": null,
+      "emptyWorkspaceShell": null
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/overview",
+      "status": 200,
+      "locationPath": null,
+      "noindex": true,
+      "emptyWorkspaceShell": true
+    },
+    {
+      "cookieCase": "stale",
+      "path": "/api/workspace",
+      "status": 401,
+      "locationPath": null,
+      "noindex": null,
+      "emptyWorkspaceShell": null
+    }
+  ],
+  "protectedBrowser": [
+    {
+      "cookieCase": "anonymous",
+      "landedOnLogin": true,
+      "finalPath": "/login",
+      "blockedOrigins": []
+    },
+    {
+      "cookieCase": "malformed",
+      "landedOnLogin": true,
+      "finalPath": "/login",
+      "blockedOrigins": []
+    },
+    {
+      "cookieCase": "stale",
+      "landedOnLogin": true,
+      "finalPath": "/login",
+      "blockedOrigins": []
+    }
+  ],
+  "blockedRemoteHostsDuringPublicChecks": [],
+  "blockedRemoteHostsDuringProtectedChecks": [],
+  "passed": true
+}

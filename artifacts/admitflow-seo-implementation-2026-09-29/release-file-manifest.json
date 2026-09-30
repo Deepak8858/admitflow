@@ -1,0 +1,609 @@
+{
+  "description": "Changed files relative to 02a0363 for the original verified SEO + Moonjar release. Unchanged base files are not listed. This manifest omits its own hash to avoid recursion.",
+  "baseCommit": "02a03632957610765ba8911a1db0ea37d628d45f",
+  "filesChangedIncludingThisManifest": 101,
+  "contentBytesExcludingThisManifest": 1770932,
+  "manifestPath": "artifacts/admitflow-seo-implementation-2026-09-29/release-file-manifest.json",
+  "files": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "bytes": 6095,
+      "sha256": "0e56c3ac5b408436fba91001d880d9af3da33aef3ea08415769f5d754790fd54"
+    },
+    {
+      "path": ".github/workflows/publish-images.yml",
+      "status": "modified",
+      "bytes": 7735,
+      "sha256": "0a022504a85a7d537898e91e6ec90b7d59d7c92b9a91cb37801c050b58524cb8"
+    },
+    {
+      "path": "Dockerfile",
+      "status": "modified",
+      "bytes": 2758,
+      "sha256": "3e1eb9cb307d14cdd8ef5f5e2cd71b8341843285c2a4e462d70a6d1470798123"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/baseline-methodology-correction.json",
+      "status": "added",
+      "bytes": 1109,
+      "sha256": "04be3ff06b78065be46437571c45348d04bd4715ac0dbb8d182003fbbf3fa617"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/baseline-turbopack-measurements.json",
+      "status": "added",
+      "bytes": 60228,
+      "sha256": "cd856d7eead9aca30656a9449e626d1c23041fac2e321612511e6b81a3065582"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/browser-first-run-failures.json",
+      "status": "added",
+      "bytes": 1820,
+      "sha256": "5429d33448d0d04de93ff7cc1945b4d2a5d87a2c0b8e580a83d0e3fdbd3ac56e"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/evidence-index.json",
+      "status": "added",
+      "bytes": 11825,
+      "sha256": "21c1e4cf39acc8221fc029efbfbabe9223a6a74488c96edd3869ed954062cc8b"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/external/public-http-2026-09-29.json",
+      "status": "added",
+      "bytes": 28406,
+      "sha256": "f43a40efed5ecba173b511283587dfbc1fbefe1257b5bfcad488821845a877be"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/external/search-console-2026-09-29.json",
+      "status": "added",
+      "bytes": 2289,
+      "sha256": "b7607304f74ce07280789a2514243b4ef342c4d172b4ea4146352a6f06f489c8"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-preview-verification.json",
+      "status": "added",
+      "bytes": 14778,
+      "sha256": "e6df97ddeda61cddf23c8bd9d001a1dfa48bb5c8b5d8326eff11a35d3d53151a"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-hosted-v2-hosted-fixture.json",
+      "status": "added",
+      "bytes": 11925,
+      "sha256": "56dd9b9ace647805549279a90b6951ab12a27aa725a25e3c7a81c54406c25fa3"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-lab-measurements.json",
+      "status": "added",
+      "bytes": 158620,
+      "sha256": "eaa62e0d8382c4c8ae40e14d3f86ebe279bff6503f7b41e8b9581234f12b7cdb"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-lab-visual-interactions.json",
+      "status": "added",
+      "bytes": 5062,
+      "sha256": "33cf13c47f0cb81d59d55e145518dc3810073d1af0af19195f43afbdb7b6cc56"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-verification.json",
+      "status": "added",
+      "bytes": 15529,
+      "sha256": "0d3add445c5f352114a64f006a21f6efc5792b0373bdc1f551ac0c5a63b27742"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/final-tested-source-fingerprint.json",
+      "status": "added",
+      "bytes": 27819,
+      "sha256": "6befd87adfaed610479a43dc7282df6ee1000a8e17875afddeeaa10eee3ab9a0"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/release-recovery-receipt.json",
+      "status": "added",
+      "bytes": 3995,
+      "sha256": "c3a047b7091fd6679a8e0234b1d1572bbdc433e3a1f834d31f9220e8ecd2c4bf"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/release-source-fingerprint.json",
+      "status": "added",
+      "bytes": 50310,
+      "sha256": "088e1ac7a08cc67a4f69a5990a70a18ff246fe6f33c28d698d19580ad44cf8ae"
+    },
+    {
+      "path": "artifacts/admitflow-seo-implementation-2026-09-29/verification-summary.json",
+      "status": "added",
+      "bytes": 3267,
+      "sha256": "6fb89b091df29591358b3f746113b08adfc942b46cf841b8487956bbf6a545eb"
+    },
+    {
+      "path": "docs/drafts/admitflow-privacy.md",
+      "status": "added",
+      "bytes": 4402,
+      "sha256": "00769c4aa888253d995276e65aae63f1e4fb25a151797387ad1d6159b0084c55"
+    },
+    {
+      "path": "docs/drafts/admitflow-terms.md",
+      "status": "added",
+      "bytes": 3175,
+      "sha256": "8bdfedefb6d058c71cafe67bd19ae56651341d3f88bee0a7760d0fa36102a322"
+    },
+    {
+      "path": "docs/drafts/contact-and-company-inputs.md",
+      "status": "added",
+      "bytes": 1776,
+      "sha256": "9091c0b8b555fd06c6810257268da68dbe9aca45e05b005b055cc2006b5373d8"
+    },
+    {
+      "path": "docs/moonjar-typography-reference.md",
+      "status": "added",
+      "bytes": 17523,
+      "sha256": "806e675d580fddf715c84b9ae2d5e456955e80b630a18029548e1a3c9ce020ba"
+    },
+    {
+      "path": "docs/seo-aeo-geo-agent-handoff.md",
+      "status": "added",
+      "bytes": 71736,
+      "sha256": "77995b4dfa3530eb6dcfd0b55bc311d875c92cfc3660bcd6793cbd70069520ed"
+    },
+    {
+      "path": "docs/seo-build-configuration.md",
+      "status": "added",
+      "bytes": 2434,
+      "sha256": "d73ed028b7ec1c922b43c907ec0a5f88be588d98748d1e420884308514caa47b"
+    },
+    {
+      "path": "docs/seo-content-claims.md",
+      "status": "added",
+      "bytes": 6734,
+      "sha256": "d32bd94a935db647f5883631345c1116625145dc786743baf4897834fac4e039"
+    },
+    {
+      "path": "docs/seo-external-evidence.md",
+      "status": "added",
+      "bytes": 9243,
+      "sha256": "06000b85fd034cc3e444250a46a3f37a0f5e026f5254656e3edabb9993aba4bf"
+    },
+    {
+      "path": "docs/seo-implementation-report.md",
+      "status": "added",
+      "bytes": 25109,
+      "sha256": "184c95f2cb02b43088c6e26a4508f620b683d16b803b32c2814355267c409958"
+    },
+    {
+      "path": "docs/seo-performance-and-measurement.md",
+      "status": "added",
+      "bytes": 9110,
+      "sha256": "b17b5ca883ccde112f9d89fd726059d395226f796f1d2ac5b4bb3ba638032141"
+    },
+    {
+      "path": "docs/seo-release-snapshot.md",
+      "status": "added",
+      "bytes": 8325,
+      "sha256": "fee1fdac9f9da2f41a720552e73bdcaec8c35e43cc76ce471ffb733cdc8f88c5"
+    },
+    {
+      "path": "next.config.ts",
+      "status": "modified",
+      "bytes": 675,
+      "sha256": "54d60984419769eee5c2fee56dc587d737bab77eed611524fdc4f19546504459"
+    },
+    {
+      "path": "public/fonts/LICENSES.md",
+      "status": "added",
+      "bytes": 8448,
+      "sha256": "bd7bf827689b2c6577665d9efab7c5c1b1e0b85ed29d65539fd7a83c399eb182"
+    },
+    {
+      "path": "public/fonts/OFL-Geist-Mono.txt",
+      "status": "added",
+      "bytes": 4498,
+      "sha256": "cc815ed4fc045f0e991abb10395b7932bd028c6a067deb13316d6002105074e6"
+    },
+    {
+      "path": "public/fonts/OFL-Inter.txt",
+      "status": "added",
+      "bytes": 4380,
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    },
+    {
+      "path": "public/fonts/geist-mono-latin-5.3.0.woff2",
+      "status": "added",
+      "bytes": 9940,
+      "sha256": "f47b0d290f27b264f180b3a90a9981dbe755e23c771e66532ec4722014f2dc7c"
+    },
+    {
+      "path": "public/fonts/geist-mono-latin-ext-5.3.0.woff2",
+      "status": "added",
+      "bytes": 7056,
+      "sha256": "13bb0f656d155d370e234dd254e28143c08a574c6e975e34f8ccfe737224d908"
+    },
+    {
+      "path": "public/fonts/inter-medium-4.0-latin-ext.woff2",
+      "status": "added",
+      "bytes": 23240,
+      "sha256": "fa3483410d386d5b49a34d01ccddcb7402cd437f45f80323089fdbd767fc303f"
+    },
+    {
+      "path": "public/fonts/inter-medium-4.0-latin.woff2",
+      "status": "added",
+      "bytes": 37136,
+      "sha256": "b863dcddd8d3145af748b5dd50a8c7fcaa76b54c1b3ab0fea3715686f55b6353"
+    },
+    {
+      "path": "public/fonts/inter-regular-4.0-latin-ext.woff2",
+      "status": "added",
+      "bytes": 22596,
+      "sha256": "74b561589b34f4139b99d59be521f70bf711ae1f3a2a647e371a0005c92df563"
+    },
+    {
+      "path": "public/fonts/inter-regular-4.0-latin.woff2",
+      "status": "added",
+      "bytes": 36284,
+      "sha256": "71e5e02942c03661fd035c66d60b02db4edb56d2d4e28d5b9bee3ea2bc0cac0c"
+    },
+    {
+      "path": "public/fonts/inter-variable-4.0-latin-ext.woff2",
+      "status": "added",
+      "bytes": 86160,
+      "sha256": "1980357307608942e678cdd6c5432a2a5ca8a2c3bca59e2b0d37f4eba0db7f56"
+    },
+    {
+      "path": "public/fonts/inter-variable-4.0-latin.woff2",
+      "status": "added",
+      "bytes": 120332,
+      "sha256": "b4d942e853047fada5b3d397942fbd91ba2073c15c890f2e3cf68dd960be1ef7"
+    },
+    {
+      "path": "public/media/admissions-mountain-hero-960.webp",
+      "status": "added",
+      "bytes": 56232,
+      "sha256": "18ddab56a2911bf758229203ef204d5c6ee6e922148e011fbdfc6ebf2ebaa37b"
+    },
+    {
+      "path": "public/opengraph-image.png",
+      "status": "added",
+      "bytes": 182645,
+      "sha256": "0a20f081d1888527b9c3743f08e1933c7b010ea5c9ae8c1d21c70e940dbb1c06"
+    },
+    {
+      "path": "scripts/measure-public-pages.mjs",
+      "status": "added",
+      "bytes": 38319,
+      "sha256": "0d3480a3c7dad8aa8cca46b6745e4f87f29078d0efb01fe47b8a74e4d33c1638"
+    },
+    {
+      "path": "scripts/verify-public-seo.mjs",
+      "status": "added",
+      "bytes": 18160,
+      "sha256": "6ae9b75eebe30b15114b27b8957382f7a3a56c578844fe186915a1bf13e080c5"
+    },
+    {
+      "path": "scripts/verify.mjs",
+      "status": "modified",
+      "bytes": 5785,
+      "sha256": "e566fd042bcf1595a675f96288ef50c61ff6a1581f4735e5418225f197ce1cb6"
+    },
+    {
+      "path": "src/app/about/page.tsx",
+      "status": "added",
+      "bytes": 4052,
+      "sha256": "e6b0f17a01a4edc958ef266f3c66a2388795ac0154a283933a3bfdfdcf6d5b01"
+    },
+    {
+      "path": "src/app/account-entry.css",
+      "status": "modified",
+      "bytes": 10950,
+      "sha256": "141083dadb2a335ff3972b4cf5c293942ee9e762cfa9e340ab272ad4a8303394"
+    },
+    {
+      "path": "src/app/contact/page.tsx",
+      "status": "added",
+      "bytes": 2195,
+      "sha256": "ce0c13ce68507fe14a886f1fd0890769d43bb80e7d23d319175b153c07de1cf2"
+    },
+    {
+      "path": "src/app/favicon.ico",
+      "status": "added",
+      "bytes": 21942,
+      "sha256": "4d54760487c9e381b7efafd7e1282b3997f5a5212f25807407e9490e4c495c62"
+    },
+    {
+      "path": "src/app/fonts.css",
+      "status": "added",
+      "bytes": 2611,
+      "sha256": "095e45a636d07cf08df4025c3420941e7064a8af29ad234c481eea2c4e7e8d2a"
+    },
+    {
+      "path": "src/app/global-error.tsx",
+      "status": "added",
+      "bytes": 4255,
+      "sha256": "fd0a3c784641b59dc880b71361bc728c84445c49e4bd76749639c3e972341a64"
+    },
+    {
+      "path": "src/app/help/page.tsx",
+      "status": "modified",
+      "bytes": 305,
+      "sha256": "a19859d8a59b528e9edccf1b3be0719558587dc63ac6e09ab5276b170d96490b"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "status": "modified",
+      "bytes": 1373,
+      "sha256": "d3ef67aca6eca99fe2e2a0b41c09c325a4b20b978d7d400a3090116d6913e479"
+    },
+    {
+      "path": "src/app/marketing.css",
+      "status": "modified",
+      "bytes": 37878,
+      "sha256": "cd7b9fa000b6f34aa79c0eef10592b5c70fb83e6316290b26d915e90be1ccff1"
+    },
+    {
+      "path": "src/app/onboarding.css",
+      "status": "modified",
+      "bytes": 16924,
+      "sha256": "aa30e3b408fc3eee1ae9964dfc9d832b53c30daf31ddd0571c440ef4068400c0"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "status": "modified",
+      "bytes": 531,
+      "sha256": "2087ef3537063e4b252de3a76178afe0938cdab1dd0a1a8985f74671a37bed1c"
+    },
+    {
+      "path": "src/app/pricing/page.tsx",
+      "status": "modified",
+      "bytes": 311,
+      "sha256": "605b087034a93cecf38b1d13e93c262045bf54273fa728f2408e982759b2cfaf"
+    },
+    {
+      "path": "src/app/product/admissions-recovery/page.tsx",
+      "status": "added",
+      "bytes": 4930,
+      "sha256": "51a515f5042d2be6ac21d740c9136887b5a35459e853a1e2cee8f34b46449890"
+    },
+    {
+      "path": "src/app/product/page.tsx",
+      "status": "modified",
+      "bytes": 462,
+      "sha256": "dc997d700e0b5fe057dc6b04b01c5ff3fc8beae30e1dcd63874108b30a64bd39"
+    },
+    {
+      "path": "src/app/product/whatsapp-follow-up/page.tsx",
+      "status": "added",
+      "bytes": 5112,
+      "sha256": "6c5e84c645099fb528c150e915e88bfbc61c16e1d802ae6995e6959a7411284c"
+    },
+    {
+      "path": "src/app/redesign.css",
+      "status": "modified",
+      "bytes": 9295,
+      "sha256": "7a131ee9638a14cbb090e4efb26bec3c57ab95071166be080e16a904dab7c1e6"
+    },
+    {
+      "path": "src/app/resources/[slug]/page.tsx",
+      "status": "added",
+      "bytes": 2641,
+      "sha256": "86a4cb42a36d13df3ae84f8e636477de4907271ee7ee1ba62d5f83e3f4a1e461"
+    },
+    {
+      "path": "src/app/resources/page.tsx",
+      "status": "added",
+      "bytes": 2613,
+      "sha256": "4e8b823995122dab8ee9e0c43acc3f875c9c7e10fb09c83fb8b82bda0c54e5ba"
+    },
+    {
+      "path": "src/app/responsive.css",
+      "status": "modified",
+      "bytes": 18719,
+      "sha256": "59d819caf2f397ad09c60058b029f37bb2e54a80320ea53a97a3ad0b3d4d46fa"
+    },
+    {
+      "path": "src/app/robots.ts",
+      "status": "added",
+      "bytes": 388,
+      "sha256": "18bb3755dec82214e904723df01e6132c032d9208e31951076b8f4e9b6d174e6"
+    },
+    {
+      "path": "src/app/security/page.tsx",
+      "status": "added",
+      "bytes": 4421,
+      "sha256": "693180f1dbb05f165a35bf468a962056c881a89a675e5f45ac7a26fba638c65c"
+    },
+    {
+      "path": "src/app/sitemap.ts",
+      "status": "added",
+      "bytes": 394,
+      "sha256": "b792f84621c3b2c65317a3d06f60574baa60a6b8c2afc5e074f7519e445b9923"
+    },
+    {
+      "path": "src/app/surfaces.css",
+      "status": "modified",
+      "bytes": 108533,
+      "sha256": "7aaefa0adff341dc7b75e55c24fa397be7806471696244944b0f0238a5e48832"
+    },
+    {
+      "path": "src/app/tokens.css",
+      "status": "modified",
+      "bytes": 6399,
+      "sha256": "54e153d4f6fd34c330310e8be96eb0d5b0b1701ce18c9fcad4745221c6b1fda8"
+    },
+    {
+      "path": "src/app/welcome/page.tsx",
+      "status": "modified",
+      "bytes": 282,
+      "sha256": "daee5094102174894e6c74392be6af4bd16153627febc28f639bb98a372f9b4e"
+    },
+    {
+      "path": "src/app/workspace.css",
+      "status": "modified",
+      "bytes": 36008,
+      "sha256": "e3b38926e4965dd351122e9da426aeeba98d6823c884804004b0dc29f6eaf2a0"
+    },
+    {
+      "path": "src/components/appearance.tsx",
+      "status": "modified",
+      "bytes": 3271,
+      "sha256": "706485a46ba44dc035ee8c548cd7be5f461f1c50131a3a5cba2f573923814ab7"
+    },
+    {
+      "path": "src/components/illustration.tsx",
+      "status": "modified",
+      "bytes": 1956,
+      "sha256": "7aee4d9bce66d13587220e7c142487bad6c177c1c3349cc0aa767c41c228a742"
+    },
+    {
+      "path": "src/components/marketing/marketing-pages.tsx",
+      "status": "added",
+      "bytes": 30946,
+      "sha256": "f657fc43e56d0bf64380093455e46bffa59bcd2117376ed3f8ee8221cd1ea05d"
+    },
+    {
+      "path": "src/components/marketing/marketing.tsx",
+      "status": "modified",
+      "bytes": 779,
+      "sha256": "79dcc48cf934c58e9edf3ba2ad51d976fd40831481e931c7de81c1b733e42d45"
+    },
+    {
+      "path": "src/components/marketing/mobile-navigation.tsx",
+      "status": "added",
+      "bytes": 2035,
+      "sha256": "f2359dbdf959f59e1a18f449bb6c7d47ed34fae839f2a85ea4973dfb6d4dbfe9"
+    },
+    {
+      "path": "src/components/marketing/product-preview.tsx",
+      "status": "added",
+      "bytes": 7416,
+      "sha256": "e35c858719c3b86feb82fe709b4db22aa8b967b5418f35a889f7f1c47c35ca60"
+    },
+    {
+      "path": "src/components/marketing/public-layout.tsx",
+      "status": "added",
+      "bytes": 4161,
+      "sha256": "deb3d6f1e303ec8537788f5b7684ddf9359f8d267c2f41d80ae66f1a97cfff4a"
+    },
+    {
+      "path": "src/components/marketing/structured-data.tsx",
+      "status": "added",
+      "bytes": 1905,
+      "sha256": "6dde26e3602d00bf072254768644fa7777e14960124513f7b28ca69910b0f976"
+    },
+    {
+      "path": "src/components/public-analytics.tsx",
+      "status": "added",
+      "bytes": 2747,
+      "sha256": "55547229d9ed6c93149dd3136b0c058580ef94d81922156204364101cb51c6fd"
+    },
+    {
+      "path": "src/components/public-content/buyer-content.css",
+      "status": "added",
+      "bytes": 8182,
+      "sha256": "258378294b0de3187ed0a16ff65112ef4d8643a4f83ee06a98813e768acac965"
+    },
+    {
+      "path": "src/components/public-content/buyer-content.tsx",
+      "status": "added",
+      "bytes": 3054,
+      "sha256": "0e43c293a216fbd87b39f9dee6201864d0310d89376230f99aa90e7072f180b6"
+    },
+    {
+      "path": "src/components/public-content/resource-articles.tsx",
+      "status": "added",
+      "bytes": 14212,
+      "sha256": "b140d6b03078bbe08f95e2efe18e18c0c9a0860d8c261c29a6767ccd47de5a23"
+    },
+    {
+      "path": "src/components/sample-audio.tsx",
+      "status": "modified",
+      "bytes": 1103,
+      "sha256": "e21a4de3bc0b2d0f61c118f9a4f50523cbe7aae88a7e697ce1270c3e33efe714"
+    },
+    {
+      "path": "src/lib/actions.ts",
+      "status": "modified",
+      "bytes": 23418,
+      "sha256": "8783a32aaf2661e3298e05906c4be6cf1abef2fb7c6ed9f4489494087f884646"
+    },
+    {
+      "path": "src/lib/buyer-resources.ts",
+      "status": "added",
+      "bytes": 1620,
+      "sha256": "fb31fb7c1fb4d4fe0e61e95c2b93f86818fd789f493348eeed721790ae269588"
+    },
+    {
+      "path": "src/lib/domain.ts",
+      "status": "modified",
+      "bytes": 27426,
+      "sha256": "317b7f049ed5a72fa91379dcb88d07c87c8bbee96fef35b3416ca13cb31a6d5e"
+    },
+    {
+      "path": "src/lib/public-analytics.ts",
+      "status": "added",
+      "bytes": 5596,
+      "sha256": "9235afbea05bd2f96432fa4fa1373e767bd269c4630515dfac274fe59f082892"
+    },
+    {
+      "path": "src/lib/public-content.ts",
+      "status": "added",
+      "bytes": 4958,
+      "sha256": "c75c8de2980b8e0a1b2eaec170f378f48e6e28f237808cffce2eee8b6c369919"
+    },
+    {
+      "path": "src/lib/public-routes.ts",
+      "status": "added",
+      "bytes": 526,
+      "sha256": "af8229c133d7b2f31f28fca0892d70ecd2d889e38cfe7d88a763b03ee6327bde"
+    },
+    {
+      "path": "src/lib/seo.ts",
+      "status": "added",
+      "bytes": 1783,
+      "sha256": "189ebf7ba04cf08c003e202b880d2daf1787be49c13e3b5ad2115d9156773f9e"
+    },
+    {
+      "path": "src/proxy.ts",
+      "status": "modified",
+      "bytes": 1277,
+      "sha256": "95e9773b455c3c993b68b0f649884348ce89cd55a130c370e0bcf77278144b5e"
+    },
+    {
+      "path": "tests/browser/entry-routing.spec.ts",
+      "status": "modified",
+      "bytes": 5986,
+      "sha256": "a8e2c4ca7a55d4a90eb8b67008120e5c8f9648f099fa863d0234dc9d828f177c"
+    },
+    {
+      "path": "tests/browser/public-seo.spec.ts",
+      "status": "added",
+      "bytes": 13131,
+      "sha256": "d1583217509c338f5415debadedf7d80de098e9523b083c4d35666498247b859"
+    },
+    {
+      "path": "tests/browser/redesign.spec.ts",
+      "status": "modified",
+      "bytes": 29595,
+      "sha256": "ecde352790ec474b0572d65a3cce51d542eca9f0ee98bb4b9d2684388ab8c0f4"
+    },
+    {
+      "path": "tests/domain.test.ts",
+      "status": "modified",
+      "bytes": 21720,
+      "sha256": "b91aa35449071c2c7cd53187278b5839b93e911ec30855c824eb61122dc75cb6"
+    },
+    {
+      "path": "tests/public-analytics.test.ts",
+      "status": "added",
+      "bytes": 6472,
+      "sha256": "710de4ea82ecee77e007e6491ae83587d2ee5da759720aa2d9af7e8867d1e343"
+    },
+    {
+      "path": "tests/public-proxy.test.ts",
+      "status": "added",
+      "bytes": 1874,
+      "sha256": "01bc894b048c16b74c87052353a54d1e2db64dcfebe00328a1285236ebc62d6f"
+    },
+    {
+      "path": "tests/seo.test.ts",
+      "status": "added",
+      "bytes": 5236,
+      "sha256": "7618ad9f206e07a9dd5f20184b5d8a038009270d6db8a7bbf159e5ad2acd4435"
+    }
+  ]
+}

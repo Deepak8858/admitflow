@@ -1,0 +1,4461 @@
+{
+  "label": "final-corrected-public-lab",
+  "capturedAt": "2026-09-29T15:55:33.232Z",
+  "source": "H:\\new-app",
+  "sourceCommit": "02a03632957610765ba8911a1db0ea37d628d45f",
+  "browser": "Chromium 153.0.8010.12",
+  "bundler": "Turbopack",
+  "node": "v24.18.0",
+  "os": "win32 10.0.26200 x64",
+  "searchIndexableBuildSetting": "true",
+  "appBaseUrlBuildAndRuntime": "absent",
+  "searchIndexableRuntimeSetting": "absent",
+  "runsPerPageAndProfile": 3,
+  "reducedMotion": "reduce",
+  "observationWindow": "navigation load plus 2500 ms; cold cache on each run; no interactions",
+  "clsMethod": "maximum layout-shift session-window sum (1 s gap, 5 s maximum), excluding recent input",
+  "externalOriginPolicy": "requests to origins other than the local production server were blocked; each sample lists any attempted origins",
+  "diagnosticHtmlPreload": null,
+  "profiles": {
+    "mobile": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "deviceScaleFactor": 2,
+      "isMobile": true,
+      "hasTouch": true,
+      "cpuRate": 4,
+      "latencyMs": 150,
+      "downloadBytesPerSecond": 200000,
+      "uploadBytesPerSecond": 90000
+    },
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "deviceScaleFactor": 1,
+      "isMobile": false,
+      "hasTouch": false,
+      "cpuRate": 1,
+      "latencyMs": 40,
+      "downloadBytesPerSecond": 1250000,
+      "uploadBytesPerSecond": 625000
+    }
+  },
+  "results": {
+    "/": {
+      "rawHtmlStatus": 200,
+      "rawHtmlContentType": "text/html; charset=utf-8",
+      "profiles": {
+        "mobile": {
+          "median": {
+            "lcpMs": 3260,
+            "cls": 0,
+            "layoutShiftSum": 0,
+            "ttfbMs": 68.30000000074506,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 74172,
+            "imageTransferBytes": 56662,
+            "totalTransferBytes": 595375
+          },
+          "samples": [
+            {
+              "path": "/",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 3360,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "img",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 263.59999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 3201.89999999851,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 4103.199999999255,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono",
+                    "Inter Hero"
+                  ]
+                }
+              ],
+              "ttfbMs": 71.5,
+              "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Admissions CRM for coaching institutes."
+              ],
+              "heroImageCurrentSrc": "/media/admissions-mountain-hero-960.webp",
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 56662,
+              "totalTransferBytes": 595375,
+              "resourceCount": 27,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 3260,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "img",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 222.80000000074506,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 3124.9000000003725,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 4018.0999999996275,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono",
+                    "Inter Hero"
+                  ]
+                }
+              ],
+              "ttfbMs": 47.19999999925494,
+              "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Admissions CRM for coaching institutes."
+              ],
+              "heroImageCurrentSrc": "/media/admissions-mountain-hero-960.webp",
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 56662,
+              "totalTransferBytes": 594636,
+              "resourceCount": 27,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 3072,
+              "cls": 0.0015134405745718383,
+              "layoutShiftSum": 0.0015134405745718383,
+              "lcpElement": "img",
+              "shiftSessionStart": 3757,
+              "shiftSessionLast": 3893.699999999255,
+              "shiftSessionValue": 0.0015134405745718383,
+              "shifts": [
+                {
+                  "atMs": 3757,
+                  "value": 0.0015091642866316615,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": null,
+                      "previousRect": {
+                        "x": 20,
+                        "y": 250.53125,
+                        "width": 350,
+                        "height": 99.03125,
+                        "top": 250.53125,
+                        "right": 370,
+                        "bottom": 349.5625,
+                        "left": 20
+                      },
+                      "currentRect": {
+                        "x": 20,
+                        "y": 252.53125,
+                        "width": 350,
+                        "height": 99.03125,
+                        "top": 252.53125,
+                        "right": 370,
+                        "bottom": 351.5625,
+                        "left": 20
+                      }
+                    },
+                    {
+                      "node": "a.hero-pilot",
+                      "previousRect": {
+                        "x": 135.828125,
+                        "y": 504.90625,
+                        "width": 118.328125,
+                        "height": 44,
+                        "top": 504.90625,
+                        "right": 254.15625,
+                        "bottom": 548.90625,
+                        "left": 135.828125
+                      },
+                      "currentRect": {
+                        "x": 131.328125,
+                        "y": 504.90625,
+                        "width": 127.328125,
+                        "height": 44,
+                        "top": 504.90625,
+                        "right": 258.65625,
+                        "bottom": 548.90625,
+                        "left": 131.328125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 253,
+                        "y": 14,
+                        "width": 117,
+                        "height": 44,
+                        "top": 14,
+                        "right": 370,
+                        "bottom": 58,
+                        "left": 253
+                      },
+                      "currentRect": {
+                        "x": 248,
+                        "y": 14,
+                        "width": 122,
+                        "height": 44,
+                        "top": 14,
+                        "right": 370,
+                        "bottom": 58,
+                        "left": 248
+                      }
+                    },
+                    {
+                      "node": "span.badge.violet",
+                      "previousRect": {
+                        "x": 253,
+                        "y": 768.9375,
+                        "width": 100,
+                        "height": 22.5,
+                        "top": 768.9375,
+                        "right": 353,
+                        "bottom": 791.4375,
+                        "left": 253
+                      },
+                      "currentRect": {
+                        "x": 249,
+                        "y": 768.9375,
+                        "width": 104,
+                        "height": 22.5,
+                        "top": 768.9375,
+                        "right": 353,
+                        "bottom": 791.4375,
+                        "left": 249
+                      }
+                    },
+                    {
+                      "node": "svg",
+                      "previousRect": {
+                        "x": 241.6875,
+                        "y": 399.90625,
+                        "width": 18,
+                        "height": 18,
+                        "top": 399.90625,
+                        "right": 259.6875,
+                        "bottom": 417.90625,
+                        "left": 241.6875
+                      },
+                      "currentRect": {
+                        "x": 246.6875,
+                        "y": 399.90625,
+                        "width": 18,
+                        "height": 18,
+                        "top": 399.90625,
+                        "right": 264.6875,
+                        "bottom": 417.90625,
+                        "left": 246.6875
+                      }
+                    }
+                  ]
+                },
+                {
+                  "atMs": 3893.699999999255,
+                  "value": 0.000004276287940176892,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "span.eyebrow-dot",
+                      "previousRect": {
+                        "x": 59.953125,
+                        "y": 134.25,
+                        "width": 6,
+                        "height": 6,
+                        "top": 134.25,
+                        "right": 65.953125,
+                        "bottom": 140.25,
+                        "left": 59.953125
+                      },
+                      "currentRect": {
+                        "x": 43.453125,
+                        "y": 134.25,
+                        "width": 6,
+                        "height": 6,
+                        "top": 134.25,
+                        "right": 49.453125,
+                        "bottom": 140.25,
+                        "left": 43.453125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 228.09999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2845,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 3914.5999999996275,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono",
+                    "Inter Hero"
+                  ]
+                }
+              ],
+              "ttfbMs": 68.30000000074506,
+              "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Admissions CRM for coaching institutes."
+              ],
+              "heroImageCurrentSrc": "/media/admissions-mountain-hero-960.webp",
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 56662,
+              "totalTransferBytes": 596066,
+              "resourceCount": 28,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 14883
+            },
+            {
+              "url": "http://127.0.0.1:63882/media/admissions-mountain-hero-960.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 56662
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-regular-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 36714
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 867
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=8nTjltbQWvg6NcbE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=tXyZJ52UQVBCVsD3",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 1430
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=BiuOixuigeBXVJn7",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4433
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-26bm_oals0-.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2370
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=VBn6xwPKNK4Ukesu",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 6802
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "lcpMs": 1076,
+            "cls": 0.0012400752314814815,
+            "layoutShiftSum": 0.0012400752314814815,
+            "ttfbMs": 28.199999999254942,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 74172,
+            "imageTransferBytes": 307754,
+            "totalTransferBytes": 867097
+          },
+          "samples": [
+            {
+              "path": "/",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 1408,
+              "cls": 0.0012400752314814815,
+              "layoutShiftSum": 0.0012400752314814815,
+              "lcpElement": "img",
+              "shiftSessionStart": 1423.2999999988824,
+              "shiftSessionLast": 1423.2999999988824,
+              "shiftSessionValue": 0.0012400752314814815,
+              "shifts": [
+                {
+                  "atMs": 1423.2999999988824,
+                  "value": 0.0012400752314814815,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 450,
+                        "y": 329.5625,
+                        "width": 540,
+                        "height": 55.78125,
+                        "top": 329.5625,
+                        "right": 990,
+                        "bottom": 385.34375,
+                        "left": 450
+                      },
+                      "currentRect": {
+                        "x": 423,
+                        "y": 329.5625,
+                        "width": 594,
+                        "height": 55.78125,
+                        "top": 329.5625,
+                        "right": 1017,
+                        "bottom": 385.34375,
+                        "left": 423
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    },
+                    {
+                      "node": "a.button.primary.public-cta",
+                      "previousRect": {
+                        "x": 526.234375,
+                        "y": 415.34375,
+                        "width": 171.375,
+                        "height": 48,
+                        "top": 415.34375,
+                        "right": 697.609375,
+                        "bottom": 463.34375,
+                        "left": 526.234375
+                      },
+                      "currentRect": {
+                        "x": 518.734375,
+                        "y": 415.34375,
+                        "width": 181.375,
+                        "height": 48,
+                        "top": 415.34375,
+                        "right": 700.109375,
+                        "bottom": 463.34375,
+                        "left": 518.734375
+                      }
+                    },
+                    {
+                      "node": "a.hero-pilot",
+                      "previousRect": {
+                        "x": 663.3125,
+                        "y": 475.34375,
+                        "width": 113.375,
+                        "height": 44,
+                        "top": 475.34375,
+                        "right": 776.6875,
+                        "bottom": 519.34375,
+                        "left": 663.3125
+                      },
+                      "currentRect": {
+                        "x": 658.3125,
+                        "y": 475.34375,
+                        "width": 123.375,
+                        "height": 44,
+                        "top": 475.34375,
+                        "right": 781.6875,
+                        "bottom": 519.34375,
+                        "left": 658.3125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 106,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 1111.0999999996275,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 1491,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Inter Hero",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 34.29999999888241,
+              "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Admissions CRM for coaching institutes."
+              ],
+              "heroImageCurrentSrc": "/media/admissions-mountain-hero.webp",
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 307754,
+              "totalTransferBytes": 863562,
+              "resourceCount": 33,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 1076,
+              "cls": 0.0012400752314814815,
+              "layoutShiftSum": 0.0012400752314814815,
+              "lcpElement": "img",
+              "shiftSessionStart": 1145.2999999988824,
+              "shiftSessionLast": 1145.2999999988824,
+              "shiftSessionValue": 0.0012400752314814815,
+              "shifts": [
+                {
+                  "atMs": 1145.2999999988824,
+                  "value": 0.0012400752314814815,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 450,
+                        "y": 329.5625,
+                        "width": 540,
+                        "height": 55.78125,
+                        "top": 329.5625,
+                        "right": 990,
+                        "bottom": 385.34375,
+                        "left": 450
+                      },
+                      "currentRect": {
+                        "x": 423,
+                        "y": 329.5625,
+                        "width": 594,
+                        "height": 55.78125,
+                        "top": 329.5625,
+                        "right": 1017,
+                        "bottom": 385.34375,
+                        "left": 423
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    },
+                    {
+                      "node": "a.button.primary.public-cta",
+                      "previousRect": {
+                        "x": 526.234375,
+                        "y": 415.34375,
+                        "width": 171.375,
+                        "height": 48,
+                        "top": 415.34375,
+                        "right": 697.609375,
+                        "bottom": 463.34375,
+                        "left": 526.234375
+                      },
+                      "currentRect": {
+                        "x": 518.734375,
+                        "y": 415.34375,
+                        "width": 181.375,
+                        "height": 48,
+                        "top": 415.34375,
+                        "right": 700.109375,
+                        "bottom": 463.34375,
+                        "left": 518.734375
+                      }
+                    },
+                    {
+                      "node": "a.hero-pilot",
+                      "previousRect": {
+                        "x": 663.3125,
+                        "y": 475.34375,
+                        "width": 113.375,
+                        "height": 44,
+                        "top": 475.34375,
+                        "right": 776.6875,
+                        "bottom": 519.34375,
+                        "left": 663.3125
+                      },
+                      "currentRect": {
+                        "x": 658.3125,
+                        "y": 475.34375,
+                        "width": 123.375,
+                        "height": 44,
+                        "top": 475.34375,
+                        "right": 781.6875,
+                        "bottom": 519.34375,
+                        "left": 658.3125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 99.39999999850988,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 883,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 1191,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono",
+                    "Inter Hero"
+                  ]
+                }
+              ],
+              "ttfbMs": 20.399999998509884,
+              "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Admissions CRM for coaching institutes."
+              ],
+              "heroImageCurrentSrc": "/media/admissions-mountain-hero.webp",
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 307754,
+              "totalTransferBytes": 867097,
+              "resourceCount": 36,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 1072,
+              "cls": 0.0012400752314814815,
+              "layoutShiftSum": 0.0012400752314814815,
+              "lcpElement": "img",
+              "shiftSessionStart": 1116.5,
+              "shiftSessionLast": 1116.5,
+              "shiftSessionValue": 0.0012400752314814815,
+              "shifts": [
+                {
+                  "atMs": 1116.5,
+                  "value": 0.0012400752314814815,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 450,
+                        "y": 329.5625,
+                        "width": 540,
+                        "height": 55.78125,
+                        "top": 329.5625,
+                        "right": 990,
+                        "bottom": 385.34375,
+                        "left": 450
+                      },
+                      "currentRect": {
+                        "x": 423,
+                        "y": 329.5625,
+                        "width": 594,
+                        "height": 55.78125,
+                        "top": 329.5625,
+                        "right": 1017,
+                        "bottom": 385.34375,
+                        "left": 423
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    },
+                    {
+                      "node": "a.button.primary.public-cta",
+                      "previousRect": {
+                        "x": 526.234375,
+                        "y": 415.34375,
+                        "width": 171.375,
+                        "height": 48,
+                        "top": 415.34375,
+                        "right": 697.609375,
+                        "bottom": 463.34375,
+                        "left": 526.234375
+                      },
+                      "currentRect": {
+                        "x": 518.734375,
+                        "y": 415.34375,
+                        "width": 181.375,
+                        "height": 48,
+                        "top": 415.34375,
+                        "right": 700.109375,
+                        "bottom": 463.34375,
+                        "left": 518.734375
+                      }
+                    },
+                    {
+                      "node": "a.hero-pilot",
+                      "previousRect": {
+                        "x": 663.3125,
+                        "y": 475.34375,
+                        "width": 113.375,
+                        "height": 44,
+                        "top": 475.34375,
+                        "right": 776.6875,
+                        "bottom": 519.34375,
+                        "left": 663.3125
+                      },
+                      "currentRect": {
+                        "x": 658.3125,
+                        "y": 475.34375,
+                        "width": 123.375,
+                        "height": 44,
+                        "top": 475.34375,
+                        "right": 781.6875,
+                        "bottom": 519.34375,
+                        "left": 658.3125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 96.29999999888241,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 866.7999999988824,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 1162.8999999985099,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono",
+                    "Inter Hero"
+                  ]
+                }
+              ],
+              "ttfbMs": 28.199999999254942,
+              "title": "Admissions CRM for Coaching Institutes | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Admissions CRM for coaching institutes."
+              ],
+              "heroImageCurrentSrc": "/media/admissions-mountain-hero.webp",
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 307754,
+              "totalTransferBytes": 867098,
+              "resourceCount": 36,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 14883
+            },
+            {
+              "url": "http://127.0.0.1:63882/media/admissions-mountain-hero.webp",
+              "type": "Image",
+              "mimeType": "image/webp",
+              "status": 200,
+              "transferBytes": 307754
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-regular-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 36714
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 853
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 867
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 691
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=5CB68i4pnAekjehf",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 868
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=7s-QXMluF-D1As7I",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 5801
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-26bm_oals0-.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2370
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=8nTjltbQWvg6NcbE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=VBn6xwPKNK4Ukesu",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 6802
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=e-TVHDPN8vGDTXUP",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4698
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=S0CoWrH7yB4wYfD7",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4759
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=BiuOixuigeBXVJn7",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4433
+            }
+          ]
+        }
+      }
+    },
+    "/product": {
+      "rawHtmlStatus": 200,
+      "rawHtmlContentType": "text/html; charset=utf-8",
+      "profiles": {
+        "mobile": {
+          "median": {
+            "lcpMs": 3064,
+            "cls": 0,
+            "layoutShiftSum": 0,
+            "ttfbMs": 29.5,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 71802,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 483310
+          },
+          "samples": [
+            {
+              "path": "/product",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 3280,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 262.80000000074506,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 3128.7000000011176,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 4105.5,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 20.700000001117587,
+              "title": "Coaching Admissions Software Features | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/product"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "The enquiry-to-admission workflow,in one place."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 71802,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 483310,
+              "resourceCount": 19,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 2968,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 200.2999999988824,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2816.199999999255,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 4011.199999999255,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 30.09999999962747,
+              "title": "Coaching Admissions Software Features | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/product"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "The enquiry-to-admission workflow,in one place."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 71802,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 483310,
+              "resourceCount": 19,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 3064,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 211.59999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2925,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 4048.9000000003725,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 29.5,
+              "title": "Coaching Admissions Software Features | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/product"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "The enquiry-to-admission workflow,in one place."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 71802,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 483310,
+              "resourceCount": 19,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/product",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 12951
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=701_4j2zWPJn7ZKN",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "lcpMs": 816,
+            "cls": 0.03635246314112869,
+            "layoutShiftSum": 0.03635246314112869,
+            "ttfbMs": 17.5,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 74172,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 520006
+          },
+          "samples": [
+            {
+              "path": "/product",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 848,
+              "cls": 0.03635246314112869,
+              "layoutShiftSum": 0.03635246314112869,
+              "lcpElement": "h1",
+              "shiftSessionStart": 982.1999999992549,
+              "shiftSessionLast": 982.1999999992549,
+              "shiftSessionValue": 0.03635246314112869,
+              "shifts": [
+                {
+                  "atMs": 982.1999999992549,
+                  "value": 0.03635246314112869,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "section.public-container.product-demo",
+                      "previousRect": {
+                        "x": 70,
+                        "y": 434.265625,
+                        "width": 1300,
+                        "height": 465.734375,
+                        "top": 434.265625,
+                        "right": 1370,
+                        "bottom": 900,
+                        "left": 70
+                      },
+                      "currentRect": {
+                        "x": 70,
+                        "y": 402.375,
+                        "width": 1300,
+                        "height": 497.625,
+                        "top": 402.375,
+                        "right": 1370,
+                        "bottom": 900,
+                        "left": 70
+                      }
+                    },
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 408,
+                        "y": 368.59375,
+                        "width": 624,
+                        "height": 95.671875,
+                        "top": 368.59375,
+                        "right": 1032,
+                        "bottom": 464.265625,
+                        "left": 408
+                      },
+                      "currentRect": {
+                        "x": 356,
+                        "y": 368.59375,
+                        "width": 728,
+                        "height": 63.78125,
+                        "top": 368.59375,
+                        "right": 1084,
+                        "bottom": 432.375,
+                        "left": 356
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 98.09999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 761.9000000003725,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 1022.1999999992549,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 14.199999999254942,
+              "title": "Coaching Admissions Software Features | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/product"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "The enquiry-to-admission workflow,in one place."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 520697,
+              "resourceCount": 34,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 816,
+              "cls": 0.03635246314112869,
+              "layoutShiftSum": 0.03635246314112869,
+              "lcpElement": "h1",
+              "shiftSessionStart": 966.9000000003725,
+              "shiftSessionLast": 966.9000000003725,
+              "shiftSessionValue": 0.03635246314112869,
+              "shifts": [
+                {
+                  "atMs": 966.9000000003725,
+                  "value": 0.03635246314112869,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "section.public-container.product-demo",
+                      "previousRect": {
+                        "x": 70,
+                        "y": 434.265625,
+                        "width": 1300,
+                        "height": 465.734375,
+                        "top": 434.265625,
+                        "right": 1370,
+                        "bottom": 900,
+                        "left": 70
+                      },
+                      "currentRect": {
+                        "x": 70,
+                        "y": 402.375,
+                        "width": 1300,
+                        "height": 497.625,
+                        "top": 402.375,
+                        "right": 1370,
+                        "bottom": 900,
+                        "left": 70
+                      }
+                    },
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 408,
+                        "y": 368.59375,
+                        "width": 624,
+                        "height": 95.671875,
+                        "top": 368.59375,
+                        "right": 1032,
+                        "bottom": 464.265625,
+                        "left": 408
+                      },
+                      "currentRect": {
+                        "x": 356,
+                        "y": 368.59375,
+                        "width": 728,
+                        "height": 63.78125,
+                        "top": 368.59375,
+                        "right": 1084,
+                        "bottom": 432.375,
+                        "left": 356
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 100.09999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 730.5,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 1009.6999999992549,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 17.90000000037253,
+              "title": "Coaching Admissions Software Features | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/product"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "The enquiry-to-admission workflow,in one place."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 520006,
+              "resourceCount": 33,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/product",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 752,
+              "cls": 0.03635246314112869,
+              "layoutShiftSum": 0.03635246314112869,
+              "lcpElement": "h1",
+              "shiftSessionStart": 866.9000000003725,
+              "shiftSessionLast": 866.9000000003725,
+              "shiftSessionValue": 0.03635246314112869,
+              "shifts": [
+                {
+                  "atMs": 866.9000000003725,
+                  "value": 0.03635246314112869,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "section.public-container.product-demo",
+                      "previousRect": {
+                        "x": 70,
+                        "y": 434.265625,
+                        "width": 1300,
+                        "height": 465.734375,
+                        "top": 434.265625,
+                        "right": 1370,
+                        "bottom": 900,
+                        "left": 70
+                      },
+                      "currentRect": {
+                        "x": 70,
+                        "y": 402.375,
+                        "width": 1300,
+                        "height": 497.625,
+                        "top": 402.375,
+                        "right": 1370,
+                        "bottom": 900,
+                        "left": 70
+                      }
+                    },
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 408,
+                        "y": 368.59375,
+                        "width": 624,
+                        "height": 95.671875,
+                        "top": 368.59375,
+                        "right": 1032,
+                        "bottom": 464.265625,
+                        "left": 408
+                      },
+                      "currentRect": {
+                        "x": 356,
+                        "y": 368.59375,
+                        "width": 728,
+                        "height": 63.78125,
+                        "top": 368.59375,
+                        "right": 1084,
+                        "bottom": 432.375,
+                        "left": 356
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 92.30000000074506,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 672.2000000011176,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 904.7000000011176,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 17.5,
+              "title": "Coaching Admissions Software Features | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/product"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "The enquiry-to-admission workflow,in one place."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 517853,
+              "resourceCount": 32,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/product",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 12951
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 853
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 868
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 867
+            },
+            {
+              "url": "http://127.0.0.1:63882/login?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 691
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=TS6DE7z2dKGYgKNE",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 691
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=O9tzF6iXNI-aN-8T",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4698
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=0uX3G0WL-5IUHexI",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 5801
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-26bm_oals0-.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2370
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=701_4j2zWPJn7ZKN",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=xUN6X9OpsyOcHBpl",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 6802
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=LcOC3MJuDejdgbOw",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4759
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=nXxJ4DWxbmf6qAsn",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4433
+            },
+            {
+              "url": "http://127.0.0.1:63882/login?_rsc=_t3BErHxXqOZ0Dmb",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 1419
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=_t3BErHxXqOZ0Dmb",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 1425
+            }
+          ]
+        }
+      }
+    },
+    "/pricing": {
+      "rawHtmlStatus": 200,
+      "rawHtmlContentType": "text/html; charset=utf-8",
+      "profiles": {
+        "mobile": {
+          "median": {
+            "lcpMs": 2440,
+            "cls": 0,
+            "layoutShiftSum": 0,
+            "ttfbMs": 12.300000000745058,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 74172,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 492760
+          },
+          "samples": [
+            {
+              "path": "/pricing",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 2476,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 262.09999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2405.9000000003725,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 2789,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 16.699999999254942,
+              "title": "Pricing and Pilot Enquiries | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/pricing"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Pricing is being finalizedfor launch."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 492760,
+              "resourceCount": 24,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 2440,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 252,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2350.2000000011176,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 2711.10000000149,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 11.900000000372529,
+              "title": "Pricing and Pilot Enquiries | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/pricing"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Pricing is being finalizedfor launch."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 492760,
+              "resourceCount": 24,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 2352,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 273.40000000037253,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2278.4000000003725,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 2682.800000000745,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 12.300000000745058,
+              "title": "Pricing and Pilot Enquiries | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/pricing"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Pricing is being finalizedfor launch."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 492760,
+              "resourceCount": 24,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/pricing",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 7074
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 867
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=hJ2_o2LoVuxp5YaM",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=nIqGBsdEeuFB5cyB",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4433
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=Wd0gymlv8yuSU5o8",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 6802
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-26bm_oals0-.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2370
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "lcpMs": 640,
+            "cls": 0.01576227709190672,
+            "layoutShiftSum": 0.01576227709190672,
+            "ttfbMs": 16.59999999962747,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 74172,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 514131
+          },
+          "samples": [
+            {
+              "path": "/pricing",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 684,
+              "cls": 0.01576227709190672,
+              "layoutShiftSum": 0.01576227709190672,
+              "lcpElement": "h1",
+              "shiftSessionStart": 706.5999999996275,
+              "shiftSessionLast": 706.5999999996275,
+              "shiftSessionValue": 0.01576227709190672,
+              "shifts": [
+                {
+                  "atMs": 706.5999999996275,
+                  "value": 0.01576227709190672,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "section.public-container.pricing-card",
+                      "previousRect": {
+                        "x": 230,
+                        "y": 455.234375,
+                        "width": 980,
+                        "height": 444.765625,
+                        "top": 455.234375,
+                        "right": 1210,
+                        "bottom": 900,
+                        "left": 230
+                      },
+                      "currentRect": {
+                        "x": 230,
+                        "y": 423.34375,
+                        "width": 980,
+                        "height": 476.65625,
+                        "top": 423.34375,
+                        "right": 1210,
+                        "bottom": 900,
+                        "left": 230
+                      }
+                    },
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 408,
+                        "y": 315.5625,
+                        "width": 624,
+                        "height": 95.671875,
+                        "top": 315.5625,
+                        "right": 1032,
+                        "bottom": 411.234375,
+                        "left": 408
+                      },
+                      "currentRect": {
+                        "x": 356,
+                        "y": 315.5625,
+                        "width": 728,
+                        "height": 63.78125,
+                        "top": 315.5625,
+                        "right": 1084,
+                        "bottom": 379.34375,
+                        "left": 356
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 93.40000000037253,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 628.0999999996275,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 958.8000000007451,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 16.59999999962747,
+              "title": "Pricing and Pilot Enquiries | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/pricing"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Pricing is being finalizedfor launch."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 514131,
+              "resourceCount": 33,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 608,
+              "cls": 0.01576227709190672,
+              "layoutShiftSum": 0.01576227709190672,
+              "lcpElement": "h1",
+              "shiftSessionStart": 622,
+              "shiftSessionLast": 622,
+              "shiftSessionValue": 0.01576227709190672,
+              "shifts": [
+                {
+                  "atMs": 622,
+                  "value": 0.01576227709190672,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "section.public-container.pricing-card",
+                      "previousRect": {
+                        "x": 230,
+                        "y": 455.234375,
+                        "width": 980,
+                        "height": 444.765625,
+                        "top": 455.234375,
+                        "right": 1210,
+                        "bottom": 900,
+                        "left": 230
+                      },
+                      "currentRect": {
+                        "x": 230,
+                        "y": 423.34375,
+                        "width": 980,
+                        "height": 476.65625,
+                        "top": 423.34375,
+                        "right": 1210,
+                        "bottom": 900,
+                        "left": 230
+                      }
+                    },
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 408,
+                        "y": 315.5625,
+                        "width": 624,
+                        "height": 95.671875,
+                        "top": 315.5625,
+                        "right": 1032,
+                        "bottom": 411.234375,
+                        "left": 408
+                      },
+                      "currentRect": {
+                        "x": 356,
+                        "y": 315.5625,
+                        "width": 728,
+                        "height": 63.78125,
+                        "top": 315.5625,
+                        "right": 1084,
+                        "bottom": 379.34375,
+                        "left": 356
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 97.90000000037253,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 540.5,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 739.2000000011176,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 17.300000000745058,
+              "title": "Pricing and Pilot Enquiries | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/pricing"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Pricing is being finalizedfor launch."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 513398,
+              "resourceCount": 33,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/pricing",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 640,
+              "cls": 0.01576227709190672,
+              "layoutShiftSum": 0.01576227709190672,
+              "lcpElement": "h1",
+              "shiftSessionStart": 657.0999999996275,
+              "shiftSessionLast": 657.0999999996275,
+              "shiftSessionValue": 0.01576227709190672,
+              "shifts": [
+                {
+                  "atMs": 657.0999999996275,
+                  "value": 0.01576227709190672,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "section.public-container.pricing-card",
+                      "previousRect": {
+                        "x": 230,
+                        "y": 455.234375,
+                        "width": 980,
+                        "height": 444.765625,
+                        "top": 455.234375,
+                        "right": 1210,
+                        "bottom": 900,
+                        "left": 230
+                      },
+                      "currentRect": {
+                        "x": 230,
+                        "y": 423.34375,
+                        "width": 980,
+                        "height": 476.65625,
+                        "top": 423.34375,
+                        "right": 1210,
+                        "bottom": 900,
+                        "left": 230
+                      }
+                    },
+                    {
+                      "node": "p",
+                      "previousRect": {
+                        "x": 408,
+                        "y": 315.5625,
+                        "width": 624,
+                        "height": 95.671875,
+                        "top": 315.5625,
+                        "right": 1032,
+                        "bottom": 411.234375,
+                        "left": 408
+                      },
+                      "currentRect": {
+                        "x": 356,
+                        "y": 315.5625,
+                        "width": 728,
+                        "height": 63.78125,
+                        "top": 315.5625,
+                        "right": 1084,
+                        "bottom": 379.34375,
+                        "left": 356
+                      }
+                    },
+                    {
+                      "node": "nav.public-desktop-nav",
+                      "previousRect": {
+                        "x": 416.78125,
+                        "y": 19.59375,
+                        "width": 433.375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 850.15625,
+                        "bottom": 60.390625,
+                        "left": 416.78125
+                      },
+                      "currentRect": {
+                        "x": 397.28125,
+                        "y": 19.59375,
+                        "width": 457.09375,
+                        "height": 40.796875,
+                        "top": 19.59375,
+                        "right": 854.375,
+                        "bottom": 60.390625,
+                        "left": 397.28125
+                      }
+                    },
+                    {
+                      "node": "div.public-nav-actions",
+                      "previousRect": {
+                        "x": 1034.828125,
+                        "y": 18,
+                        "width": 305.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1034.828125
+                      },
+                      "currentRect": {
+                        "x": 1018.828125,
+                        "y": 18,
+                        "width": 321.171875,
+                        "height": 44,
+                        "top": 18,
+                        "right": 1340,
+                        "bottom": 62,
+                        "left": 1018.828125
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 94.09999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 577.7999999988824,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 756.5,
+                  "families": [
+                    "Inter Hero",
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 15,
+              "title": "Pricing and Pilot Enquiries | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/pricing"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Pricing is being finalizedfor launch."
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 514826,
+              "resourceCount": 34,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/pricing",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 7074
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 853
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 691
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 868
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=bME4Q4px3YJ1rAzL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 867
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=2ja-4-xvKMEH5MUy",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 5801
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-26bm_oals0-.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2370
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=hJ2_o2LoVuxp5YaM",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=Wd0gymlv8yuSU5o8",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 6802
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=cEZXiMQbAqkBuU8b",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4698
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=_4-a4purpio3mlhn",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4759
+            },
+            {
+              "url": "http://127.0.0.1:63882/login?_rsc=4uavnN5mX1q-K87W",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 1417
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=4uavnN5mX1q-K87W",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 1429
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=nIqGBsdEeuFB5cyB",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4433
+            }
+          ]
+        }
+      }
+    },
+    "/resources/measuring-admissions-recovery-pilot": {
+      "rawHtmlStatus": 200,
+      "rawHtmlContentType": "text/html; charset=utf-8",
+      "profiles": {
+        "mobile": {
+          "median": {
+            "lcpMs": 2620,
+            "cls": 0,
+            "layoutShiftSum": 0,
+            "ttfbMs": 24.200000001117587,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 74172,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 487485
+          },
+          "samples": [
+            {
+              "path": "/resources/measuring-admissions-recovery-pilot",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 2780,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 204.30000000074506,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2652.4000000003725,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 3438.5,
+                  "families": [
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 16.600000001490116,
+              "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Measuring an admissions recovery pilot"
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 487485,
+              "resourceCount": 22,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/resources/measuring-admissions-recovery-pilot",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 2620,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 220.59999999962747,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2501.699999999255,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 3394.2999999988824,
+                  "families": [
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 29.09999999962747,
+              "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Measuring an admissions recovery pilot"
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 487485,
+              "resourceCount": 22,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/resources/measuring-admissions-recovery-pilot",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 2324,
+              "cls": 0,
+              "layoutShiftSum": 0,
+              "lcpElement": "p",
+              "shiftSessionStart": null,
+              "shiftSessionLast": null,
+              "shiftSessionValue": 0,
+              "shifts": [],
+              "fontsReadyMs": 215.80000000074506,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 2226.5,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 2641.2000000011176,
+                  "families": [
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 24.200000001117587,
+              "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Measuring an admissions recovery pilot"
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 487485,
+              "resourceCount": 22,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/resources/measuring-admissions-recovery-pilot",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 9129
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-26bm_oals0-.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2370
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 868
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=eO5ulTthqWuEbvBp",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4759
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=R9ItrXRa5YUSR8Kl",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            }
+          ]
+        },
+        "desktop": {
+          "median": {
+            "lcpMs": 716,
+            "cls": 0.027879126713338045,
+            "layoutShiftSum": 0.027879126713338045,
+            "ttfbMs": 21.200000001117587,
+            "scriptTransferBytes": 221359,
+            "stylesheetTransferBytes": 74172,
+            "imageTransferBytes": 0,
+            "totalTransferBytes": 516878
+          },
+          "samples": [
+            {
+              "path": "/resources/measuring-admissions-recovery-pilot",
+              "run": 1,
+              "status": 200,
+              "lcpMs": 740,
+              "cls": 0.027879126713338045,
+              "layoutShiftSum": 0.027879126713338045,
+              "lcpElement": "p",
+              "shiftSessionStart": 829.0999999996275,
+              "shiftSessionLast": 829.0999999996275,
+              "shiftSessionValue": 0.027879126713338045,
+              "shifts": [
+                {
+                  "atMs": 829.0999999996275,
+                  "value": 0.027879126713338045,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "article.buyer-measure.public-container",
+                      "previousRect": {
+                        "x": 350,
+                        "y": 640.859375,
+                        "width": 740,
+                        "height": 259.140625,
+                        "top": 640.859375,
+                        "right": 1090,
+                        "bottom": 900,
+                        "left": 350
+                      },
+                      "currentRect": {
+                        "x": 350,
+                        "y": 587.828125,
+                        "width": 740,
+                        "height": 312.171875,
+                        "top": 587.828125,
+                        "right": 1090,
+                        "bottom": 900,
+                        "left": 350
+                      }
+                    },
+                    {
+                      "node": "p.buyer-lead",
+                      "previousRect": {
+                        "x": 100,
+                        "y": 462.078125,
+                        "width": 780,
+                        "height": 63.78125,
+                        "top": 462.078125,
+                        "right": 880,
+                        "bottom": 525.859375,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 409.046875,
+                        "width": 910,
+                        "height": 63.78125,
+                        "top": 409.046875,
+                        "right": 1010,
+                        "bottom": 472.828125,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": null,
+                      "previousRect": {
+                        "x": 100,
+                        "y": 269.984375,
+                        "width": 493,
+                        "height": 116.03125,
+                        "top": 269.984375,
+                        "right": 593,
+                        "bottom": 386.015625,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 273.984375,
+                        "width": 561,
+                        "height": 116.03125,
+                        "top": 273.984375,
+                        "right": 661,
+                        "bottom": 390.015625,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": "div.buyer-resource-meta.public-container",
+                      "previousRect": {
+                        "x": 100,
+                        "y": 622.859375,
+                        "width": 1240,
+                        "height": 18,
+                        "top": 622.859375,
+                        "right": 1340,
+                        "bottom": 640.859375,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 569.828125,
+                        "width": 1240,
+                        "height": 18,
+                        "top": 569.828125,
+                        "right": 1340,
+                        "bottom": 587.828125,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": null,
+                      "previousRect": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 0,
+                        "height": 0,
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "currentRect": {
+                        "x": 374,
+                        "y": 790.734375,
+                        "width": 716,
+                        "height": 48.890625,
+                        "top": 790.734375,
+                        "right": 1090,
+                        "bottom": 839.625,
+                        "left": 374
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 87.30000000074506,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 675.6999999992549,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 850.0999999996275,
+                  "families": [
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 38.80000000074506,
+              "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Measuring an admissions recovery pilot"
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 515462,
+              "resourceCount": 33,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/resources/measuring-admissions-recovery-pilot",
+              "run": 2,
+              "status": 200,
+              "lcpMs": 708,
+              "cls": 0.027879126713338045,
+              "layoutShiftSum": 0.027879126713338045,
+              "lcpElement": "p",
+              "shiftSessionStart": 820.9000000003725,
+              "shiftSessionLast": 820.9000000003725,
+              "shiftSessionValue": 0.027879126713338045,
+              "shifts": [
+                {
+                  "atMs": 820.9000000003725,
+                  "value": 0.027879126713338045,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "article.buyer-measure.public-container",
+                      "previousRect": {
+                        "x": 350,
+                        "y": 640.859375,
+                        "width": 740,
+                        "height": 259.140625,
+                        "top": 640.859375,
+                        "right": 1090,
+                        "bottom": 900,
+                        "left": 350
+                      },
+                      "currentRect": {
+                        "x": 350,
+                        "y": 587.828125,
+                        "width": 740,
+                        "height": 312.171875,
+                        "top": 587.828125,
+                        "right": 1090,
+                        "bottom": 900,
+                        "left": 350
+                      }
+                    },
+                    {
+                      "node": "p.buyer-lead",
+                      "previousRect": {
+                        "x": 100,
+                        "y": 462.078125,
+                        "width": 780,
+                        "height": 63.78125,
+                        "top": 462.078125,
+                        "right": 880,
+                        "bottom": 525.859375,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 409.046875,
+                        "width": 910,
+                        "height": 63.78125,
+                        "top": 409.046875,
+                        "right": 1010,
+                        "bottom": 472.828125,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": null,
+                      "previousRect": {
+                        "x": 100,
+                        "y": 269.984375,
+                        "width": 493,
+                        "height": 116.03125,
+                        "top": 269.984375,
+                        "right": 593,
+                        "bottom": 386.015625,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 273.984375,
+                        "width": 561,
+                        "height": 116.03125,
+                        "top": 273.984375,
+                        "right": 661,
+                        "bottom": 390.015625,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": "div.buyer-resource-meta.public-container",
+                      "previousRect": {
+                        "x": 100,
+                        "y": 622.859375,
+                        "width": 1240,
+                        "height": 18,
+                        "top": 622.859375,
+                        "right": 1340,
+                        "bottom": 640.859375,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 569.828125,
+                        "width": 1240,
+                        "height": 18,
+                        "top": 569.828125,
+                        "right": 1340,
+                        "bottom": 587.828125,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": null,
+                      "previousRect": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 0,
+                        "height": 0,
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "currentRect": {
+                        "x": 374,
+                        "y": 790.734375,
+                        "width": 716,
+                        "height": 48.890625,
+                        "top": 790.734375,
+                        "right": 1090,
+                        "bottom": 839.625,
+                        "left": 374
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 87.5,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 627.4000000003725,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 847.4000000003725,
+                  "families": [
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 21.200000001117587,
+              "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Measuring an admissions recovery pilot"
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 516880,
+              "resourceCount": 34,
+              "blockedOrigins": []
+            },
+            {
+              "path": "/resources/measuring-admissions-recovery-pilot",
+              "run": 3,
+              "status": 200,
+              "lcpMs": 716,
+              "cls": 0.027879126713338045,
+              "layoutShiftSum": 0.027879126713338045,
+              "lcpElement": "p",
+              "shiftSessionStart": 826.8999999985099,
+              "shiftSessionLast": 826.8999999985099,
+              "shiftSessionValue": 0.027879126713338045,
+              "shifts": [
+                {
+                  "atMs": 826.8999999985099,
+                  "value": 0.027879126713338045,
+                  "fontsStatus": "loading",
+                  "sources": [
+                    {
+                      "node": "article.buyer-measure.public-container",
+                      "previousRect": {
+                        "x": 350,
+                        "y": 640.859375,
+                        "width": 740,
+                        "height": 259.140625,
+                        "top": 640.859375,
+                        "right": 1090,
+                        "bottom": 900,
+                        "left": 350
+                      },
+                      "currentRect": {
+                        "x": 350,
+                        "y": 587.828125,
+                        "width": 740,
+                        "height": 312.171875,
+                        "top": 587.828125,
+                        "right": 1090,
+                        "bottom": 900,
+                        "left": 350
+                      }
+                    },
+                    {
+                      "node": "p.buyer-lead",
+                      "previousRect": {
+                        "x": 100,
+                        "y": 462.078125,
+                        "width": 780,
+                        "height": 63.78125,
+                        "top": 462.078125,
+                        "right": 880,
+                        "bottom": 525.859375,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 409.046875,
+                        "width": 910,
+                        "height": 63.78125,
+                        "top": 409.046875,
+                        "right": 1010,
+                        "bottom": 472.828125,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": null,
+                      "previousRect": {
+                        "x": 100,
+                        "y": 269.984375,
+                        "width": 493,
+                        "height": 116.03125,
+                        "top": 269.984375,
+                        "right": 593,
+                        "bottom": 386.015625,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 273.984375,
+                        "width": 561,
+                        "height": 116.03125,
+                        "top": 273.984375,
+                        "right": 661,
+                        "bottom": 390.015625,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": "div.buyer-resource-meta.public-container",
+                      "previousRect": {
+                        "x": 100,
+                        "y": 622.859375,
+                        "width": 1240,
+                        "height": 18,
+                        "top": 622.859375,
+                        "right": 1340,
+                        "bottom": 640.859375,
+                        "left": 100
+                      },
+                      "currentRect": {
+                        "x": 100,
+                        "y": 569.828125,
+                        "width": 1240,
+                        "height": 18,
+                        "top": 569.828125,
+                        "right": 1340,
+                        "bottom": 587.828125,
+                        "left": 100
+                      }
+                    },
+                    {
+                      "node": null,
+                      "previousRect": {
+                        "x": 0,
+                        "y": 0,
+                        "width": 0,
+                        "height": 0,
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "left": 0
+                      },
+                      "currentRect": {
+                        "x": 374,
+                        "y": 790.734375,
+                        "width": 716,
+                        "height": 48.890625,
+                        "top": 790.734375,
+                        "right": 1090,
+                        "bottom": 839.625,
+                        "left": 374
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fontsReadyMs": 88.89999999850988,
+              "fontEvents": [
+                {
+                  "name": "loading",
+                  "atMs": 645.7999999988824,
+                  "families": []
+                },
+                {
+                  "name": "loadingdone",
+                  "atMs": 846,
+                  "families": [
+                    "Inter Variable",
+                    "Geist Mono"
+                  ]
+                }
+              ],
+              "ttfbMs": 13.399999998509884,
+              "title": "Measuring an Admissions Recovery Pilot | AdmitFlow",
+              "canonical": [
+                "https://admitflow.incfrog.ai/resources/measuring-admissions-recovery-pilot"
+              ],
+              "robots": [
+                "index, follow"
+              ],
+              "h1": [
+                "Measuring an admissions recovery pilot"
+              ],
+              "heroImageCurrentSrc": null,
+              "scriptTransferBytes": 221359,
+              "stylesheetTransferBytes": 74172,
+              "imageTransferBytes": 0,
+              "totalTransferBytes": 516878,
+              "resourceCount": 34,
+              "blockedOrigins": []
+            }
+          ],
+          "firstRunResources": [
+            {
+              "url": "http://127.0.0.1:63882/resources/measuring-admissions-recovery-pilot",
+              "type": "Document",
+              "mimeType": "text/html",
+              "status": 200,
+              "transferBytes": 9129
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-26bm_oals0-.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2370
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/13_sedd5vwgs6.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 69112
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3-q03se7hvs-n.css",
+              "type": "Stylesheet",
+              "mimeType": "text/css",
+              "status": 200,
+              "transferBytes": 2690
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-medium-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 37566
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/43qi2ef0_-07u.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9183
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1nq0sqdultszo.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 9152
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/turbopack-2_2--887bg-p2.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4850
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/09asoieh8b03g.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 5533
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2iw4624dtoe4d.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 4432
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/1zaoqvq-ktldd.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 18989
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3anko_1gv50ln.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 11239
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/2gd8h7_y041ka.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 36422
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/41y-oww00-ceh.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 45679
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/3a1a9xoq0p87e.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 1959
+            },
+            {
+              "url": "http://127.0.0.1:63882/_next/static/chunks/06jxjnw8bfczc.js",
+              "type": "Script",
+              "mimeType": "application/javascript",
+              "status": 200,
+              "transferBytes": 73921
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/inter-variable-4.0-latin.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 120764
+            },
+            {
+              "url": "http://127.0.0.1:63882/fonts/geist-mono-latin-5.3.0.woff2",
+              "type": "Font",
+              "mimeType": "font/woff2",
+              "status": 200,
+              "transferBytes": 10369
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 843
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 855
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 853
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 868
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 867
+            },
+            {
+              "url": "http://127.0.0.1:63882/login?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 691
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=SO8w7JZWpQaTHZ5Q",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 691
+            },
+            {
+              "url": "http://127.0.0.1:63882/product?_rsc=m53dMnAb2uiu295h",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 6802
+            },
+            {
+              "url": "http://127.0.0.1:63882/?_rsc=R9ItrXRa5YUSR8Kl",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 7656
+            },
+            {
+              "url": "http://127.0.0.1:63882/pricing?_rsc=XJP4vhxnjz7JaAPL",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4698
+            },
+            {
+              "url": "http://127.0.0.1:63882/help?_rsc=7cRXzygmvnPX2b6_",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 5801
+            },
+            {
+              "url": "http://127.0.0.1:63882/resources?_rsc=eO5ulTthqWuEbvBp",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4759
+            },
+            {
+              "url": "http://127.0.0.1:63882/contact?_rsc=22DaZSkYJmpRPFDJ",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 4433
+            },
+            {
+              "url": "http://127.0.0.1:63882/signup?_rsc=xAjfsOo2J31vcT9n",
+              "type": "Fetch",
+              "mimeType": "text/x-component",
+              "status": 200,
+              "transferBytes": 1431
+            }
+          ]
+        }
+      }
+    }
+  },
+  "routeSelection": {
+    "criterion": "largest emitted HTML bytes among new published sitemap pages; shared initial JS/CSS is measured during the selected route's lab runs",
+    "candidates": [
+      {
+        "path": "/resources/measuring-admissions-recovery-pilot",
+        "emittedHtmlBytes": 46812
+      },
+      {
+        "path": "/resources/how-to-evaluate-an-admissions-crm",
+        "emittedHtmlBytes": 45528
+      },
+      {
+        "path": "/resources/coaching-admissions-follow-up-checklist",
+        "emittedHtmlBytes": 45040
+      },
+      {
+        "path": "/product/whatsapp-follow-up",
+        "emittedHtmlBytes": 43515
+      },
+      {
+        "path": "/product/admissions-recovery",
+        "emittedHtmlBytes": 42584
+      },
+      {
+        "path": "/security",
+        "emittedHtmlBytes": 40761
+      },
+      {
+        "path": "/about",
+        "emittedHtmlBytes": 40234
+      },
+      {
+        "path": "/resources",
+        "emittedHtmlBytes": 39048
+      },
+      {
+        "path": "/contact",
+        "emittedHtmlBytes": 35309
+      }
+    ],
+    "selectedPath": "/resources/measuring-admissions-recovery-pilot"
+  }
+}

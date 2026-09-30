@@ -1,0 +1,27 @@
+{
+  "run": "final-corrected-browser-public.log",
+  "result": "79 passed, 4 failed, 26.3 minutes",
+  "note": "Curated diagnostic record. Raw Playwright traces are kept out of the report because fixture browser state can contain private test data.",
+  "failures": [
+    {
+      "test": "entry-routing.spec.ts:87 landing actions keep readable text while hovered in both themes",
+      "failure": "Strict selector .public-nav .primary matched both desktop and hidden mobile signup links before hover.",
+      "classification": "Test locator ambiguity; contrast verdict was never reached in this run."
+    },
+    {
+      "test": "public-seo.spec.ts:109 unpublished and unknown pages are genuine 404s; private pages stay excluded",
+      "failure": "Strict meta[name=robots] selector matched both AdmitFlow noindex,nofollow and an additional Next noindex tag.",
+      "classification": "Test locator ambiguity; preserve real 404 and exclusion assertions."
+    },
+    {
+      "test": "public-seo.spec.ts:185 analytics records only verified CTA journey starts and actual playback",
+      "failure": "Test sought the walkthrough audio on /product, where that sample is not rendered. The walkthrough sample is on /.",
+      "classification": "Test route mismatch; preserve genuine playing-event and deduplication checks."
+    },
+    {
+      "test": "subscriptions.spec.ts:67 restricted UI blocks paid controls but retains drafts, notes, pauses and existing records",
+      "failure": "On /team, Invite teammate was absent after 15 seconds. The page still showed Loading your admissions workspace. A Next dev JavaScript chunk logged net::ERR_NO_BUFFER_SPACE during this navigation.",
+      "classification": "Environment or app-load failure under investigation; paid-control authorization assertions remain unchanged."
+    }
+  ]
+}

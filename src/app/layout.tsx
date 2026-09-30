@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/geist";
+import "./fonts.css";
 import "./tokens.css";
 import "./globals.css";
 import { AppearanceProvider } from "@/components/appearance";
@@ -11,6 +11,6 @@ export const metadata: Metadata = {
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const content = <AppearanceProvider>{children}</AppearanceProvider>;
-  const bootstrapTheme = `(function(){try{var t=localStorage.getItem('admitflow:theme');document.documentElement.dataset.theme=(t==='dark'||t==='light')?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}})()`;
-  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: bootstrapTheme }} /></head><body>{content}</body></html>;
+  const bootstrapTheme = `(function(){var theme='light';try{var saved=localStorage.getItem('admitflow:theme');if(saved==='dark'||saved==='light'){theme=saved}else if(saved==='system'){theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}}catch(e){}document.documentElement.dataset.theme=theme})()`;
+  return <html lang="en" data-theme="light" suppressHydrationWarning><head><link rel="preload" href="/fonts/inter-variable-4.0-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" /><link rel="preload" href="/fonts/inter-medium-4.0-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" /><script dangerouslySetInnerHTML={{ __html: bootstrapTheme }} /></head><body>{content}</body></html>;
 }
