@@ -46,6 +46,7 @@
   --color-faint: #b1aea5;
   --color-rule: #eae8e1;
   --color-rule-strong: #dfdcd3;
+  --color-control-border: #8a8880;
   --color-accent: #7466e8;
   --color-accent-hover: #6051c7;
   --color-accent-text: #6051c7;
@@ -151,6 +152,7 @@
   --color-faint: #79776e;
   --color-rule: #3a3933;
   --color-rule-strong: #56544b;
+  --color-control-border: #79776e;
   --color-accent: #b7abff;
   --color-accent-hover: #d0c7ff;
   --color-accent-text: #b7abff;

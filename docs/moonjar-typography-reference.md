@@ -109,6 +109,39 @@ Several feature panels use `linear-gradient(#F1F0EB 0%, #EAE8E2 58%, #ECEAE4 100
 
 The initial `surfaceColors` inventory in `computed-styles.json` includes computed border colors even where border width may be zero. Use the stricter `paletteUsage` records in `rendered-addenda.json` for confirmed nonzero border paints.
 
+## Release review corrections — 30 September 2026
+
+The follow-up release patch applies the measured hero gradient
+`linear-gradient(#F7F7F5 0%, #F5F4F6 58%, #EEE9F5 100%)` to the light homepage
+hero panel and the measured feature gradient
+`linear-gradient(#F1F0EB 0%, #EAE8E2 58%, #ECEAE4 100%)` to light feature tiles.
+The archived reference did not establish the decorative glow layers' complete
+horizontal positions, blur or blending; those effects are not reconstructed.
+Original AdmitFlow product artwork remains.
+
+Buyer-page H1 now shares the static Inter Hero 500 role and public heading
+scale: up to 52px desktop, and a 20px floor/28.4553px cap below 810px. Static
+faces use normal feature/variation settings; Inter Variable body and reading
+roles retain their character features and optical axes. This supersedes the
+29 September buyer-H1 variable-face evidence only; historical screenshots and
+receipts remain unchanged.
+
+The reference body `#8A8880` on paper is about 3.40:1. AdmitFlow intentionally
+retains `#66645D` (about 5.66:1), with calculated contrast at least 4.97:1 at
+the hero gradient stops and 4.83:1 at feature stops. Enabled control boundaries
+use `#8A8880` in light and `#79776E` in dark (about 3.55:1 on their respective
+field surfaces). Small success/completion text uses the readable green-ink
+token. The dark checked-switch thumb and enabled task-completion icon retain
+visible contrast; faint decorative dividers are unchanged. These are limited
+AA-oriented departures from the reference, not a claim of complete WCAG
+conformance. Persisted dark mode is an intentional product feature; the fatal
+global-error replacement document remains explicitly light.
+
+Parent source review accepted these changes. Independent targeted rendered
+verification and combined-head CI are pending; source calculations and earlier
+flat-background screenshots are not proof of the new paints. See the
+[current release validation](seo-release-snapshot.md#pr-review-corrections-and-current-validation).
+
 ## Read-only AdmitFlow override audit
 
 This is a source snapshot during parallel implementation, not final runtime acceptance. Already assigned font/theme/CSS work remains with its owners.

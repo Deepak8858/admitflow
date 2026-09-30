@@ -93,7 +93,7 @@
 .mini-bars i:nth-child(-n+2) { opacity: .55; }
 .avatar-stack { display: flex; align-self: center; padding-left: 6px; }
 .avatar-stack .avatar { margin-left: -6px; border: 2px solid var(--color-surface); }
-.range-select { display: inline-flex; align-items: center; gap: 8px; min-width: 0; min-height: 36px; padding: 0 11px; color: var(--color-body); background: var(--color-surface); border: 1px solid var(--color-rule-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-control); }
+.range-select { display: inline-flex; align-items: center; gap: 8px; min-width: 0; min-height: 36px; padding: 0 11px; color: var(--color-body); background: var(--color-surface); border: 1px solid var(--color-control-border); border-radius: var(--radius-sm); box-shadow: var(--shadow-control); }
 .range-select > svg { flex-shrink: 0; color: var(--color-muted); }
 .range-select select { min-width: 0; min-height: 34px; padding: 0 3px; border: 0; background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: pointer; }
 .range-select:focus-within { outline: 2px solid var(--color-focus); outline-offset: 3px; }
@@ -190,10 +190,8 @@
 .task-strip > div { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 4px 18px; border-left: 1px solid var(--color-rule); }
 .task-strip > div:first-child { padding-left: 0; border-left: 0; }
 .task-strip > div:last-child { padding-right: 0; }
-.task-check { display: grid; place-items: center; width: 20px; height: 20px; flex-shrink: 0; padding: 0; border: 1px solid var(--color-rule-strong); border-radius: 6px; background: var(--color-surface); color: var(--color-muted); cursor: pointer; }
-.task-check svg { opacity: .4; }
+.task-check { display: grid; place-items: center; width: 20px; height: 20px; flex-shrink: 0; padding: 0; border: 1px solid var(--color-control-border); border-radius: 6px; background: var(--color-surface); color: var(--color-muted); cursor: pointer; }
 .task-check:hover { border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-accent-text); }
-.task-check:hover svg { opacity: 1; }
 .task-detail { flex: 1; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--color-body); text-align: left; cursor: pointer; }
 .task-detail strong { display: block; font-size: 11px; font-weight: var(--font-weight-medium); line-height: var(--leading-body); overflow-wrap: anywhere; }
 .task-detail small { display: block; margin-top: 4px; color: var(--color-muted); font-size: 10px; line-height: var(--leading-body); }

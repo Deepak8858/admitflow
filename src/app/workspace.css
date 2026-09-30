@@ -72,7 +72,7 @@ kbd { padding: 1px 5px; border: 1px solid var(--color-rule); border-radius: 4px;
 /* Fields share the same rhythm in forms, drawers and toolbar filters. */
 .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; margin-bottom: 18px; color: var(--color-body); font-size: 12px; }
 .field > span:first-child { font-weight: var(--font-weight-label); font-family: var(--font-mono); font-feature-settings: normal; font-variation-settings: normal; letter-spacing: var(--tracking-label); line-height: var(--leading-label); font-size: var(--text-label); }
-.field input, .field select, .field textarea { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink); font-size: 14px; line-height: var(--leading-body); box-shadow: var(--shadow-control); transition: border-color 150ms ease, box-shadow 150ms ease; font-family: var(--font-body); font-feature-settings: var(--font-features); font-optical-sizing: none; font-variation-settings: "opsz" var(--font-optical-body); font-weight: var(--font-weight-body); letter-spacing: var(--tracking-body); }
+.field input, .field select, .field textarea { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid var(--color-control-border); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink); font-size: 14px; line-height: var(--leading-body); box-shadow: var(--shadow-control); transition: border-color 150ms ease, box-shadow 150ms ease; font-family: var(--font-body); font-feature-settings: var(--font-features); font-optical-sizing: none; font-variation-settings: "opsz" var(--font-optical-body); font-weight: var(--font-weight-body); letter-spacing: var(--tracking-body); }
 .field select { appearance: auto; padding-right: 8px; }
 .field textarea { min-height: 90px; resize: vertical; }
 .field small { color: var(--color-muted); font-size: 11px; }
@@ -86,10 +86,10 @@ input[type="checkbox"], input[type="radio"] { flex-shrink: 0; width: 16px; heigh
 .field-note { display: flex; align-items: flex-start; gap: 8px; margin-block: 14px; color: var(--color-muted); font-size: 12px; line-height: var(--leading-body); overflow-wrap: anywhere; }
 .field-note > svg { margin-top: 3px; }
 .inline-error { margin-block: 14px; padding: 12px 14px; border: 1px solid var(--color-error-rule); border-radius: var(--radius-sm); background: var(--color-error-soft); color: var(--color-error-ink); font-size: 12px; line-height: var(--leading-body); overflow-wrap: anywhere; }
-.range-select, .compact-select { display: inline-flex; align-items: center; gap: 7px; min-width: 0; max-width: 100%; min-height: 38px; padding-inline: 10px; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-body); box-shadow: var(--shadow-control); }
+.range-select, .compact-select { display: inline-flex; align-items: center; gap: 7px; min-width: 0; max-width: 100%; min-height: 38px; padding-inline: 10px; border: 1px solid var(--color-control-border); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-body); box-shadow: var(--shadow-control); }
 .range-select > svg, .compact-select > svg { color: var(--color-muted); }
 .range-select select, .compact-select select { min-width: 0; max-width: 100%; min-height: 34px; padding: 5px 2px; border: 0; background: transparent; color: inherit; font-size: 12px; cursor: pointer; appearance: auto; }
-.search-input { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 38px; padding-inline: 11px; border: 1px solid var(--color-rule); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-muted); }
+.search-input { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 38px; padding-inline: 11px; border: 1px solid var(--color-control-border); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-muted); }
 .search-input input { width: 100%; min-width: 0; padding-block: 9px; border: 0; background: transparent; color: var(--color-ink); font-size: 12px; }
 .search-input:focus-within { border-color: var(--color-accent); outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .search-input input:focus-visible { outline: none; }
@@ -134,6 +134,7 @@ body:has(.dialog[open]) { overflow: hidden; }
 .switch[data-state="checked"] { background: var(--color-accent); }
 .switch-thumb { display: block; width: 18px; height: 18px; border-radius: 50%; background: var(--color-switch-thumb); box-shadow: var(--shadow-switch); transition: transform 150ms var(--ease-out); }
 .switch-thumb[data-state="checked"] { transform: translateX(16px); }
+:root[data-theme="dark"] .switch-thumb[data-state="checked"] { background: var(--color-accent-ink); }
 
 /* Desktop shell. responsive.css owns the sidebar breakpoint and offsets. */
 .app-shell { --sidebar-width: 232px; min-width: 0; min-height: 100dvh; }
@@ -245,7 +246,7 @@ body:has(.dialog[open]) { overflow: hidden; }
 @keyframes workspace-appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Keyboard-first workspace search. */
-.command-search { display: flex; align-items: center; gap: 11px; min-width: 0; padding: 12px; border: 1px solid var(--color-rule-strong); border-radius: 8px; color: var(--color-muted); }
+.command-search { display: flex; align-items: center; gap: 11px; min-width: 0; padding: 12px; border: 1px solid var(--color-control-border); border-radius: 8px; color: var(--color-muted); }
 .command-search input { flex: 1; width: 100%; min-width: 0; padding-block: 3px; border: 0; background: transparent; color: var(--color-ink); font-size: 14px; }
 .command-search:focus-within { border-color: var(--color-accent); outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .command-search input:focus-visible { outline: none; }
@@ -265,7 +266,7 @@ body:has(.dialog[open]) { overflow: hidden; }
   .button.ghost:hover:not(:disabled), .icon-button:hover:not(:disabled), .quiet-icon:hover:not(:disabled) { background: var(--color-paper-2); color: var(--color-ink); }
   .button.danger:hover:not(:disabled) { border-color: var(--color-error); background: var(--color-error-soft); color: var(--color-error-ink); }
   .text-link:hover, .table-text-action:hover { color: var(--color-accent-hover); text-decoration: underline; text-underline-offset: 3px; }
-  .field :is(input, select, textarea):hover:not(:disabled) { border-color: var(--color-rule-strong); }
+  .field :is(input, select, textarea):hover:not(:disabled):not(:focus-visible) { border-color: var(--color-control-border); }
   .nav-item:hover:not(.active) { background: var(--color-paper-2); color: var(--color-ink); }
   .nav-item.active:hover { background: var(--color-accent-soft); }
   .workspace-selector:hover { border-color: var(--color-rule-strong); }

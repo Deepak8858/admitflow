@@ -449,12 +449,14 @@ export function PricingPage() {
           <span className="badge violet">Pricing not published</span>
           <h2>Start with the workflow.</h2>
           <p>AdmitFlow connects enquiry records, conversations, counselling and recorded outcomes. The product page explains what is available and which services need setup.</p>
-          <Link href="/contact" className="button primary public-cta" data-af-event="primary_cta_click" data-af-cta="contact" data-af-placement="body">
-            Discuss a pilot <ArrowUpRight size={17} aria-hidden="true" />
-          </Link>
-          <Link href="/product" className="text-link">
-            Explore the current product <ArrowRight size={15} aria-hidden="true" />
-          </Link>
+          <div className="pricing-actions">
+            <Link href="/contact" className="button primary public-cta" data-af-event="primary_cta_click" data-af-cta="contact" data-af-placement="body">
+              Discuss a pilot <ArrowUpRight size={17} aria-hidden="true" />
+            </Link>
+            <Link href="/product" className="text-link">
+              Explore the current product <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
         </div>
         <div>
           <span className="public-eyebrow">CURRENT PRODUCT AREAS</span>
@@ -563,7 +565,7 @@ export function HelpPage() {
           </Question>
           <Question question="How does admissions recovery work?">
             <p>Open enquiries become candidates after seven days without contact. The team reviews the audience and follow-up. Messaging permission and eligibility checks apply; an active sequence stops after a reply, booking, opt-out or human takeover.</p>
-            <p><Link href="/product/admissions-recovery">See the recovery workflow <ArrowRight size={14} aria-hidden="true" /></Link></p>
+            <Link href="/product/admissions-recovery">See the recovery workflow <ArrowRight size={14} aria-hidden="true" /></Link>
           </Question>
           <Question question="Can it sync counselling with Google Calendar?">
             <p>With a connected institute calendar, AdmitFlow sends booking, rescheduling and cancellation updates to Google. Google-side changes are not imported, and an availability check does not reserve a slot.</p>

@@ -145,9 +145,13 @@ for (const width of [320, 375, 414, 768, 1440]) {
         expect(appearance.headingFont.toLowerCase()).toContain("inter");
         expect(appearance.headingWeight).toBe("500");
         if (appearance.buyerHeading) {
-          expect(appearance.headingFont.toLowerCase()).toContain("inter variable");
-          for (const feature of ["blwf", "cv03", "cv04", "cv09", "cv11"]) expect(appearance.headingFeatures).toContain(feature);
-          expect(appearance.headingVariation).toContain("opsz");
+          expect(appearance.headingFont.toLowerCase()).toContain("inter hero");
+          expect(appearance.headingFeatures).toBe("normal");
+          expect(appearance.headingVariation).toBe("normal");
+          expect(appearance.headingSize).toBeCloseTo(
+            width <= 809 ? Math.min(28.4553, Math.max(20, (width - 40) / 12.3)) : 52,
+            1,
+          );
         }
         if (publishedRoutes.includes(path) || ["/login", "/signup", "/onboarding"].includes(path)) {
           expect(appearance.headingLineRatio).toBeCloseTo(1.02, 2);

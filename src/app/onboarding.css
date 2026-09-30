@@ -83,7 +83,7 @@
 .institute-onboarding-steps li.complete { border-top-color: var(--color-green); }
 .institute-onboarding-steps .step-mark { color: var(--color-body); font: 400 var(--text-eyebrow, 11px)/1.3 var(--font-mono); font-variation-settings: normal; letter-spacing: .06em; }
 .institute-onboarding-steps li.active .step-mark { color: var(--color-ink); }
-.institute-onboarding-steps li.complete .step-mark { color: var(--color-green); }
+.institute-onboarding-steps li.complete .step-mark { color: var(--color-green-ink); }
 
 .institute-onboarding-main {
   display: grid;

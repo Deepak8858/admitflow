@@ -81,7 +81,7 @@ export function BillingPanel({ workspace, onUpdated }: BillingPanelProps) {
       {!canManage ? <p className="small-copy">An institute owner or administrator can view and manage the subscription.</p> : <>
         {loading && !billing && <div role="status"><div className="skeleton" style={{ height: 70 }} /><p className="field-note">Checking subscription details…</p></div>}
         {error && <p className="inline-error" role="alert">{error}</p>}
-        {notice && <p role="status" className="field-note" style={{ color: "var(--color-green)" }}>{notice}</p>}
+        {notice && <p role="status" className="field-note" style={{ color: "var(--color-green-ink)" }}>{notice}</p>}
         {billing && <>
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 14, padding: "16px 0 20px" }}>
             <span className="integration-icon"><CreditCard size={20} /></span>

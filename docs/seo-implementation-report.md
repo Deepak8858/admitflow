@@ -1,5 +1,13 @@
 # AdmitFlow search and public experience implementation report
 
+The 29 September results below describe the snapshot recovered as `15e02cd`.
+Subsequent PR14 corrections include dependency security, verification tooling,
+resource dates, and typography/layout/contrast changes. Their current validation
+and outstanding gates are recorded in the
+[release snapshot](seo-release-snapshot.md#pr-review-corrections-and-current-validation).
+Original fingerprints, lab measurements and screenshots are preserved; they do
+not prove byte identity or performance for the later combined head.
+
 Local verification record, 29 September 2026. Portable release copy prepared 30 September; no deployment is claimed. The corrected public Turbopack production build completed compilation, TypeScript and 27/27 static routes, then passed [43/43 built HTTP/SEO checks](../artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-verification.json). The [runtime-only fake hosted fixture](../artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-public-hosted-v2-hosted-fixture.json) passed with the unchanged public build. A separate preview-safe build passed its [43/43 built checks](../artifacts/admitflow-seo-implementation-2026-09-29/final-corrected-preview-verification.json) and the remaining worker and migration dry-run checks. The browser suite passed 79 cases on its first run and its four initially failed cases on an isolated rerun; the account suite passed 10/10. The local starting commit is `02a03632957610765ba8911a1db0ea37d628d45f`; the tested app/build files have a [192-file fingerprint](../artifacts/admitflow-seo-implementation-2026-09-29/final-tested-source-fingerprint.json) captured before the original local validation was committed. The [release snapshot record](seo-release-snapshot.md) explains exact-byte recovery and the expanded dependency/test manifest. No release, search submission, or index result is claimed.
 
 ## Task status and implementation

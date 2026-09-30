@@ -57,7 +57,8 @@ body { background: var(--color-paper); }
   .nav-item.active:hover { background: transparent; }
   .sidebar-assistant:hover { background: var(--color-paper-2); border-color: var(--color-accent-light); }
   .button.danger:hover:not(:disabled) { background: var(--color-error-soft); color: var(--color-error-ink); }
-  .button.secondary:hover:not(:disabled):not(.disabled), .field :is(input, select, textarea):hover:not(:disabled) { border-color: var(--color-rule-strong); }
+  .button.secondary:hover:not(:disabled):not(.disabled) { border-color: var(--color-rule-strong); }
+  .field :is(input, select, textarea):hover:not(:disabled):not(:focus-visible) { border-color: var(--color-control-border); }
 }
 @media (prefers-reduced-motion: no-preference) {
   .button:active:not(:disabled), .icon-button:active:not(:disabled) { transform: scale(.98); }
