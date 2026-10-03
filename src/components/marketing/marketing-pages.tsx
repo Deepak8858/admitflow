@@ -442,7 +442,7 @@ export function PricingPage() {
       <section className="public-container pricing-intro">
         <div className="public-eyebrow">START WITH A SCOPED PILOT</div>
         <h1>Evaluate your follow-up workflow.<br /><em>Then plan the rollout.</em></h1>
-        <p>Start with one coaching team and an agreed enquiry group. Discuss the workflow, connected services and success measures before committing to a rollout. Public rates are not yet published.</p>
+        <p>Start with one coaching team and an agreed enquiry group. Discuss the workflow, connected services and success measures before committing to a rollout. There is no published rate or paid plan to select here yet.</p>
       </section>
       <section className="public-container pricing-card">
         <div>
