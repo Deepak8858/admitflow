@@ -225,17 +225,17 @@ export function WelcomePage() {
         <div className="hero-copy public-container">
           <div className="public-eyebrow"><span className="eyebrow-dot" />BUILT FOR COACHING TEAMS IN INDIA</div>
           <h1 id="hero-title">Admissions CRM for coaching institutes.</h1>
-          <p>Bring enquiries, WhatsApp follow-ups and counselling into one workspace, with AI assistance and your admissions team in control.</p>
+          <p>Give every enquiry an owner and a next step. Bring WhatsApp follow-ups, counselling and recorded outcomes into one workspace, with your admissions team in control.</p>
           <div className="hero-actions">
-            <Link className="button primary public-cta" href="/signup" data-af-event="primary_cta_click" data-af-cta="signup" data-af-placement="hero">
-              Create account <ArrowUpRight size={18} aria-hidden="true" />
+            <Link className="button primary public-cta" href="/contact" data-af-event="primary_cta_click" data-af-cta="contact" data-af-placement="hero">
+              Discuss a pilot <ArrowUpRight size={18} aria-hidden="true" />
             </Link>
             <Link className="button secondary public-cta" href="/product" data-public-action="product-walkthrough">
               Explore the product <ArrowRight size={17} aria-hidden="true" />
             </Link>
           </div>
-          <Link href="/contact" className="hero-pilot" data-af-event="primary_cta_click" data-af-cta="contact" data-af-placement="hero">
-            Discuss a pilot <ArrowRight size={15} aria-hidden="true" />
+          <Link href="/signup" className="hero-pilot" data-af-event="primary_cta_click" data-af-cta="signup" data-af-placement="hero">
+            Create account <ArrowRight size={15} aria-hidden="true" />
           </Link>
           <div className="hero-assurance">
             <ShieldCheck size={15} aria-hidden="true" />
@@ -440,15 +440,15 @@ export function PricingPage() {
   return (
     <>
       <section className="public-container pricing-intro">
-        <div className="public-eyebrow">COMMERCIAL AVAILABILITY</div>
-        <h1>Pricing is being finalized<br /><em>for launch.</em></h1>
-        <p>There is no published rate or paid plan to select here yet. Explore the current product, then ask about a pilot or rollout for your institute.</p>
+        <div className="public-eyebrow">START WITH A SCOPED PILOT</div>
+        <h1>Evaluate your follow-up workflow.<br /><em>Then plan the rollout.</em></h1>
+        <p>Start with one coaching team and an agreed enquiry group. Discuss the workflow, connected services and success measures before committing to a rollout. There is no published rate or paid plan to select here yet.</p>
       </section>
       <section className="public-container pricing-card">
         <div>
           <span className="badge violet">Pricing not published</span>
-          <h2>Start with the workflow.</h2>
-          <p>AdmitFlow connects enquiry records, conversations, counselling and recorded outcomes. The product page explains what is available and which services need setup.</p>
+          <h2>A clear scope before you begin.</h2>
+          <p>A pilot discussion covers your enquiry sources, counsellor ownership, WhatsApp readiness and counselling process. Agree the duration, fees, service charges and support responsibilities in writing before starting.</p>
           <div className="pricing-actions">
             <Link href="/contact" className="button primary public-cta" data-af-event="primary_cta_click" data-af-cta="contact" data-af-placement="body">
               Discuss a pilot <ArrowUpRight size={17} aria-hidden="true" />
