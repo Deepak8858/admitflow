@@ -20,7 +20,7 @@ The [accepted UI direction](production-ui-direction.md) uses the existing eight 
 
 | Layer | Current implementation |
 | --- | --- |
-| Application | Next.js **16.3.5**, React/React DOM **19.3.0**, TypeScript, Node **24**; App Router and Node API handlers |
+| Application | Next.js **16.4.0**, React/React DOM **19.3.0**, TypeScript, Node **24**; App Router and Node API handlers |
 | Interface | Custom shared components, Radix primitives, native dialogs, Tailwind 4 and layered CSS; Geist, Lucide, Recharts; React Hook Form/Zod |
 | Data UI | TanStack Query and React Table **8.21.3**; native server-filtered/count/paginated enquiry queries; full workspace projection still used by the shell and mutations |
 | Local preview | Node SQLite, cookie-scoped demo sessions and local evaluation accounts when `DATABASE_URL` is absent |

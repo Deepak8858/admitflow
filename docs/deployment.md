@@ -213,7 +213,7 @@ Rechecked 17 September with `npm audit --omit=dev --package-lock-only --ignore-s
 
 - `npm audit --omit=dev`: **0 vulnerabilities** after upgrading BullMQ to **5.81.5** and ioredis to **5.11.1** within their compatible 5.x lines. BullMQ's former `uuid@9` dependency was removed, resolving [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq). Its declared `cron-parser@4.9.0` dependency is included in the clean production audit.
 - Full `npm audit`: **0 vulnerabilities** in the 27 September security remediation. A scoped `@esbuild-kit/core-utils` override reuses the direct `esbuild@0.28.2` dependency, removing [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99) from the Drizzle Kit loader chain. The actual loader transform and Drizzle CLI regression tests pass locally. Production migrations use `tsx` plus the Drizzle ORM migrator.
-- Dependency resolution retains Next **16.3.5**, React/React DOM **19.3.0**, and React Table **8.21.3**. Re-run the audits for each release because advisory data can change independently of the lockfile.
+- Dependency resolution retains Next **16.4.0** (upgraded from 16.3.5 for GHSA-vcvr-r3jv-pc5j, GHSA-cjq9-62q9-8jv4 and the SSG/ISR cache-poisoning advisories; `sharp` 0.35.5 and `source-map-js` 1.2.2 resolve the remaining production audit findings), React/React DOM **19.3.0**, and React Table **8.21.3**. Re-run the audits for each release because advisory data can change independently of the lockfile.
 
 ### Build
 

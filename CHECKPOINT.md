@@ -29,7 +29,7 @@ Read these current implementation records first:
 
 ## Decisions and working constraints
 
-- Approved stack: **Next.js 16.3.5, React/React DOM 19.3.0, TypeScript, Node 24; Neon + Drizzle; WorkOS; R2; AWS ECS/Fargate web and worker; BullMQ with node-based private Valkey/noeviction**.
+- Approved stack: **Next.js 16.4.0, React/React DOM 19.3.0, TypeScript, Node 24; Neon + Drizzle; WorkOS; R2; AWS ECS/Fargate web and worker; BullMQ with node-based private Valkey/noeviction**.
 - Approved messaging: **Meta Cloud API transport + OpenAI autonomous mode + ElevenLabs speech**. Counsellors retain human override. The user wants the existing WhatsApp Business app number through Meta's coexistence path. Native ElevenLabs Agents WhatsApp is not the selected transport.
 - Default deployment placement is Singapore (`ap-southeast-1`) alongside Neon Singapore. Budget, actual account resources and credentialed rollout remain deployment work; Mumbai was absent from the reviewed Neon region list.
 - Accepted design direction uses the existing **8 inspected Mobbin references** in [UI direction](docs/production-ui-direction.md). They are sufficient. Do not reopen image research, fetch new reference images or load skills.
