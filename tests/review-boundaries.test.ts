@@ -20,14 +20,18 @@ async function moduleWith<T>(file: string, overrides: Record<string, unknown>): 
   return module.exports as T;
 }
 
-test("HSTS is host-only and production-only without losing existing security headers", async () => {
+test("HSTS is host-only and production-only, CSP is report-only, and existing security headers remain", async () => {
   const previous = process.env.NODE_ENV;
   try {
     for (const environment of ["production", "development", "test"]) {
       Object.assign(process.env, { NODE_ENV: environment });
       const result = await config.headers!();
       const headers = Object.fromEntries(result[0].headers.map(item => [item.key, item.value]));
-      assert.equal(headers["Strict-Transport-Security"], environment === "production" ? "max-age=86400" : undefined);
+      assert.equal(headers["Strict-Transport-Security"], environment === "production" ? "max-age=31536000" : undefined);
+      const csp = headers["Content-Security-Policy-Report-Only"];
+      assert.match(csp, /(^|; )default-src 'self'(;|$)/); assert.match(csp, /(^|; )frame-ancestors 'none'(;|$)/); assert.match(csp, /(^|; )object-src 'none'(;|$)/);
+      assert.equal(csp.includes("'unsafe-eval'"), environment === "development", "eval is only allowed for the development runtime");
+      assert.equal(headers["Content-Security-Policy"], undefined, "CSP stays report-only until violations are reviewed");
       assert.equal(headers["X-Content-Type-Options"], "nosniff");
       assert.equal(headers["X-Frame-Options"], "DENY");
       assert.equal(headers["Referrer-Policy"], "strict-origin-when-cross-origin");
