@@ -50,7 +50,7 @@
     "framer-motion": "^13.4.0",
     "ioredis": "^5.11.1",
     "lucide-react": "latest",
-    "next": "16.3.5",
+    "next": "^16.4.0",
     "openai": "^7.15.0",
     "papaparse": "^5.5.3",
     "pdf-parse": "^2.4.5",
@@ -82,7 +82,7 @@
     "constructs": "^10.8.1",
     "drizzle-kit": "^0.31.10",
     "esbuild": "0.28.2",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "tsx": "latest",
     "typescript": "^5.9.0"
   }
